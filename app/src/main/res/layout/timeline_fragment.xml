@@ -1,5 +1,6 @@
 <android.support.design.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -11,11 +12,11 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <fragment
+    <!--<fragment
         android:id="@+id/parallax"
         class="com.google.android.gms.maps.SupportStreetViewPanoramaFragment"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"/>-->
 
     <android.support.v4.widget.NestedScrollView
         android:layout_width="match_parent"
@@ -24,9 +25,44 @@
         android:background="@android:color/white"
         android:layout_gravity="bottom"
         app:behavior_hideable="true"
-        app:behavior_header_layout="@layout/custom_header"
-        app:behavior_content_layout="@layout/custom_content"
-        android:elevation="16dp"
-        app:layout_behavior="com.example.murat.gezi_yorum.GoogleMapsBottomSheetBehavior" />
+        app:layout_behavior="com.example.murat.gezi_yorum.CustomBottomSheetBehavior">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <Button
+                android:id="@+id/left_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Sol"
+                android:layout_alignParentLeft="true"
+                />
+            <TextView
+                android:id="@+id/header"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="32sp"
+                android:textColor="@android:color/black"
+                tools:textColor="@android:color/white"
+                android:text="@string/header"
+                android:layout_centerHorizontal="true"
+                android:textAlignment="center"/>
+            <Button
+                android:id="@+id/right_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Sağ"
+                android:layout_alignParentRight="true"
+                />
+            <android.support.v4.view.ViewPager
+                android:id="@+id/pager"
+                android:layout_width="wrap_content"
+                android:layout_below="@+id/header"
+                android:layout_height="200dp">
+
+            </android.support.v4.view.ViewPager>
+        </RelativeLayout>
+    </android.support.v4.widget.NestedScrollView>
 
 </android.support.design.widget.CoordinatorLayout>

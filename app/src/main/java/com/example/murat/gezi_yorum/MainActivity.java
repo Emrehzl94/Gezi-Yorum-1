@@ -15,8 +15,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
-public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,5 +110,8 @@ public class MainActivity extends AppCompatActivity
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.content_main,fragment);
         fragmentTransaction.commit();
+    }
+    public void showSnackbarMessage(String message, int lenght){
+        Snackbar.make(getCurrentFocus(),message,lenght).show();
     }
 }

@@ -1,4 +1,4 @@
-package com.github.reline;
+package com.example.murat.gezi_yorum;
 
 class MathUtils {
 

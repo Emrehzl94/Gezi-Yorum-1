@@ -11,7 +11,7 @@
     <string name="navigation_drawer_close"></string>
     <string name="permission_rationale"></string>
     <string name="prompt_email">E-posta</string>
-    <string name="prompt_password"></string>
+    <string name="prompt_password">Şifre</string>
     <string name="title_activity_main">Ana Sayfa</string>
     <string name="search">Ara</string>
     <string name="home">Ana Sayfa</string>

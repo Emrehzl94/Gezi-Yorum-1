@@ -9,29 +9,33 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.OnStreetViewPanoramaReadyCallback;
-import com.google.android.gms.maps.StreetViewPanorama;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.SupportStreetViewPanoramaFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 
-public class exActivity extends Fragment implements OnMapReadyCallback, OnStreetViewPanoramaReadyCallback {
+public class TimeLine extends Fragment implements OnMapReadyCallback {
 
     private GoogleMap map;
-    private GoogleMapsBottomSheetBehavior behavior;
-    private View parallax;
+    private CustomBottomSheetBehavior behavior;
+    private ViewPager viewPager;
+    private PagerAdapter pagerAdapter;
+    //private View parallax;
     private final static int MAP_PERMISSION_REQUEST = 1;
 
     @Override
@@ -42,31 +46,25 @@ public class exActivity extends Fragment implements OnMapReadyCallback, OnStreet
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-
-        SupportStreetViewPanoramaFragment streetViewPanoramaFragment = (SupportStreetViewPanoramaFragment) getChildFragmentManager()
-                .findFragmentById(R.id.parallax);
-        streetViewPanoramaFragment.getStreetViewPanoramaAsync(this);
+        DisplayMetrics metrics = new DisplayMetrics();
+        getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        viewPager = view.findViewById(R.id.pager);
+        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) viewPager.getLayoutParams();
+        params.height = metrics.heightPixels;
+        params.width = metrics.widthPixels;
+        viewPager.setLayoutParams(params);
+        final PagerAdapter pagerAdapter = new com.example.murat.gezi_yorum.PagerAdapter(getChildFragmentManager());
+        viewPager.setAdapter(pagerAdapter);
 
         final View bottomsheet = view.findViewById(R.id.bottomsheet);
-        behavior = GoogleMapsBottomSheetBehavior.from(bottomsheet);
-        parallax = view.findViewById(R.id.parallax);
-        behavior.setParallax(parallax);
+        behavior = CustomBottomSheetBehavior.from(bottomsheet);
+        behavior.setHideable(false);
+        behavior.setState(CustomBottomSheetBehavior.STATE_COLLAPSED);
         behavior.setPeekHeight(300);
-        behavior.setState(GoogleMapsBottomSheetBehavior.STATE_COLLAPSED);
-        // wait for the bottomsheet to be laid out
-        bottomsheet.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                // set the height of the parallax to fill the gap between the anchor and the top of the screen
-                CoordinatorLayout.LayoutParams layoutParams = new CoordinatorLayout.LayoutParams(parallax.getMeasuredWidth(), behavior.getAnchorOffset() / 2);
-                parallax.setLayoutParams(layoutParams);
-                bottomsheet.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-            }
-        });
 
-        behavior.setBottomSheetCallback(new GoogleMapsBottomSheetBehavior.BottomSheetCallback() {
+        behavior.setBottomSheetCallback(new CustomBottomSheetBehavior.BottomSheetCallback() {
             @Override
-            public void onStateChanged(@NonNull View bottomSheet, @GoogleMapsBottomSheetBehavior.State int newState) {
+            public void onStateChanged(@NonNull View bottomSheet, @CustomBottomSheetBehavior.State int newState) {
                 // each time the bottomsheet changes position, animate the camera to keep the pin in view
                 // normally this would be a little more complex (getting the pin location and such),
                 // but for the purpose of an example this is enough to show how to stay centered on a pin
@@ -77,24 +75,34 @@ public class exActivity extends Fragment implements OnMapReadyCallback, OnStreet
 
             }
         });
+
+        Button rightButton = (Button) view.findViewById(R.id.right_button);
+        Button leftButton = (Button) view.findViewById(R.id.left_button);
+        rightButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int page = viewPager.getCurrentItem();
+                if(page < pagerAdapter.getCount()){
+                    viewPager.setCurrentItem(page+1);
+                }
+            }
+        });
+        leftButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int page = viewPager.getCurrentItem();
+                if(page > 0){
+                    viewPager.setCurrentItem(page-1);
+                }
+            }
+        });
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.activity_maps, container, false);
+        return inflater.inflate(R.layout.timeline_fragment, container, false);
     }
-
-
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
     @Override
     public void onMapReady(GoogleMap googleMap) {
         this.map = googleMap;
@@ -120,7 +128,7 @@ public class exActivity extends Fragment implements OnMapReadyCallback, OnStreet
         map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
-                behavior.setState(GoogleMapsBottomSheetBehavior.STATE_COLLAPSED);
+                behavior.setState(CustomBottomSheetBehavior.STATE_COLLAPSED);
                 behavior.setHideable(false);
                 map.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()));
                 return true;
@@ -129,15 +137,33 @@ public class exActivity extends Fragment implements OnMapReadyCallback, OnStreet
         map.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng latLng) {
-                behavior.setHideable(true);
-                behavior.setState(GoogleMapsBottomSheetBehavior.STATE_HIDDEN);
+                if(behavior.getState() == CustomBottomSheetBehavior.STATE_HIDDEN){
+                    behavior.setHideable(false);
+                    behavior.setState(CustomBottomSheetBehavior.STATE_COLLAPSED);
+                }else {
+                    behavior.setHideable(true);
+                    behavior.setState(CustomBottomSheetBehavior.STATE_HIDDEN);
+                }
             }
         });
     }
 
     @Override
-    public void onStreetViewPanoramaReady(StreetViewPanorama streetViewPanorama) {
-        //streetViewPanorama.setPosition(SYDNEY);
-        //streetViewPanorama.setUserNavigationEnabled(false);
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        boolean granted = false;
+        switch (requestCode){
+            case MAP_PERMISSION_REQUEST:
+                if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                    granted = true;
+                }
+                break;
+        }
+        MainActivity mainActivity = ((MainActivity) getActivity());
+        if(granted){
+            mainActivity.changeFragment(new TimeLine());
+        }else {
+            mainActivity.showSnackbarMessage("Bu işlev konum izni olmadan çalışmaz",Snackbar.LENGTH_LONG);
+        }
     }
 }
