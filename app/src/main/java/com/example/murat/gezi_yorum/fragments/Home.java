@@ -1,4 +1,4 @@
-package com.example.murat.gezi_yorum;
+package com.example.murat.gezi_yorum.fragments;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -6,6 +6,8 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import com.example.murat.gezi_yorum.R;
 
 /**
  * Created by murat on 10/22/17.

@@ -1,4 +1,4 @@
-package com.example.murat.gezi_yorum;
+package com.example.murat.gezi_yorum.fragments;
 
 import android.Manifest;
 import android.content.Context;
@@ -19,9 +19,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
+import com.example.murat.gezi_yorum.utils.CustomBottomSheetBehavior;
+import com.example.murat.gezi_yorum.MainActivity;
+import com.example.murat.gezi_yorum.R;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -53,10 +55,10 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
         params.height = metrics.heightPixels;
         params.width = metrics.widthPixels;
         viewPager.setLayoutParams(params);
-        final PagerAdapter pagerAdapter = new com.example.murat.gezi_yorum.PagerAdapter(getChildFragmentManager());
+        pagerAdapter = new com.example.murat.gezi_yorum.helpers.PagerAdapter(getChildFragmentManager());
         viewPager.setAdapter(pagerAdapter);
 
-        final View bottomsheet = view.findViewById(R.id.bottomsheet);
+        View bottomsheet = view.findViewById(R.id.bottomsheet);
         behavior = CustomBottomSheetBehavior.from(bottomsheet);
         behavior.setHideable(false);
         behavior.setState(CustomBottomSheetBehavior.STATE_COLLAPSED);

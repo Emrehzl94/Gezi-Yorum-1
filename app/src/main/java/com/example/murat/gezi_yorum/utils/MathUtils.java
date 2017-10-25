@@ -1,4 +1,4 @@
-package com.example.murat.gezi_yorum;
+package com.example.murat.gezi_yorum.utils;
 
 class MathUtils {
 

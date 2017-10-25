@@ -24,7 +24,7 @@
             android:name=".MainActivity"
             android:label="@string/title_activity_main"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".TimeLine"/>
+        <service android:name=".LocationSaveService"/>
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"

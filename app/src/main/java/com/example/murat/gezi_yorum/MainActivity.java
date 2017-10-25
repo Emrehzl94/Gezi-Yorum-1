@@ -1,5 +1,8 @@
 package com.example.murat.gezi_yorum;
 
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -15,24 +18,56 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+import com.example.murat.gezi_yorum.fragments.Home;
+import com.example.murat.gezi_yorum.fragments.Search;
+import com.example.murat.gezi_yorum.fragments.TimeLine;
 
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+    private static final String TRIP_STATE = "tripState";
+    private static final boolean TRIP_STARTED = true;
+    private static final boolean TRIP_NOT_STARTED = false;
+    View.OnClickListener startTrip;
+    View.OnClickListener stopTrip;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        SharedPreferences sharedPreferences = getPreferences(Context.MODE_PRIVATE);
+        final SharedPreferences.Editor editor = sharedPreferences.edit();
+        final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        startTrip = new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+            public void onClick(View v) {
+                Snackbar.make(v, "Trip started", Snackbar.LENGTH_LONG).show();
+                Intent intent = new Intent(MainActivity.this,LocationSaveService.class);
+                startService(intent);
+                editor.putBoolean(TRIP_STATE,TRIP_STARTED);
+                editor.apply();
+                fab.setImageResource(android.R.drawable.btn_dialog);
+                fab.setOnClickListener(stopTrip);
             }
-        });
-
+        };
+        stopTrip = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Snackbar.make(v, "Trip stopped", Snackbar.LENGTH_LONG).show();
+                Intent intent = new Intent(MainActivity.this,LocationSaveService.class);
+                stopService(intent);
+                editor.putBoolean(TRIP_STATE,TRIP_NOT_STARTED);
+                editor.apply();
+                fab.setImageResource(android.R.drawable.ic_dialog_map);
+                fab.setOnClickListener(startTrip);
+            }
+        };
+        if(!sharedPreferences.getBoolean(TRIP_STATE,false)){
+            fab.setOnClickListener(startTrip);
+            fab.setImageResource(android.R.drawable.ic_dialog_map);
+        }else {
+            fab.setImageResource(android.R.drawable.btn_dialog);
+            fab.setOnClickListener(stopTrip);
+        }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -114,4 +149,5 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public void showSnackbarMessage(String message, int lenght){
         Snackbar.make(getCurrentFocus(),message,lenght).show();
     }
+
 }

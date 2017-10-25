@@ -1,8 +1,10 @@
-package com.example.murat.gezi_yorum;
+package com.example.murat.gezi_yorum.helpers;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+
+import com.example.murat.gezi_yorum.fragments.Element;
 
 /**
  * Created by murat on 24.10.2017.

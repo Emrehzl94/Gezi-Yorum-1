@@ -1,4 +1,4 @@
-package com.example.murat.gezi_yorum;
+package com.example.murat.gezi_yorum.utils;
 
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
@@ -35,6 +35,7 @@ import android.view.ViewParent;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.example.murat.gezi_yorum.R;
 import com.google.android.gms.maps.GoogleMap;
 
 import java.lang.annotation.Retention;
