@@ -10,10 +10,15 @@ import com.example.murat.gezi_yorum.fragments.Element;
  * Created by murat on 24.10.2017.
  */
 
-public class PagerAdapter extends FragmentPagerAdapter{
-    private static int NUM_ITEMS = 3;
+public class TripPagerAdapter extends FragmentPagerAdapter{
 
-    public PagerAdapter(FragmentManager fragmentManager) {
+    private int NUM_ITEMS = 3;
+
+    public void setCount(int NUM_ITEMS) {
+        this.NUM_ITEMS = NUM_ITEMS;
+    }
+
+    public TripPagerAdapter(FragmentManager fragmentManager) {
         super(fragmentManager);
     }
 

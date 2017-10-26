@@ -21,6 +21,8 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.RelativeLayout;
 
+import com.example.murat.gezi_yorum.helpers.LocationDbOpenHelper;
+import com.example.murat.gezi_yorum.helpers.TripPagerAdapter;
 import com.example.murat.gezi_yorum.utils.CustomBottomSheetBehavior;
 import com.example.murat.gezi_yorum.MainActivity;
 import com.example.murat.gezi_yorum.R;
@@ -30,21 +32,25 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.PolygonOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
+
+import java.util.ArrayList;
 
 public class TimeLine extends Fragment implements OnMapReadyCallback {
 
     private GoogleMap map;
     private CustomBottomSheetBehavior behavior;
     private ViewPager viewPager;
-    private PagerAdapter pagerAdapter;
-    //private View parallax;
+    private TripPagerAdapter pagerAdapter;
+    private ArrayList<Integer> trip_ids;
+    private LocationDbOpenHelper helper;
     private final static int MAP_PERMISSION_REQUEST = 1;
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         getActivity().setTitle(getString(R.string.timeline));
-
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -55,9 +61,35 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
         params.height = metrics.heightPixels;
         params.width = metrics.widthPixels;
         viewPager.setLayoutParams(params);
-        pagerAdapter = new com.example.murat.gezi_yorum.helpers.PagerAdapter(getChildFragmentManager());
-        viewPager.setAdapter(pagerAdapter);
 
+        helper = new LocationDbOpenHelper(getContext());
+
+        trip_ids = helper.getTripsInfo();
+        pagerAdapter = new TripPagerAdapter(getChildFragmentManager());
+        pagerAdapter.setCount(trip_ids.size());
+        viewPager.setAdapter(pagerAdapter);
+        viewPager.setCurrentItem(trip_ids.size());
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                PolylineOptions options = helper.getTripInfo(trip_ids.get(position));
+                map.clear();
+                if(!options.getPoints().isEmpty()) {
+                    map.animateCamera(CameraUpdateFactory.newLatLngZoom(options.getPoints().get(0), 15.0f));
+                    map.addPolyline(options);
+                }
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
         View bottomsheet = view.findViewById(R.id.bottomsheet);
         behavior = CustomBottomSheetBehavior.from(bottomsheet);
         behavior.setHideable(false);
@@ -127,6 +159,10 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
             LatLng lastKnownLatLng = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
             map.moveCamera(CameraUpdateFactory.newLatLngZoom(lastKnownLatLng,13.0f));
         }
+
+        PolylineOptions options = helper.getTripInfo(trip_ids.get(trip_ids.size()-1));
+        map.addPolyline(options);
+
         map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {

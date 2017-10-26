@@ -21,28 +21,38 @@ import android.view.MenuItem;
 import com.example.murat.gezi_yorum.fragments.Home;
 import com.example.murat.gezi_yorum.fragments.Search;
 import com.example.murat.gezi_yorum.fragments.TimeLine;
+import com.example.murat.gezi_yorum.helpers.LocationDbOpenHelper;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private static final String TRIP_STATE = "tripState";
     private static final boolean TRIP_STARTED = true;
     private static final boolean TRIP_NOT_STARTED = false;
-    View.OnClickListener startTrip;
-    View.OnClickListener stopTrip;
+    private static final String STARTED_TRIP_ID= "tripId";
+    private static final long ENDED = 0;
+    private SharedPreferences sharedPreferences;
+    private FloatingActionButton fab;
+    private SharedPreferences.Editor editor;
+    private LocationDbOpenHelper helper;
+    private View.OnClickListener startTrip;
+    private View.OnClickListener stopTrip;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        SharedPreferences sharedPreferences = getPreferences(Context.MODE_PRIVATE);
-        final SharedPreferences.Editor editor = sharedPreferences.edit();
-        final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        sharedPreferences = getPreferences(Context.MODE_PRIVATE);
+        helper = new LocationDbOpenHelper(this);
+        editor = sharedPreferences.edit();
+        fab = (FloatingActionButton) findViewById(R.id.fab);
         startTrip = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Snackbar.make(v, "Trip started", Snackbar.LENGTH_LONG).show();
                 Intent intent = new Intent(MainActivity.this,LocationSaveService.class);
                 startService(intent);
+                long insert_id = helper.insertStartEntry();
+                editor.putLong(STARTED_TRIP_ID,insert_id);
                 editor.putBoolean(TRIP_STATE,TRIP_STARTED);
                 editor.apply();
                 fab.setImageResource(android.R.drawable.btn_dialog);
@@ -55,6 +65,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 Snackbar.make(v, "Trip stopped", Snackbar.LENGTH_LONG).show();
                 Intent intent = new Intent(MainActivity.this,LocationSaveService.class);
                 stopService(intent);
+                long inserted_id = sharedPreferences.getLong(STARTED_TRIP_ID,0);
+                helper.updateTripFinish(inserted_id);
+                editor.putLong(STARTED_TRIP_ID,0);
                 editor.putBoolean(TRIP_STATE,TRIP_NOT_STARTED);
                 editor.apply();
                 fab.setImageResource(android.R.drawable.ic_dialog_map);

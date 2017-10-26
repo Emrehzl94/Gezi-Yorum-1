@@ -65,9 +65,9 @@ public class LocationSaveService extends Service implements LocationListener {
         Double latitude = location.getLatitude();
         Double longitude = location.getLongitude();
         Double altitude = location.getAltitude();
-
+        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         helper.saveLocation(new mLocation(
-                longitude,latitude,altitude," time('now') "
+                latitude,longitude,altitude,dateFormat.format(new Date())
         ),writableLocationDb);
     }
 
