@@ -7,7 +7,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 import com.example.murat.gezi_yorum.fragments.Element;
 
 /**
- * Created by murat on 24.10.2017.
+ * Custom adapter for viewPager
  */
 
 public class TripPagerAdapter extends FragmentPagerAdapter{
@@ -31,16 +31,7 @@ public class TripPagerAdapter extends FragmentPagerAdapter{
     // Returns the fragment to display for that page
     @Override
     public Fragment getItem(int position) {
-        switch (position) {
-            case 0: // Fragment # 0 - This will show FirstFragment
-                return Element.newInstance(0, "Page # 1");
-            case 1: // Fragment # 0 - This will show FirstFragment different title
-                return Element.newInstance(1, "Page # 2");
-            case 2: // Fragment # 1 - This will show SecondFragment
-                return Element.newInstance(2, "Page # 3");
-            default:
-                return null;
-        }
+        return Element.newInstance(position, "Page # "+position);
     }
 
     // Returns the page title for the top indicator

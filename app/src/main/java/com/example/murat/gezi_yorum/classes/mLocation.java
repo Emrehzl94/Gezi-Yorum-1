@@ -3,15 +3,15 @@ package com.example.murat.gezi_yorum.classes;
 import java.util.Date;
 
 /**
- * Created by murat on 25.10.2017.
+ * Custom Location struct for application.
  */
 
 public class mLocation {
     private double Longtitude;
     private double Latitude;
     private double Altitude;
-    private String Time;
-    public mLocation(double Latitude,double Longtitude,double Altitude,String Time){
+    private long Time;
+    public mLocation(double Latitude,double Longtitude,double Altitude,long Time){
         this.Latitude = Latitude;
         this.Longtitude = Longtitude;
         this.Altitude = Altitude;
@@ -22,7 +22,7 @@ public class mLocation {
         return Longtitude;
     }
 
-    public String getTime() {
+    public long getTime() {
         return Time;
     }
 

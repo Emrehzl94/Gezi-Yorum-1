@@ -1,18 +1,23 @@
 package com.example.murat.gezi_yorum.fragments;
 
 import android.Manifest;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Criteria;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
-import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
@@ -20,7 +25,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
+import com.example.murat.gezi_yorum.LocationSaveService;
 import com.example.murat.gezi_yorum.helpers.LocationDbOpenHelper;
 import com.example.murat.gezi_yorum.helpers.TripPagerAdapter;
 import com.example.murat.gezi_yorum.utils.CustomBottomSheetBehavior;
@@ -28,16 +35,19 @@ import com.example.murat.gezi_yorum.MainActivity;
 import com.example.murat.gezi_yorum.R;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.LocationSource;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.PolygonOptions;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
+import java.util.List;
 
-public class TimeLine extends Fragment implements OnMapReadyCallback {
+public class TimeLine extends Fragment implements OnMapReadyCallback, LocationSource, LocationListener {
 
     private GoogleMap map;
     private CustomBottomSheetBehavior behavior;
@@ -45,11 +55,19 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
     private TripPagerAdapter pagerAdapter;
     private ArrayList<Integer> trip_ids;
     private LocationDbOpenHelper helper;
+    private OnLocationChangedListener listener;
+    private LocationManager locationManager;
+    private String provider;
+    private Polyline addedPolyLine;
+    private ArrayList<LatLng> points;
     private final static int MAP_PERMISSION_REQUEST = 1;
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+
+
         getActivity().setTitle(getString(R.string.timeline));
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
                 .findFragmentById(R.id.map);
@@ -63,12 +81,10 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
         viewPager.setLayoutParams(params);
 
         helper = new LocationDbOpenHelper(getContext());
-
         trip_ids = helper.getTripsInfo();
         pagerAdapter = new TripPagerAdapter(getChildFragmentManager());
         pagerAdapter.setCount(trip_ids.size());
         viewPager.setAdapter(pagerAdapter);
-        viewPager.setCurrentItem(trip_ids.size());
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -77,11 +93,25 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
 
             @Override
             public void onPageSelected(int position) {
-                PolylineOptions options = helper.getTripInfo(trip_ids.get(position));
+                points= helper.getTripInfo(trip_ids.get(position));
+
+                PolylineOptions options = new PolylineOptions();
+                options.color(Color.RED);
+                options.width(15);
+                options.visible(true);
+                for (LatLng cursor : points) {
+                    options.add(cursor);
+                }
                 map.clear();
-                if(!options.getPoints().isEmpty()) {
-                    map.animateCamera(CameraUpdateFactory.newLatLngZoom(options.getPoints().get(0), 15.0f));
-                    map.addPolyline(options);
+                if (!options.getPoints().isEmpty()) {
+                    LatLngBounds.Builder builder = new LatLngBounds.Builder();
+                    for (LatLng point : points){
+                        builder.include(point);
+                    }
+                    int routePadding = 100;
+
+                    map.animateCamera(CameraUpdateFactory.newLatLngBounds(builder.build(),routePadding));
+                    addedPolyLine = map.addPolyline(options);
                 }
             }
 
@@ -90,6 +120,7 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
 
             }
         });
+
         View bottomsheet = view.findViewById(R.id.bottomsheet);
         behavior = CustomBottomSheetBehavior.from(bottomsheet);
         behavior.setHideable(false);
@@ -110,26 +141,49 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
             }
         });
 
-        Button rightButton = (Button) view.findViewById(R.id.right_button);
-        Button leftButton = (Button) view.findViewById(R.id.left_button);
-        rightButton.setOnClickListener(new View.OnClickListener() {
+        Button nextButton = view.findViewById(R.id.right_button);
+        Button previousButton = view.findViewById(R.id.left_button);
+        nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 int page = viewPager.getCurrentItem();
-                if(page < pagerAdapter.getCount()){
-                    viewPager.setCurrentItem(page+1);
+                if (page < pagerAdapter.getCount()) {
+                    viewPager.setCurrentItem(page + 1);
                 }
             }
         });
-        leftButton.setOnClickListener(new View.OnClickListener() {
+        previousButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 int page = viewPager.getCurrentItem();
-                if(page > 0){
-                    viewPager.setCurrentItem(page-1);
+                if (page > 0) {
+                    viewPager.setCurrentItem(page - 1);
                 }
             }
         });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+        if(LocationSaveService.instance == null){
+            Criteria criteria = new Criteria();
+            criteria.setAccuracy(Criteria.ACCURACY_FINE);
+            criteria.setPowerRequirement(Criteria.POWER_LOW);
+            provider = locationManager.getBestProvider(criteria, true);
+        }else {
+            provider = LocationManager.PASSIVE_PROVIDER;
+        }
+        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            locationManager.requestLocationUpdates(provider, 0, 0, this);
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        locationManager.removeUpdates(this);
     }
 
     @Nullable
@@ -139,29 +193,23 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
     }
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        this.map = googleMap;
-        behavior.anchorMap(map);
         if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION},MAP_PERMISSION_REQUEST);
             return;
         }
+        map = googleMap;
         map.setMyLocationEnabled(true);
-        LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-        Criteria criteria = new Criteria();
-        criteria.setAccuracy(Criteria.ACCURACY_FINE);
-        criteria.setAltitudeRequired(false);
-        criteria.setBearingRequired(false);
-        criteria.setCostAllowed(true);
-        criteria.setPowerRequirement(Criteria.POWER_LOW);
-        String provider = locationManager.getBestProvider(criteria, true);
+        map.setLocationSource(this);
+        behavior.anchorMap(map);
+
         Location lastKnownLocation = locationManager.getLastKnownLocation(provider);
         if(lastKnownLocation != null) {
             LatLng lastKnownLatLng = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
             map.moveCamera(CameraUpdateFactory.newLatLngZoom(lastKnownLatLng,13.0f));
         }
-
-        PolylineOptions options = helper.getTripInfo(trip_ids.get(trip_ids.size()-1));
-        map.addPolyline(options);
+        if(trip_ids.size()>0) {
+            viewPager.setCurrentItem(trip_ids.size());
+        }
 
         map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
@@ -203,5 +251,41 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
         }else {
             mainActivity.showSnackbarMessage("Bu işlev konum izni olmadan çalışmaz",Snackbar.LENGTH_LONG);
         }
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        if(listener != null){
+            listener.onLocationChanged(location);
+            if(addedPolyLine != null && points != null && viewPager.getCurrentItem() == trip_ids.size()-1 && LocationSaveService.instance != null){
+                points.add(new LatLng(location.getLatitude(),location.getLongitude()));
+                addedPolyLine.setPoints(points);
+            }
+        }
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+
+    }
+
+    @Override
+    public void activate(OnLocationChangedListener onLocationChangedListener) {
+        listener = onLocationChangedListener;
+    }
+
+    @Override
+    public void deactivate() {
+        listener = null;
     }
 }

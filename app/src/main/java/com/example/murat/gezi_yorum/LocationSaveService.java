@@ -23,18 +23,20 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
- * Created by murat on 25.10.2017.
+ * Listens and saves locations to database. Must run as service.
  */
 
 public class LocationSaveService extends Service implements LocationListener {
-    private static final int MIN_TIME = 10;
-    private static final int MIN_DISTANCE = 0;
+    private static final int MIN_TIME = 10000;
+    private static final int MIN_DISTANCE = 3;
+    public static LocationSaveService instance;
 
     LocationDbOpenHelper helper;
     LocationManager locationManager;
     SQLiteDatabase writableLocationDb;
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        instance = this;
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         helper = new LocationDbOpenHelper(getApplicationContext());
         writableLocationDb = helper.getWritableDatabase();
@@ -54,6 +56,7 @@ public class LocationSaveService extends Service implements LocationListener {
         locationManager.removeUpdates(this);
         writableLocationDb.close();
         Toast.makeText(getApplicationContext(),"Service stopped",Toast.LENGTH_LONG).show();
+        instance = null;
     }
     @Override
     public IBinder onBind(Intent intent) {
@@ -65,10 +68,10 @@ public class LocationSaveService extends Service implements LocationListener {
         Double latitude = location.getLatitude();
         Double longitude = location.getLongitude();
         Double altitude = location.getAltitude();
-        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         helper.saveLocation(new mLocation(
-                latitude,longitude,altitude,dateFormat.format(new Date())
+                latitude,longitude,altitude,(new Date()).getTime()
         ),writableLocationDb);
+        Toast.makeText(getApplicationContext(),"Konum kaydedildi.",Toast.LENGTH_SHORT).show();
     }
 
     @Override

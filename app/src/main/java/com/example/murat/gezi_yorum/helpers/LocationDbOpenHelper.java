@@ -19,7 +19,7 @@ import java.util.Date;
 
 
 /**
- * Created by murat on 25.10.2017.
+ * Performs database operations.
  */
 
 public class LocationDbOpenHelper extends SQLiteOpenHelper {
@@ -49,11 +49,11 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
                 COLUMN_LATITUDE + " double NOT NULL, " +
                 COLUMN_ALTITUDE + " double NOT NULL," +
                 COLUMN_FEATURE_NAME + " varchar(255)," +
-                COLUMN_DATE + " date); ";
+                COLUMN_DATE + " INTEGER); ";
         String tripsTableCreateQuery = "CREATE TABLE " + TABLE_TRIPS +
                 "("+COLUMN_ID+" integer PRIMARY KEY AUTOINCREMENT," +
-                 COLUMN_STARTDATE +" date not null," +
-                 COLUMN_FINISHDATE+" date)";
+                 COLUMN_STARTDATE +" INTEGER not null," +
+                 COLUMN_FINISHDATE+" INTEGER not null)";
         db.execSQL(locationTableCreateQuery);
         db.execSQL(tripsTableCreateQuery);
     }
@@ -70,21 +70,20 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
         values.put(COLUMN_LONGTITUDE, location.getLongtitude());
         values.put(COLUMN_LATITUDE, location.getLatitude());
         values.put(COLUMN_ALTITUDE, location.getAltitude());
-        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-        values.put(COLUMN_DATE, dateFormat.format(new Date()));
+        values.put(COLUMN_DATE, location.getTime());
         writableDatabase.insert(TABLE_LOCATIONS, null, values);
     }
     public long insertStartEntry(){
         ContentValues values = new ContentValues();
-        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-        values.put(COLUMN_STARTDATE,dateFormat.format(new Date()));
+        values.put(COLUMN_STARTDATE,(new Date()).getTime());
+        values.put(COLUMN_FINISHDATE,Long.MAX_VALUE);
         SQLiteDatabase database = getWritableDatabase();
         return database.insert(TABLE_TRIPS,null,values);
     }
     public boolean updateTripFinish(long inserted_trip_id){
         ContentValues values = new ContentValues();
         DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-        values.put(COLUMN_FINISHDATE,dateFormat.format(new Date()));
+        values.put(COLUMN_FINISHDATE,(new Date()).getTime());
         SQLiteDatabase database = getWritableDatabase();
         int effectedColumnCount = database.update(TABLE_TRIPS,values,COLUMN_ID+"='"+inserted_trip_id+"'",null);
         return effectedColumnCount > 0;
@@ -100,11 +99,12 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
             trip_ids.add(cursor.getInt(id_column_index));
             cursor.moveToNext();
         }
+        cursor.close();
         database.close();
         return trip_ids;
     }
-    public PolylineOptions getTripInfo(int trip_id) {
-        logInfoLocation();
+    public ArrayList<LatLng> getTripInfo(int trip_id) {
+        //logInfoLocation();
         SQLiteDatabase db = getReadableDatabase();
         String query = "SELECT " + COLUMN_LATITUDE + " ," + COLUMN_LONGTITUDE +","+COLUMN_DATE+
                 " FROM " + TABLE_LOCATIONS + " AS loc, "+ TABLE_TRIPS+" AS trip " +
@@ -114,17 +114,15 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
         Cursor cursor = db.rawQuery(query, null);
         Log.d("Size", ""+cursor.getCount());
         cursor.moveToFirst();
-        PolylineOptions options = new PolylineOptions();
-        options.color(Color.RED);
-        options.width(15);
-        options.visible(true);
+        ArrayList<LatLng> points = new ArrayList<>();
         while (!cursor.isAfterLast()) {
-            options.add(new LatLng(cursor.getDouble(cursor.getColumnIndex(COLUMN_LATITUDE)),
+            points.add(new LatLng(cursor.getDouble(cursor.getColumnIndex(COLUMN_LATITUDE)),
                     cursor.getDouble(cursor.getColumnIndex(COLUMN_LONGTITUDE))));
             cursor.moveToNext();
         }
+        cursor.close();
         db.close();
-        return options;
+        return points;
     }
     public void logInfoTrip() {
         SQLiteDatabase db = getReadableDatabase();
@@ -137,6 +135,7 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
             Log.d("FINISHDATE",""+ cursor.getString(cursor.getColumnIndex(COLUMN_FINISHDATE)));
             cursor.moveToNext();
         }
+        cursor.close();
         db.close();
     }
     public void logInfoLocation() {
@@ -149,6 +148,7 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
             Log.d("LONGITUDE",""+ cursor.getString(cursor.getColumnIndex(COLUMN_LONGTITUDE)));
             cursor.moveToNext();
         }
+        cursor.close();
         db.close();
     }
 }
