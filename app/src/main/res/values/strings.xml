@@ -23,4 +23,7 @@
     <string name="home">Home</string>
     <string name="timeline">Time Line</string>
     <string name="header">Header</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="title_activity_start_trip">StartTripActivity</string>
+    <string name="trip">Trip</string>
 </resources>

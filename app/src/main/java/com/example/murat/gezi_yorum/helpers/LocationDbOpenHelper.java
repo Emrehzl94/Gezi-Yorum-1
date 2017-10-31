@@ -16,6 +16,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 
 
 /**
@@ -73,22 +74,14 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
         values.put(COLUMN_DATE, location.getTime());
         writableDatabase.insert(TABLE_LOCATIONS, null, values);
     }
-    public long insertStartEntry(){
+    public long insertTripInfo(long startdate,long finishdate){
         ContentValues values = new ContentValues();
-        values.put(COLUMN_STARTDATE,(new Date()).getTime());
-        values.put(COLUMN_FINISHDATE,Long.MAX_VALUE);
+        values.put(COLUMN_STARTDATE,startdate);
+        values.put(COLUMN_FINISHDATE,finishdate);
         SQLiteDatabase database = getWritableDatabase();
-        return database.insert(TABLE_TRIPS,null,values);
+        return database.insert(TABLE_TRIPS,null ,values);
     }
-    public boolean updateTripFinish(long inserted_trip_id){
-        ContentValues values = new ContentValues();
-        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-        values.put(COLUMN_FINISHDATE,(new Date()).getTime());
-        SQLiteDatabase database = getWritableDatabase();
-        int effectedColumnCount = database.update(TABLE_TRIPS,values,COLUMN_ID+"='"+inserted_trip_id+"'",null);
-        return effectedColumnCount > 0;
-    }
-    public ArrayList<Integer> getTripsInfo(){
+    public ArrayList<Integer> getTripsIDs(){
         String query = "SELECT "+COLUMN_ID+" FROM "+TABLE_TRIPS;
         SQLiteDatabase database = getReadableDatabase();
         Cursor cursor = database.rawQuery(query,null);
@@ -103,16 +96,46 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
         database.close();
         return trip_ids;
     }
-    public ArrayList<LatLng> getTripInfo(int trip_id) {
-        //logInfoLocation();
+    public HashMap<String, String> getTripsInfo(int trip_id){
+        String query = "SELECT * FROM "+TABLE_TRIPS+" WHERE "+COLUMN_ID+"='"+trip_id+"'";
+        SQLiteDatabase database = getReadableDatabase();
+        Cursor cursor = database.rawQuery(query,null);
+        cursor.moveToFirst();
+        HashMap<String,String> trip_info = new HashMap<>();
+        DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss dd-MM-YYYY");
+        Long starttime = cursor.getLong(cursor.getColumnIndex(COLUMN_STARTDATE));
+        trip_info.put("startdate",dateFormat.format(new Date(starttime)));
+        Long finishtime = cursor.getLong(cursor.getColumnIndex(COLUMN_FINISHDATE));
+        trip_info.put("finishdate",dateFormat.format(new Date(finishtime)));
+        cursor.moveToNext();
+        cursor.close();
+        database.close();
+        return trip_info;
+    }
+    public ArrayList<LatLng> getTripPath(int trip_id) {
         SQLiteDatabase db = getReadableDatabase();
         String query = "SELECT " + COLUMN_LATITUDE + " ," + COLUMN_LONGTITUDE +","+COLUMN_DATE+
                 " FROM " + TABLE_LOCATIONS + " AS loc, "+ TABLE_TRIPS+" AS trip " +
-                "WHERE " + COLUMN_DATE + ">= trip."+COLUMN_STARTDATE+" AND " + COLUMN_DATE+ "<= trip."+COLUMN_FINISHDATE
-                + " AND trip."+COLUMN_ID+"='"+trip_id+"'";
-        Log.d("Query", query);
+                "WHERE  trip."+COLUMN_ID+"='"+trip_id+"' AND " + COLUMN_DATE + ">= trip."+COLUMN_STARTDATE+
+                " AND " + COLUMN_DATE+ "<= trip."+COLUMN_FINISHDATE;
         Cursor cursor = db.rawQuery(query, null);
-        Log.d("Size", ""+cursor.getCount());
+        cursor.moveToFirst();
+        ArrayList<LatLng> points = new ArrayList<>();
+        while (!cursor.isAfterLast()) {
+            points.add(new LatLng(cursor.getDouble(cursor.getColumnIndex(COLUMN_LATITUDE)),
+                    cursor.getDouble(cursor.getColumnIndex(COLUMN_LONGTITUDE))));
+            cursor.moveToNext();
+        }
+        cursor.close();
+        db.close();
+        return points;
+    }
+    public ArrayList<LatLng> getTripPath(long startdate,long finishdate) {
+        SQLiteDatabase db = getReadableDatabase();
+        String query = "SELECT " + COLUMN_LATITUDE + " ," + COLUMN_LONGTITUDE +","+COLUMN_DATE+
+                " FROM " + TABLE_LOCATIONS + " WHERE  " + COLUMN_DATE + ">= '"+startdate+
+                "' AND " + COLUMN_DATE+ "<= '"+finishdate+"'";
+        Cursor cursor = db.rawQuery(query, null);
         cursor.moveToFirst();
         ArrayList<LatLng> points = new ArrayList<>();
         while (!cursor.isAfterLast()) {

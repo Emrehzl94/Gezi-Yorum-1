@@ -4,11 +4,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
-import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -18,69 +16,29 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.example.murat.gezi_yorum.classes.Constants;
 import com.example.murat.gezi_yorum.fragments.Home;
 import com.example.murat.gezi_yorum.fragments.Search;
+import com.example.murat.gezi_yorum.fragments.StartTripFragment;
 import com.example.murat.gezi_yorum.fragments.TimeLine;
 import com.example.murat.gezi_yorum.helpers.LocationDbOpenHelper;
 
+import java.util.Date;
+
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
-    private static final String TRIP_STATE = "tripState";
-    private static final boolean TRIP_STARTED = true;
-    private static final boolean TRIP_NOT_STARTED = false;
-    private static final String STARTED_TRIP_ID= "tripId";
-    private static final long ENDED = 0;
-    private SharedPreferences sharedPreferences;
-    private FloatingActionButton fab;
-    private SharedPreferences.Editor editor;
-    private LocationDbOpenHelper helper;
-    private View.OnClickListener startTrip;
-    private View.OnClickListener stopTrip;
+    private SharedPreferences preferences;
+    SharedPreferences.Editor editor;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        preferences = getPreferences(Context.MODE_PRIVATE);
+        editor = preferences.edit();
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        sharedPreferences = getPreferences(Context.MODE_PRIVATE);
-        helper = new LocationDbOpenHelper(this);
-        editor = sharedPreferences.edit();
-        fab = (FloatingActionButton) findViewById(R.id.fab);
-        startTrip = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Snackbar.make(v, "Trip started", Snackbar.LENGTH_LONG).show();
-                Intent intent = new Intent(MainActivity.this,LocationSaveService.class);
-                startService(intent);
-                long insert_id = helper.insertStartEntry();
-                editor.putLong(STARTED_TRIP_ID,insert_id);
-                editor.putBoolean(TRIP_STATE,TRIP_STARTED);
-                editor.apply();
-                fab.setImageResource(android.R.drawable.btn_dialog);
-                fab.setOnClickListener(stopTrip);
-            }
-        };
-        stopTrip = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Snackbar.make(v, "Trip stopped", Snackbar.LENGTH_LONG).show();
-                Intent intent = new Intent(MainActivity.this,LocationSaveService.class);
-                stopService(intent);
-                long inserted_id = sharedPreferences.getLong(STARTED_TRIP_ID,0);
-                helper.updateTripFinish(inserted_id);
-                editor.putLong(STARTED_TRIP_ID,0);
-                editor.putBoolean(TRIP_STATE,TRIP_NOT_STARTED);
-                editor.apply();
-                fab.setImageResource(android.R.drawable.ic_dialog_map);
-                fab.setOnClickListener(startTrip);
-            }
-        };
-        if(!sharedPreferences.getBoolean(TRIP_STATE,false)){
-            fab.setOnClickListener(startTrip);
-            fab.setImageResource(android.R.drawable.ic_dialog_map);
-        }else {
-            fab.setImageResource(android.R.drawable.btn_dialog);
-            fab.setOnClickListener(stopTrip);
-        }
+
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -131,21 +89,36 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // Handle navigation view item clicks here.
         Fragment fragment = null;
         int id = item.getItemId();
+        switch (id){
+            case(R.id.nav_home): {
+                fragment = new Home();
+                break;
+                // Handle the camera action
+            }case (R.id.nav_timeline): {
+                fragment = new TimeLine();
+                break;
+            }case (R.id.nav_search): {
+                fragment = new Search();
+                break;
+            }case (R.id.nav_trip):{
+                if(preferences.getString(Constants.TRIPSTATE,Constants.PASSIVE).equals(Constants.ACTIVE)){
+                    ContinuingTrip continuingTrip = new ContinuingTrip();
+                    continuingTrip.setStartDate(preferences.getLong(Constants.STARTDATE,Long.MAX_VALUE));
+                    fragment = continuingTrip;
+                }else {
+                    fragment = new StartTripFragment();
+                }
+                break;
+            }
+            case (R.id.nav_settings): {
 
-        if (id == R.id.nav_home) {
-            fragment = new Home();
-            // Handle the camera action
-        } else if (id == R.id.nav_timeline) {
-            fragment = new TimeLine();
-        } else if (id == R.id.nav_search) {
-            fragment = new Search();
-        } else if (id == R.id.nav_settings) {
+            }case  (R.id.nav_share) :{
 
-        } else if (id == R.id.nav_share) {
+            }case (R.id.nav_send): {
 
-        } else if (id == R.id.nav_send) {
-
+            }
         }
+
         if(fragment != null){
             changeFragment(fragment);
         }
@@ -161,6 +134,29 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
     public void showSnackbarMessage(String message, int lenght){
         Snackbar.make(getCurrentFocus(),message,lenght).show();
+    }
+    public void startTrip(){
+        Snackbar.make(getCurrentFocus(), "Trip started", Snackbar.LENGTH_LONG).show();
+        startRecording();
+        editor.putLong(Constants.STARTDATE, new Date().getTime());
+        editor.putString(Constants.TRIPSTATE,Constants.ACTIVE);
+        editor.apply();
+    }
+    public void endTrip(){
+        Snackbar.make(getCurrentFocus(), "Trip stopped", Snackbar.LENGTH_LONG).show();
+        stopRecording();
+        long starttime = preferences.getLong(Constants.STARTDATE,0);
+        long insert_id = (new LocationDbOpenHelper(this)).insertTripInfo(starttime,new Date().getTime());
+        editor.putString(Constants.TRIPSTATE,Constants.PASSIVE);
+        editor.apply();
+    }
+    public void startRecording(){
+        Intent intent = new Intent(this,LocationSaveService.class);
+        startService(intent);
+    }
+    public void stopRecording(){
+        Intent intent = new Intent(this,LocationSaveService.class);
+        stopService(intent);
     }
 
 }

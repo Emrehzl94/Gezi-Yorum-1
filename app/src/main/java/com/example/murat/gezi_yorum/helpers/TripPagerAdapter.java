@@ -4,7 +4,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
-import com.example.murat.gezi_yorum.fragments.Element;
+import com.example.murat.gezi_yorum.fragments.TripInfo;
 
 /**
  * Custom adapter for viewPager
@@ -12,7 +12,7 @@ import com.example.murat.gezi_yorum.fragments.Element;
 
 public class TripPagerAdapter extends FragmentPagerAdapter{
 
-    private int NUM_ITEMS = 3;
+    private int NUM_ITEMS;
 
     public void setCount(int NUM_ITEMS) {
         this.NUM_ITEMS = NUM_ITEMS;
@@ -31,7 +31,7 @@ public class TripPagerAdapter extends FragmentPagerAdapter{
     // Returns the fragment to display for that page
     @Override
     public Fragment getItem(int position) {
-        return Element.newInstance(position, "Page # "+position);
+        return TripInfo.newInstance(position, "Page # " + position);
     }
 
     // Returns the page title for the top indicator

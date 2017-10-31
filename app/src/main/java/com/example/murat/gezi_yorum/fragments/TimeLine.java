@@ -1,90 +1,63 @@
 package com.example.murat.gezi_yorum.fragments;
 
 import android.Manifest;
-import android.content.ComponentName;
 import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.location.Criteria;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
-import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.RelativeLayout;
-import android.widget.Toast;
 
-import com.example.murat.gezi_yorum.LocationSaveService;
 import com.example.murat.gezi_yorum.helpers.LocationDbOpenHelper;
 import com.example.murat.gezi_yorum.helpers.TripPagerAdapter;
-import com.example.murat.gezi_yorum.utils.CustomBottomSheetBehavior;
 import com.example.murat.gezi_yorum.MainActivity;
 import com.example.murat.gezi_yorum.R;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.LocationSource;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
-import java.util.List;
 
-public class TimeLine extends Fragment implements OnMapReadyCallback, LocationSource, LocationListener {
+public class TimeLine extends Fragment implements OnMapReadyCallback {
 
     private GoogleMap map;
-    private CustomBottomSheetBehavior behavior;
+    private BottomSheetBehavior behavior;
     private ViewPager viewPager;
     private TripPagerAdapter pagerAdapter;
     private ArrayList<Integer> trip_ids;
     private LocationDbOpenHelper helper;
-    private OnLocationChangedListener listener;
-    private LocationManager locationManager;
-    private String provider;
-    private Polyline addedPolyLine;
-    private ArrayList<LatLng> points;
     private final static int MAP_PERMISSION_REQUEST = 1;
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-
-
         getActivity().setTitle(getString(R.string.timeline));
-        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
-                .findFragmentById(R.id.map);
+        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-        DisplayMetrics metrics = new DisplayMetrics();
-        getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
-        viewPager = view.findViewById(R.id.pager);
-        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) viewPager.getLayoutParams();
-        params.height = metrics.heightPixels;
-        params.width = metrics.widthPixels;
-        viewPager.setLayoutParams(params);
 
+        viewPager = view.findViewById(R.id.pager);
         helper = new LocationDbOpenHelper(getContext());
-        trip_ids = helper.getTripsInfo();
+        trip_ids = helper.getTripsIDs();
         pagerAdapter = new TripPagerAdapter(getChildFragmentManager());
         pagerAdapter.setCount(trip_ids.size());
         viewPager.setAdapter(pagerAdapter);
+        viewPager.setCurrentItem(trip_ids.size());
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -93,17 +66,15 @@ public class TimeLine extends Fragment implements OnMapReadyCallback, LocationSo
 
             @Override
             public void onPageSelected(int position) {
-                points= helper.getTripInfo(trip_ids.get(position));
+                map.clear();
+                ArrayList<LatLng> points = helper.getTripPath(trip_ids.get(position));
 
                 PolylineOptions options = new PolylineOptions();
-                options.color(Color.RED);
-                options.width(15);
-                options.visible(true);
-                for (LatLng cursor : points) {
-                    options.add(cursor);
-                }
-                map.clear();
-                if (!options.getPoints().isEmpty()) {
+                if (!points.isEmpty()) {
+                    options.color(Color.RED);
+                    options.width(15);
+                    options.visible(true);
+                    options.addAll(points);
                     LatLngBounds.Builder builder = new LatLngBounds.Builder();
                     for (LatLng point : points){
                         builder.include(point);
@@ -111,7 +82,7 @@ public class TimeLine extends Fragment implements OnMapReadyCallback, LocationSo
                     int routePadding = 100;
 
                     map.animateCamera(CameraUpdateFactory.newLatLngBounds(builder.build(),routePadding));
-                    addedPolyLine = map.addPolyline(options);
+                    map.addPolyline(options);
                 }
             }
 
@@ -122,68 +93,10 @@ public class TimeLine extends Fragment implements OnMapReadyCallback, LocationSo
         });
 
         View bottomsheet = view.findViewById(R.id.bottomsheet);
-        behavior = CustomBottomSheetBehavior.from(bottomsheet);
+        behavior = BottomSheetBehavior.from(bottomsheet);
+        behavior.setState(BottomSheetBehavior.STATE_DRAGGING);
         behavior.setHideable(false);
-        behavior.setState(CustomBottomSheetBehavior.STATE_COLLAPSED);
         behavior.setPeekHeight(300);
-
-        behavior.setBottomSheetCallback(new CustomBottomSheetBehavior.BottomSheetCallback() {
-            @Override
-            public void onStateChanged(@NonNull View bottomSheet, @CustomBottomSheetBehavior.State int newState) {
-                // each time the bottomsheet changes position, animate the camera to keep the pin in view
-                // normally this would be a little more complex (getting the pin location and such),
-                // but for the purpose of an example this is enough to show how to stay centered on a pin
-            }
-
-            @Override
-            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-
-            }
-        });
-
-        Button nextButton = view.findViewById(R.id.right_button);
-        Button previousButton = view.findViewById(R.id.left_button);
-        nextButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                int page = viewPager.getCurrentItem();
-                if (page < pagerAdapter.getCount()) {
-                    viewPager.setCurrentItem(page + 1);
-                }
-            }
-        });
-        previousButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                int page = viewPager.getCurrentItem();
-                if (page > 0) {
-                    viewPager.setCurrentItem(page - 1);
-                }
-            }
-        });
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-        if(LocationSaveService.instance == null){
-            Criteria criteria = new Criteria();
-            criteria.setAccuracy(Criteria.ACCURACY_FINE);
-            criteria.setPowerRequirement(Criteria.POWER_LOW);
-            provider = locationManager.getBestProvider(criteria, true);
-        }else {
-            provider = LocationManager.PASSIVE_PROVIDER;
-        }
-        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            locationManager.requestLocationUpdates(provider, 0, 0, this);
-        }
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        locationManager.removeUpdates(this);
     }
 
     @Nullable
@@ -199,22 +112,17 @@ public class TimeLine extends Fragment implements OnMapReadyCallback, LocationSo
         }
         map = googleMap;
         map.setMyLocationEnabled(true);
-        map.setLocationSource(this);
-        behavior.anchorMap(map);
-
-        Location lastKnownLocation = locationManager.getLastKnownLocation(provider);
+        LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+        Location lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         if(lastKnownLocation != null) {
             LatLng lastKnownLatLng = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
-            map.moveCamera(CameraUpdateFactory.newLatLngZoom(lastKnownLatLng,13.0f));
-        }
-        if(trip_ids.size()>0) {
-            viewPager.setCurrentItem(trip_ids.size());
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(lastKnownLatLng, 13.0f));
         }
 
         map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
-                behavior.setState(CustomBottomSheetBehavior.STATE_COLLAPSED);
+                behavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
                 behavior.setHideable(false);
                 map.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()));
                 return true;
@@ -223,12 +131,12 @@ public class TimeLine extends Fragment implements OnMapReadyCallback, LocationSo
         map.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng latLng) {
-                if(behavior.getState() == CustomBottomSheetBehavior.STATE_HIDDEN){
+                if(behavior.getState() == BottomSheetBehavior.STATE_HIDDEN){
                     behavior.setHideable(false);
-                    behavior.setState(CustomBottomSheetBehavior.STATE_COLLAPSED);
+                    behavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
                 }else {
                     behavior.setHideable(true);
-                    behavior.setState(CustomBottomSheetBehavior.STATE_HIDDEN);
+                    behavior.setState(BottomSheetBehavior.STATE_HIDDEN);
                 }
             }
         });
@@ -253,39 +161,14 @@ public class TimeLine extends Fragment implements OnMapReadyCallback, LocationSo
         }
     }
 
-    @Override
-    public void onLocationChanged(Location location) {
-        if(listener != null){
-            listener.onLocationChanged(location);
-            if(addedPolyLine != null && points != null && viewPager.getCurrentItem() == trip_ids.size()-1 && LocationSaveService.instance != null){
-                points.add(new LatLng(location.getLatitude(),location.getLongitude()));
-                addedPolyLine.setPoints(points);
-            }
-        }
+    public void setNextPage(){
+        viewPager.setCurrentItem(viewPager.getCurrentItem()+1);
+    }
+    public void setPrevPage(){
+        viewPager.setCurrentItem(viewPager.getCurrentItem()-1);
+    }
+    public int getIdAtPosition(int position){
+        return trip_ids.get(position);
     }
 
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-
-    }
-
-    @Override
-    public void onProviderEnabled(String provider) {
-
-    }
-
-    @Override
-    public void onProviderDisabled(String provider) {
-
-    }
-
-    @Override
-    public void activate(OnLocationChangedListener onLocationChangedListener) {
-        listener = onLocationChangedListener;
-    }
-
-    @Override
-    public void deactivate() {
-        listener = null;
-    }
 }
