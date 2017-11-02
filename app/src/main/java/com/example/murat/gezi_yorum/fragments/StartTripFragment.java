@@ -13,7 +13,7 @@ import com.example.murat.gezi_yorum.MainActivity;
 import com.example.murat.gezi_yorum.R;
 
 /**
- * Created by murat on 31.10.2017.
+ * Trip configuration before start
  */
 
 public class StartTripFragment extends Fragment{
@@ -32,7 +32,6 @@ public class StartTripFragment extends Fragment{
             public void onClick(View v) {
                 MainActivity parentActivity = (MainActivity) getActivity();
                 parentActivity.startTrip();
-                parentActivity.changeFragment(new ContinuingTrip());
             }
         });
         fab.setBackgroundColor(Color.GREEN);

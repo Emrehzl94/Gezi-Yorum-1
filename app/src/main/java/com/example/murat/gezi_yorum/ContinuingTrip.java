@@ -1,6 +1,7 @@
 package com.example.murat.gezi_yorum;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -36,7 +37,7 @@ import java.util.Date;
 public class ContinuingTrip extends Fragment implements OnMapReadyCallback, LocationSource, LocationListener {
 
     private BottomSheetBehavior behavior;
-    private Button pause_continue, stop;
+    private Button pause_continue;
     private View.OnClickListener pause, continue_listener;
     private MainActivity parentActivity;
     private long startDate;
@@ -60,8 +61,8 @@ public class ContinuingTrip extends Fragment implements OnMapReadyCallback, Loca
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        pause_continue = (Button) view.findViewById(R.id.pause_continue);
-        stop = (Button) view.findViewById(R.id.stop);
+        pause_continue = view.findViewById(R.id.pause_continue);
+        Button stop = view.findViewById(R.id.stop);
         parentActivity = (MainActivity) getActivity();
         pause = new View.OnClickListener() {
             @Override
@@ -111,12 +112,16 @@ public class ContinuingTrip extends Fragment implements OnMapReadyCallback, Loca
         if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             locationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, 0, 0, this);
         }
+        if(map!=null){
+            getInfoFromDb();
+        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
         locationManager.removeUpdates(this);
+        map.clear();
     }
 
     @Override
@@ -149,24 +154,29 @@ public class ContinuingTrip extends Fragment implements OnMapReadyCallback, Loca
                 }
             }
         });
+        getInfoFromDb();
 
+    }
+    public void getInfoFromDb(){
         points = new LocationDbOpenHelper(getContext()).getTripPath(startDate, new Date().getTime());
 
         PolylineOptions options = new PolylineOptions();
-        if (!points.isEmpty()) {
-            options.color(Color.RED);
-            options.width(15);
-            options.visible(true);
-            options.addAll(points);
+        options.color(Color.RED);
+        options.width(15);
+        options.visible(true);
+        options.addAll(points);
+        if(!points.isEmpty()) {
             LatLngBounds.Builder builder = new LatLngBounds.Builder();
-            for (LatLng point : points){
+            for (LatLng point : points) {
                 builder.include(point);
             }
             int routePadding = 100;
-
-            map.animateCamera(CameraUpdateFactory.newLatLngBounds(builder.build(),routePadding));
-            addedPolyline = map.addPolyline(options);
+            map.animateCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), routePadding));
+        }else {
+            @SuppressLint("MissingPermission") Location lastknown = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
+            map.animateCamera(CameraUpdateFactory.newLatLng(new LatLng(lastknown.getLatitude(),lastknown.getLongitude())));
         }
+        addedPolyline = map.addPolyline(options);
     }
 
     @Override

@@ -133,8 +133,8 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
     public ArrayList<LatLng> getTripPath(long startdate,long finishdate) {
         SQLiteDatabase db = getReadableDatabase();
         String query = "SELECT " + COLUMN_LATITUDE + " ," + COLUMN_LONGTITUDE +","+COLUMN_DATE+
-                " FROM " + TABLE_LOCATIONS + " WHERE  " + COLUMN_DATE + ">= '"+startdate+
-                "' AND " + COLUMN_DATE+ "<= '"+finishdate+"'";
+                " FROM " + TABLE_LOCATIONS + " WHERE  " + COLUMN_DATE + ">= "+startdate+
+                " AND " + COLUMN_DATE+ "<= "+finishdate;
         Cursor cursor = db.rawQuery(query, null);
         cursor.moveToFirst();
         ArrayList<LatLng> points = new ArrayList<>();

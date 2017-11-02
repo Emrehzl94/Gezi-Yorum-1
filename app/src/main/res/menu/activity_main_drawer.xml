@@ -4,7 +4,7 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_home"
-            android:icon="@drawable/ic_menu_camera"
+            android:icon="@android:drawable/ic_menu_view"
             android:title="@string/home" />
         <item
             android:id="@+id/nav_timeline"
@@ -23,6 +23,26 @@
             android:icon="@drawable/ic_menu_manage"
             android:title="@string/action_settings" />
     </group>
+    <item android:title="Add">
+        <menu>
+            <item
+                android:id="@+id/nav_photo"
+                android:icon="@drawable/ic_menu_camera"
+                android:title="@string/photo" />
+            <item
+                android:id="@+id/nav_video"
+                android:icon="@android:drawable/presence_video_online"
+                android:title="@string/video" />
+            <item
+                android:id="@+id/nav_sound_record"
+                android:icon="@android:drawable/ic_btn_speak_now"
+                android:title="@string/sound_record" />
+            <item
+                android:id="@+id/nav_note"
+                android:icon="@android:drawable/ic_menu_agenda"
+                android:title="@string/note" />
+        </menu>
+    </item>
 
     <item android:title="Communicate">
         <menu>

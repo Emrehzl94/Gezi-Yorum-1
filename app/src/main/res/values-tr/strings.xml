@@ -8,8 +8,8 @@
     <string name="error_incorrect_password">Şifre yanlış</string>
     <string name="error_invalid_email">E-posta adresi geçersiz</string>
     <string name="error_invalid_password">Şifre çok kısa</string>
-    <string name="navigation_drawer_close"></string>
-    <string name="permission_rationale"></string>
+    <string name="navigation_drawer_close"/>
+    <string name="permission_rationale"/>
     <string name="prompt_email">E-posta</string>
     <string name="prompt_password">Şifre</string>
     <string name="title_activity_main">Ana Sayfa</string>
@@ -17,4 +17,7 @@
     <string name="home">Ana Sayfa</string>
     <string name="timeline">Zaman Çizelgesi</string>
     <string name="trip">Gezi</string>
+    <string name="photo">Fotoğraf</string>
+    <string name="sound_record">Ses Kaydı</string>
+    <string name="note">Not</string>
 </resources>

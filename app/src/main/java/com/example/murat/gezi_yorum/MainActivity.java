@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -18,6 +19,7 @@ import android.view.MenuItem;
 
 import com.example.murat.gezi_yorum.classes.Constants;
 import com.example.murat.gezi_yorum.fragments.Home;
+import com.example.murat.gezi_yorum.fragments.PhotoFragment;
 import com.example.murat.gezi_yorum.fragments.Search;
 import com.example.murat.gezi_yorum.fragments.StartTripFragment;
 import com.example.murat.gezi_yorum.fragments.TimeLine;
@@ -85,7 +87,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         // Handle navigation view item clicks here.
         Fragment fragment = null;
         int id = item.getItemId();
@@ -101,7 +103,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 fragment = new Search();
                 break;
             }case (R.id.nav_trip):{
-                if(preferences.getString(Constants.TRIPSTATE,Constants.PASSIVE).equals(Constants.ACTIVE)){
+                if(Constants.ACTIVE.equals(preferences.getString(Constants.TRIPSTATE, Constants.PASSIVE))){
                     ContinuingTrip continuingTrip = new ContinuingTrip();
                     continuingTrip.setStartDate(preferences.getLong(Constants.STARTDATE,Long.MAX_VALUE));
                     fragment = continuingTrip;
@@ -109,6 +111,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     fragment = new StartTripFragment();
                 }
                 break;
+            }case R.id.nav_photo:{
+                    fragment = new PhotoFragment();
             }
             case (R.id.nav_settings): {
 
@@ -141,6 +145,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         editor.putLong(Constants.STARTDATE, new Date().getTime());
         editor.putString(Constants.TRIPSTATE,Constants.ACTIVE);
         editor.apply();
+        ContinuingTrip trip = new ContinuingTrip();
+        trip.setStartDate(preferences.getLong(Constants.STARTDATE,Long.MAX_VALUE));
+        changeFragment(trip);
     }
     public void endTrip(){
         Snackbar.make(getCurrentFocus(), "Trip stopped", Snackbar.LENGTH_LONG).show();
@@ -158,5 +165,4 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Intent intent = new Intent(this,LocationSaveService.class);
         stopService(intent);
     }
-
 }

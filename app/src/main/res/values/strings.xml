@@ -26,4 +26,8 @@
     <string name="title_activity_maps">Map</string>
     <string name="title_activity_start_trip">StartTripActivity</string>
     <string name="trip">Trip</string>
+    <string name="photo">Photo</string>
+    <string name="video" translatable="false">Video</string>
+    <string name="sound_record">Sound Record</string>
+    <string name="note">Note</string>
 </resources>
