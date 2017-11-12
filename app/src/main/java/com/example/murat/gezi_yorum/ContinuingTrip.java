@@ -31,7 +31,6 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
-import java.util.Date;
 
 
 public class ContinuingTrip extends Fragment implements OnMapReadyCallback, LocationSource, LocationListener {
@@ -40,15 +39,15 @@ public class ContinuingTrip extends Fragment implements OnMapReadyCallback, Loca
     private Button pause_continue;
     private View.OnClickListener pause, continue_listener;
     private MainActivity parentActivity;
-    private long startDate;
+    private long trip_id;
     private OnLocationChangedListener listener;
     private GoogleMap map;
     private LocationManager locationManager;
     private Polyline addedPolyline;
     private ArrayList<LatLng> points;
 
-    public void setStartDate(long startDate) {
-        this.startDate = startDate;
+    public void setTrip_id(long trip_id) {
+        this.trip_id = trip_id;
     }
 
     @Nullable
@@ -158,7 +157,7 @@ public class ContinuingTrip extends Fragment implements OnMapReadyCallback, Loca
 
     }
     public void getInfoFromDb(){
-        points = new LocationDbOpenHelper(getContext()).getTripPath(startDate, new Date().getTime());
+        points = new LocationDbOpenHelper(getContext()).getTripPath(trip_id);
 
         PolylineOptions options = new PolylineOptions();
         options.color(Color.RED);
