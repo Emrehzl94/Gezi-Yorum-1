@@ -17,8 +17,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.GridView;
 
+import com.example.murat.gezi_yorum.classes.Constants;
+import com.example.murat.gezi_yorum.classes.MediaFile;
 import com.example.murat.gezi_yorum.helpers.LocationDbOpenHelper;
+import com.example.murat.gezi_yorum.helpers.MediaGridViewAdapter;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.LocationSource;
@@ -45,6 +49,8 @@ public class ContinuingTrip extends Fragment implements OnMapReadyCallback, Loca
     private LocationManager locationManager;
     private Polyline addedPolyline;
     private ArrayList<LatLng> points;
+    private LocationDbOpenHelper helper;
+    private GridView photo_preview, video_preview, sound_preview, note_peview;
 
     public void setTrip_id(long trip_id) {
         this.trip_id = trip_id;
@@ -55,6 +61,7 @@ public class ContinuingTrip extends Fragment implements OnMapReadyCallback, Loca
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.continuing_trip_fragment, container, false);
 
+        helper = new LocationDbOpenHelper(getContext());
         locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
         getActivity().setTitle("Devam eden");
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
@@ -102,6 +109,18 @@ public class ContinuingTrip extends Fragment implements OnMapReadyCallback, Loca
         behavior.setState(BottomSheetBehavior.STATE_DRAGGING);
         behavior.setHideable(false);
         behavior.setPeekHeight(300);
+
+        photo_preview = view.findViewById(R.id.photo_preview_grid);
+        video_preview = view.findViewById(R.id.video_preview_grid);
+        sound_preview = view.findViewById(R.id.sound_preview_grid);
+        note_peview = view.findViewById(R.id.note_preview_grid);
+
+        photo_preview.setAdapter(new MediaGridViewAdapter(getContext(), MediaFile.getBitmapArray(getActivity(),helper.getMedias(trip_id, Constants.PHOTO))));
+        video_preview.setAdapter(new MediaGridViewAdapter(getContext(), MediaFile.getBitmapArray(getActivity(),helper.getMedias(trip_id, Constants.VIDEO))));
+        sound_preview.setAdapter(new MediaGridViewAdapter(getContext(), MediaFile.getBitmapArray(getActivity(),helper.getMedias(trip_id, Constants.SOUNDRECORD))));
+        note_peview.setAdapter(new MediaGridViewAdapter(getContext(), MediaFile.getBitmapArray(getActivity(),helper.getMedias(trip_id, Constants.NOTE))));
+
+
         return view;
     }
 

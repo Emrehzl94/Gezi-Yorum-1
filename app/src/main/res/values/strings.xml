@@ -30,4 +30,5 @@
     <string name="video" translatable="false">Video</string>
     <string name="sound_record">Sound Record</string>
     <string name="note">Note</string>
+    <string name="title_activity_record_audio">RecordAudio</string>
 </resources>

@@ -19,7 +19,7 @@ import android.view.MenuItem;
 
 import com.example.murat.gezi_yorum.classes.Constants;
 import com.example.murat.gezi_yorum.fragments.Home;
-import com.example.murat.gezi_yorum.fragments.PhotoFragment;
+import com.example.murat.gezi_yorum.fragments.MediaFragment;
 import com.example.murat.gezi_yorum.fragments.Search;
 import com.example.murat.gezi_yorum.fragments.StartTripFragment;
 import com.example.murat.gezi_yorum.fragments.TimeLine;
@@ -105,14 +105,39 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }case (R.id.nav_trip):{
                 if(Constants.ACTIVE.equals(preferences.getString(Constants.TRIPSTATE, Constants.PASSIVE))){
                     ContinuingTrip continuingTrip = new ContinuingTrip();
-                    continuingTrip.setStartDate(preferences.getLong(Constants.STARTDATE,Long.MAX_VALUE));
+                    continuingTrip.setTrip_id(preferences.getLong(Constants.TRIPID,-1));
                     fragment = continuingTrip;
                 }else {
                     fragment = new StartTripFragment();
                 }
                 break;
             }case R.id.nav_photo:{
-                    fragment = new PhotoFragment();
+                    fragment = new MediaFragment();
+                    Bundle photoBundle = new Bundle();
+                    photoBundle.putString(Constants.ACTION,Constants.PHOTO);
+                    fragment.setArguments(photoBundle);
+                    break;
+            }
+            case R.id.nav_video:{
+                fragment = new MediaFragment();
+                Bundle videoBundle = new Bundle();
+                videoBundle.putString(Constants.ACTION,Constants.VIDEO);
+                fragment.setArguments(videoBundle);
+                break;
+            }
+            case R.id.nav_sound_record:{
+                fragment = new MediaFragment();
+                Bundle recordBundle = new Bundle();
+                recordBundle.putString(Constants.ACTION,Constants.SOUNDRECORD);
+                fragment.setArguments(recordBundle);
+                break;
+            }
+            case R.id.nav_note:{
+                fragment = new MediaFragment();
+                Bundle noteBundle = new Bundle();
+                noteBundle.putString(Constants.ACTION,Constants.NOTE);
+                fragment.setArguments(noteBundle);
+                break;
             }
             case (R.id.nav_settings): {
 
@@ -142,18 +167,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public void startTrip(){
         Snackbar.make(getCurrentFocus(), "Trip started", Snackbar.LENGTH_LONG).show();
         startRecording();
-        editor.putLong(Constants.STARTDATE, new Date().getTime());
+        long insert_id = (new LocationDbOpenHelper(this)).insertTripInfo(new Date().getTime(),Long.MAX_VALUE);
+        editor.putLong(Constants.TRIPID,insert_id);
         editor.putString(Constants.TRIPSTATE,Constants.ACTIVE);
         editor.apply();
         ContinuingTrip trip = new ContinuingTrip();
-        trip.setStartDate(preferences.getLong(Constants.STARTDATE,Long.MAX_VALUE));
+        trip.setTrip_id(preferences.getLong(Constants.TRIPID,-1));
         changeFragment(trip);
     }
     public void endTrip(){
         Snackbar.make(getCurrentFocus(), "Trip stopped", Snackbar.LENGTH_LONG).show();
         stopRecording();
-        long starttime = preferences.getLong(Constants.STARTDATE,0);
-        long insert_id = (new LocationDbOpenHelper(this)).insertTripInfo(starttime,new Date().getTime());
+        editor.putLong(Constants.TRIPID,-1);
         editor.putString(Constants.TRIPSTATE,Constants.PASSIVE);
         editor.apply();
     }

@@ -6,8 +6,11 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.Color;
+import android.location.Location;
+import android.net.Uri;
 import android.util.Log;
 
+import com.example.murat.gezi_yorum.classes.MediaFile;
 import com.example.murat.gezi_yorum.classes.mLocation;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolylineOptions;
@@ -39,6 +42,11 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
     private static final String COLUMN_STARTDATE = "startDate";
     private static final String COLUMN_FINISHDATE = "finishDate";
 
+    private static final String TABLE_MEDIA = "Media";
+    private static final String COLUMN_TYPE = "type";
+    private static final String COLUMN_PATH = "path";
+    private static final String COLUMN_TRIPID = "trip_id";
+
     public LocationDbOpenHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -50,13 +58,23 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
                 COLUMN_LATITUDE + " double NOT NULL, " +
                 COLUMN_ALTITUDE + " double NOT NULL," +
                 COLUMN_FEATURE_NAME + " varchar(255)," +
-                COLUMN_DATE + " INTEGER); ";
+                COLUMN_DATE + " integer); ";
         String tripsTableCreateQuery = "CREATE TABLE " + TABLE_TRIPS +
                 "("+COLUMN_ID+" integer PRIMARY KEY AUTOINCREMENT," +
                  COLUMN_STARTDATE +" INTEGER not null," +
                  COLUMN_FINISHDATE+" INTEGER not null)";
+        String mediaTableCreateQuery = "CREATE TABLE " + TABLE_MEDIA +
+                " (" + COLUMN_ID + " integer PRIMARY KEY AUTOINCREMENT," +
+                COLUMN_TYPE +" varchar(255)," +
+                COLUMN_LONGTITUDE + " double NOT NULL, " +
+                COLUMN_LATITUDE + " double NOT NULL, " +
+                COLUMN_ALTITUDE + " double NOT NULL," +
+                COLUMN_PATH + " varchar(255)," +
+                COLUMN_TRIPID + " integer,"+
+                COLUMN_DATE + " integer ); ";
         db.execSQL(locationTableCreateQuery);
         db.execSQL(tripsTableCreateQuery);
+        db.execSQL(mediaTableCreateQuery);
     }
 
     @Override
@@ -82,7 +100,7 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
         return database.insert(TABLE_TRIPS,null ,values);
     }
     public ArrayList<Integer> getTripsIDs(){
-        String query = "SELECT "+COLUMN_ID+" FROM "+TABLE_TRIPS;
+        String query = "SELECT "+COLUMN_ID+" FROM "+TABLE_TRIPS +" WHERE "+COLUMN_FINISHDATE+"!="+Long.MAX_VALUE;
         SQLiteDatabase database = getReadableDatabase();
         Cursor cursor = database.rawQuery(query,null);
         cursor.moveToFirst();
@@ -112,7 +130,7 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
         database.close();
         return trip_info;
     }
-    public ArrayList<LatLng> getTripPath(int trip_id) {
+    public ArrayList<LatLng> getTripPath(long trip_id) {
         SQLiteDatabase db = getReadableDatabase();
         String query = "SELECT " + COLUMN_LATITUDE + " ," + COLUMN_LONGTITUDE +","+COLUMN_DATE+
                 " FROM " + TABLE_LOCATIONS + " AS loc, "+ TABLE_TRIPS+" AS trip " +
@@ -130,17 +148,35 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
         db.close();
         return points;
     }
-    public ArrayList<LatLng> getTripPath(long startdate,long finishdate) {
+
+    public long insertMediaFile(MediaFile mediaFile){
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_TYPE,mediaFile.type);
+        values.put(COLUMN_PATH,mediaFile.path);
+        values.put(COLUMN_LATITUDE,mediaFile.location.getLatitude());
+        values.put(COLUMN_LONGTITUDE, mediaFile.location.getLongtitude());
+        values.put(COLUMN_ALTITUDE, mediaFile.location.getAltitude());
+        values.put(COLUMN_TRIPID, mediaFile.trip_id);
+        values.put(COLUMN_DATE,mediaFile.location.getTime());
+        SQLiteDatabase database = getWritableDatabase();
+        return database.insert(TABLE_MEDIA,null ,values);
+    }
+    public ArrayList<MediaFile> getMedias(long trip_id, String type) {
         SQLiteDatabase db = getReadableDatabase();
-        String query = "SELECT " + COLUMN_LATITUDE + " ," + COLUMN_LONGTITUDE +","+COLUMN_DATE+
-                " FROM " + TABLE_LOCATIONS + " WHERE  " + COLUMN_DATE + ">= "+startdate+
-                " AND " + COLUMN_DATE+ "<= "+finishdate;
+        String query = "SELECT * FROM "+TABLE_MEDIA+" WHERE "+COLUMN_TRIPID+"="+trip_id + " AND "+ COLUMN_TYPE + "='" +type+"'";
         Cursor cursor = db.rawQuery(query, null);
         cursor.moveToFirst();
-        ArrayList<LatLng> points = new ArrayList<>();
+        ArrayList<MediaFile> points = new ArrayList<>();
         while (!cursor.isAfterLast()) {
-            points.add(new LatLng(cursor.getDouble(cursor.getColumnIndex(COLUMN_LATITUDE)),
-                    cursor.getDouble(cursor.getColumnIndex(COLUMN_LONGTITUDE))));
+            points.add(new MediaFile(
+                                    cursor.getString(cursor.getColumnIndex(COLUMN_TYPE)),
+                                    cursor.getString(cursor.getColumnIndex(COLUMN_PATH)),
+                                    cursor.getLong(cursor.getColumnIndex(COLUMN_LATITUDE)),
+                                    cursor.getLong(cursor.getColumnIndex(COLUMN_LONGTITUDE)),
+                                    cursor.getLong(cursor.getColumnIndex(COLUMN_ALTITUDE)),
+                                    cursor.getLong(cursor.getColumnIndex(COLUMN_TRIPID)),
+                                    cursor.getLong(cursor.getColumnIndex(COLUMN_DATE))
+                    ));
             cursor.moveToNext();
         }
         cursor.close();

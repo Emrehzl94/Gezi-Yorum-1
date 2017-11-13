@@ -9,20 +9,22 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 
+import com.example.murat.gezi_yorum.classes.Constants;
+
 import java.util.ArrayList;
 
 /**
  * List photos
  */
 
-public class PhotoListViewAdapter extends ArrayAdapter<Bitmap> {
+public class MediaGridViewAdapter extends ArrayAdapter<Bitmap> {
     private Context context;
-    private ArrayList<Bitmap> values;
+    private ArrayList<Bitmap> media;
 
-    public PhotoListViewAdapter(Context context, ArrayList<Bitmap> values) {
-        super(context, -1,values);
+    public MediaGridViewAdapter(Context context, ArrayList<Bitmap> media) {
+        super(context, -1,media);
         this.context = context;
-        this.values = values;
+        this.media = media;
     }
 
     @NonNull
@@ -32,7 +34,7 @@ public class PhotoListViewAdapter extends ArrayAdapter<Bitmap> {
         imageView.setScaleType(ImageView.ScaleType.FIT_XY);
         imageView.setPadding(2,2,2,2);
         imageView.setAdjustViewBounds(true);
-        imageView.setImageBitmap(values.get(position));
+        imageView.setImageBitmap(media.get(position));
         return imageView;
     }
 }

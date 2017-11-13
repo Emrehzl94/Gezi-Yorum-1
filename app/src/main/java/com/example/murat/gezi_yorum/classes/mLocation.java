@@ -1,7 +1,5 @@
 package com.example.murat.gezi_yorum.classes;
 
-import java.util.Date;
-
 /**
  * Custom Location struct for application.
  */
