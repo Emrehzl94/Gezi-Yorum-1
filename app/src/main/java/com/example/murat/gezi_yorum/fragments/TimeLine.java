@@ -83,6 +83,7 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
 
                     map.animateCamera(CameraUpdateFactory.newLatLngBounds(builder.build(),routePadding));
                     map.addPolyline(options);
+                    pagerAdapter.getCurrentFragment().addMarkersToMap(map);
                 }
             }
 
@@ -140,6 +141,8 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
                 }
             }
         });
+        if(pagerAdapter.getCount()>0)
+            pagerAdapter.getCurrentFragment().addMarkersToMap(map) ;
     }
 
     @Override
@@ -159,6 +162,7 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
         }else {
             mainActivity.showSnackbarMessage("Bu işlev konum izni olmadan çalışmaz",Snackbar.LENGTH_LONG);
         }
+
     }
 
     public void setNextPage(){

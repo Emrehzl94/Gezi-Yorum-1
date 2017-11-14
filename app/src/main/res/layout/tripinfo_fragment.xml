@@ -31,11 +31,9 @@
         android:layout_height="2dp"
         android:background="@color/colorPrimaryDark"
         android:layout_below="@id/nextbutton"/>
-    <TextView
-        android:id="@+id/trytext"
+    <include layout="@layout/media_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/hline"
-        />
+        android:layout_below="@id/hline"/>
 
 </RelativeLayout>

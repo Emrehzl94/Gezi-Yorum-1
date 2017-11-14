@@ -1,7 +1,9 @@
 package com.example.murat.gezi_yorum.classes;
 
+import com.google.android.gms.maps.model.LatLng;
+
 /**
- * Custom Location struct for application.
+ * Custom Location struct for carrying location data.
  */
 
 public class mLocation {
@@ -9,14 +11,14 @@ public class mLocation {
     private double Latitude;
     private double Altitude;
     private long Time;
-    public mLocation(double Latitude,double Longtitude,double Altitude,long Time){
+    public mLocation(double Latitude,double Longitude,double Altitude,long Time){
         this.Latitude = Latitude;
-        this.Longtitude = Longtitude;
+        this.Longtitude = Longitude;
         this.Altitude = Altitude;
         this.Time = Time;
     }
 
-    public double getLongtitude() {
+    public double getLongitude() {
         return Longtitude;
     }
 
@@ -30,5 +32,9 @@ public class mLocation {
 
     public double getAltitude() {
         return Altitude;
+    }
+
+    LatLng convertLatLng(){
+        return new LatLng(Latitude,Longtitude);
     }
 }

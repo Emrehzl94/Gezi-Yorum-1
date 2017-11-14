@@ -68,9 +68,9 @@ public class LocationSaveService extends Service implements LocationListener {
         Double latitude = location.getLatitude();
         Double longitude = location.getLongitude();
         Double altitude = location.getAltitude();
-        helper.saveLocation(new mLocation(
-                latitude,longitude,altitude,(new Date()).getTime()
-        ),writableLocationDb);
+        helper.saveLocation(
+                new mLocation(latitude,longitude,altitude,System.currentTimeMillis())
+                ,writableLocationDb);
         Toast.makeText(getApplicationContext(),"Konum kaydedildi.",Toast.LENGTH_SHORT).show();
     }
 

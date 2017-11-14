@@ -36,7 +36,8 @@
             android:name=".RecordAudio"
             android:label="@string/title_activity_record_audio"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".NoteTake"></activity>
+        <activity android:name=".NoteTake" />
+        <activity android:name=".MediaActivity"></activity>
     </application>
 
 </manifest>

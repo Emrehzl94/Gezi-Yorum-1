@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent">
+    <Button
+        android:id="@+id/photo_more"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/photo"
+        android:drawableRight="@android:drawable/ic_media_next" />
+
+    <GridView
+        android:id="@+id/photo_preview_grid"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:numColumns="5"
+        android:stretchMode="columnWidth"
+        android:gravity="center"
+        android:layout_below="@+id/photo_more"/>
+    <Button
+        android:id="@+id/video_more"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/video"
+        android:layout_below="@id/photo_preview_grid"
+        android:drawableRight="@android:drawable/ic_media_next"/>
+
+    <GridView
+        android:id="@+id/video_preview_grid"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:numColumns="5"
+        android:stretchMode="columnWidth"
+        android:gravity="center"
+        android:layout_below="@id/video_more"/>
+
+    <Button
+        android:id="@+id/sound_more"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/sound_record"
+        android:layout_below="@id/video_preview_grid"
+        android:drawableRight="@android:drawable/ic_media_next"/>
+
+    <GridView
+        android:id="@+id/sound_preview_grid"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:numColumns="5"
+        android:stretchMode="columnWidth"
+        android:gravity="center"
+        android:layout_below="@id/sound_more"/>
+
+    <Button
+        android:id="@+id/note_more"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/note"
+        android:layout_below="@id/sound_preview_grid"
+        android:drawableRight="@android:drawable/ic_media_next"
+        />
+
+    <GridView
+        android:id="@+id/note_preview_grid"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:numColumns="5"
+        android:stretchMode="columnWidth"
+        android:gravity="center"
+        android:layout_below="@id/note_more" />
+</RelativeLayout>
