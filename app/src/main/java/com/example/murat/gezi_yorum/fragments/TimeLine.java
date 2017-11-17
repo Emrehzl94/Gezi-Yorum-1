@@ -22,6 +22,7 @@ import com.example.murat.gezi_yorum.helpers.LocationDbOpenHelper;
 import com.example.murat.gezi_yorum.helpers.TripPagerAdapter;
 import com.example.murat.gezi_yorum.MainActivity;
 import com.example.murat.gezi_yorum.R;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -40,7 +41,6 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
     private ViewPager viewPager;
     private TripPagerAdapter pagerAdapter;
     private ArrayList<Integer> trip_ids;
-    private LocationDbOpenHelper helper;
     private final static int MAP_PERMISSION_REQUEST = 1;
 
     @Override
@@ -48,14 +48,13 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
         super.onViewCreated(view, savedInstanceState);
 
         getActivity().setTitle(getString(R.string.timeline));
-        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+        final SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
         viewPager = view.findViewById(R.id.pager);
-        helper = new LocationDbOpenHelper(getContext());
+        LocationDbOpenHelper helper = new LocationDbOpenHelper(getContext());
         trip_ids = helper.getTripsIDs();
-        pagerAdapter = new TripPagerAdapter(getChildFragmentManager());
-        pagerAdapter.setCount(trip_ids.size());
+        pagerAdapter = new TripPagerAdapter(getChildFragmentManager(),trip_ids);
         viewPager.setAdapter(pagerAdapter);
         viewPager.setCurrentItem(trip_ids.size());
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -66,24 +65,8 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
 
             @Override
             public void onPageSelected(int position) {
-                map.clear();
-                ArrayList<LatLng> points = helper.getTripPath(trip_ids.get(position));
-
-                PolylineOptions options = new PolylineOptions();
-                if (!points.isEmpty()) {
-                    options.color(Color.RED);
-                    options.width(15);
-                    options.visible(true);
-                    options.addAll(points);
-                    LatLngBounds.Builder builder = new LatLngBounds.Builder();
-                    for (LatLng point : points){
-                        builder.include(point);
-                    }
-                    int routePadding = 100;
-
-                    map.animateCamera(CameraUpdateFactory.newLatLngBounds(builder.build(),routePadding));
-                    map.addPolyline(options);
-                    pagerAdapter.getCurrentFragment().addMarkersToMap(map);
+                if(map != null){
+                    pagerAdapter.getFragment(position).drawPathOnMap(map,false);
                 }
             }
 
@@ -92,7 +75,6 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
 
             }
         });
-
         View bottomsheet = view.findViewById(R.id.bottomsheet);
         behavior = BottomSheetBehavior.from(bottomsheet);
         behavior.setState(BottomSheetBehavior.STATE_DRAGGING);
@@ -113,12 +95,6 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
         }
         map = googleMap;
         map.setMyLocationEnabled(true);
-        LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-        Location lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        if(lastKnownLocation != null) {
-            LatLng lastKnownLatLng = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
-            map.moveCamera(CameraUpdateFactory.newLatLngZoom(lastKnownLatLng, 13.0f));
-        }
 
         map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
@@ -141,8 +117,9 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
                 }
             }
         });
-        if(pagerAdapter.getCount()>0)
-            pagerAdapter.getCurrentFragment().addMarkersToMap(map) ;
+        if(pagerAdapter.getCount()>0) {
+            pagerAdapter.getFragment(pagerAdapter.getCount()-1).drawPathOnMap(map,true);
+        }
     }
 
     @Override
@@ -170,9 +147,6 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
     }
     public void setPrevPage(){
         viewPager.setCurrentItem(viewPager.getCurrentItem()-1);
-    }
-    public int getIdAtPosition(int position){
-        return trip_ids.get(position);
     }
 
 }

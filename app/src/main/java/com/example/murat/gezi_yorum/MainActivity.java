@@ -19,6 +19,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.example.murat.gezi_yorum.classes.Constants;
+import com.example.murat.gezi_yorum.fragments.ContinuingTrip;
 import com.example.murat.gezi_yorum.fragments.Home;
 import com.example.murat.gezi_yorum.fragments.Search;
 import com.example.murat.gezi_yorum.fragments.StartTripFragment;

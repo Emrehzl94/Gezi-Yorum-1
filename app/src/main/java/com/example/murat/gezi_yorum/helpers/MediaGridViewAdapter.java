@@ -10,6 +10,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 
 import com.example.murat.gezi_yorum.classes.Constants;
+import com.example.murat.gezi_yorum.classes.MediaFile;
 
 import java.util.ArrayList;
 
@@ -19,10 +20,10 @@ import java.util.ArrayList;
 
 public class MediaGridViewAdapter extends ArrayAdapter<Bitmap> {
     private Context context;
-    private ArrayList<Bitmap> media;
+    private ArrayList<MediaFile> media;
 
-    public MediaGridViewAdapter(Context context, ArrayList<Bitmap> media) {
-        super(context, -1,media);
+    public MediaGridViewAdapter(Context context, ArrayList<MediaFile> media) {
+        super(context, -1,MediaFile.getThumbnailArray(media));
         this.context = context;
         this.media = media;
     }
@@ -34,7 +35,7 @@ public class MediaGridViewAdapter extends ArrayAdapter<Bitmap> {
         imageView.setScaleType(ImageView.ScaleType.FIT_XY);
         imageView.setPadding(2,2,2,2);
         imageView.setAdjustViewBounds(true);
-        imageView.setImageBitmap(media.get(position));
+        imageView.setImageBitmap(media.get(position).thumbNail);
         return imageView;
     }
 }

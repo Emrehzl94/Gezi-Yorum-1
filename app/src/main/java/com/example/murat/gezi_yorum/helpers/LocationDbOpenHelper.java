@@ -5,12 +5,14 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
+import android.graphics.Bitmap;
+import android.support.annotation.Nullable;
 
 import com.example.murat.gezi_yorum.classes.MediaFile;
 import com.example.murat.gezi_yorum.classes.mLocation;
 import com.google.android.gms.maps.model.LatLng;
 
+import java.io.ByteArrayOutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -42,6 +44,8 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
     private static final String COLUMN_TYPE = "type";
     private static final String COLUMN_PATH = "path";
     private static final String COLUMN_TRIPID = "trip_id";
+    private static final String COLUMN_THUMBNAIL = "thumbnail";
+
 
     public LocationDbOpenHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -67,7 +71,8 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
                 COLUMN_ALTITUDE + " double NOT NULL," +
                 COLUMN_PATH + " varchar(255)," +
                 COLUMN_TRIPID + " integer,"+
-                COLUMN_DATE + " integer ); ";
+                COLUMN_DATE + " integer," +
+                COLUMN_THUMBNAIL+" blob NOT NULL ); ";
         db.execSQL(locationTableCreateQuery);
         db.execSQL(tripsTableCreateQuery);
         db.execSQL(mediaTableCreateQuery);
@@ -95,11 +100,11 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
         SQLiteDatabase database = getWritableDatabase();
         return database.insert(TABLE_TRIPS,null ,values);
     }
-    public long endTrip(long trip_id, long finishdate){
+    public void endTrip(long trip_id, long finishdate){
         ContentValues values = new ContentValues();
         values.put(COLUMN_FINISHDATE,finishdate);
         SQLiteDatabase database = getWritableDatabase();
-        return database.update(TABLE_TRIPS,values,COLUMN_ID+"="+trip_id,null);
+        database.update(TABLE_TRIPS, values, COLUMN_ID + "=" + trip_id, null);
     }
     public ArrayList<Integer> getTripsIDs(){
         String query = "SELECT "+COLUMN_ID+" FROM "+TABLE_TRIPS +" WHERE "+COLUMN_FINISHDATE+"!="+Long.MAX_VALUE;
@@ -151,8 +156,13 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
         return points;
     }
 
-    public long insertMediaFile(MediaFile mediaFile){
+    public void insertMediaFile(MediaFile mediaFile){
         ContentValues values = new ContentValues();
+        Bitmap image = mediaFile.thumbNail;
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        image.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+        byte[] byteArray = stream.toByteArray();
+
         values.put(COLUMN_TYPE,mediaFile.type);
         values.put(COLUMN_PATH,mediaFile.path);
         values.put(COLUMN_LATITUDE,mediaFile.location.getLatitude());
@@ -160,12 +170,28 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
         values.put(COLUMN_ALTITUDE, mediaFile.location.getAltitude());
         values.put(COLUMN_TRIPID, mediaFile.trip_id);
         values.put(COLUMN_DATE,mediaFile.location.getTime());
+        values.put(COLUMN_THUMBNAIL,byteArray);
         SQLiteDatabase database = getWritableDatabase();
-        return database.insert(TABLE_MEDIA,null ,values);
+        database.insert(TABLE_MEDIA, null, values);
     }
-    public ArrayList<MediaFile> getMediaFiles(long trip_id, String type , String additionalQuery) {
+
+    /**
+     * Returns media files taken in trip
+     * @param trip_id
+     * @param type
+     * @param additionalQuery
+     * @return
+     */
+    public ArrayList<MediaFile> getMediaFiles(long trip_id, @Nullable String type ,@Nullable String additionalQuery) {
         SQLiteDatabase db = getReadableDatabase();
-        String query = "SELECT * FROM "+TABLE_MEDIA+" WHERE "+COLUMN_TRIPID+"="+trip_id + " AND "+ COLUMN_TYPE + "='" +type+"' "+additionalQuery;
+        String query = "SELECT * FROM "+TABLE_MEDIA+" WHERE "+COLUMN_TRIPID+"='"+trip_id+"'";
+        if(type != null){
+            query+=" AND "+ COLUMN_TYPE + "='" +type+"'";
+        }
+        query += " ORDER BY "+ COLUMN_DATE + " DESC ";
+        if (additionalQuery != null){
+            query += additionalQuery;
+        }
         Cursor cursor = db.rawQuery(query, null);
         cursor.moveToFirst();
         ArrayList<MediaFile> points = new ArrayList<>();
@@ -177,7 +203,8 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
                                     cursor.getDouble(cursor.getColumnIndex(COLUMN_LONGTITUDE)),
                                     cursor.getDouble(cursor.getColumnIndex(COLUMN_ALTITUDE)),
                                     cursor.getLong(cursor.getColumnIndex(COLUMN_TRIPID)),
-                                    cursor.getLong(cursor.getColumnIndex(COLUMN_DATE))
+                                    cursor.getLong(cursor.getColumnIndex(COLUMN_DATE)),
+                                    cursor.getBlob(cursor.getColumnIndex(COLUMN_THUMBNAIL))
                     ));
             cursor.moveToNext();
         }
@@ -186,34 +213,6 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
         return points;
     }
     public ArrayList<MediaFile> getMediaFilesForPreview(long trip_id, String type){
-        return getMediaFiles(trip_id,type,"LIMIT 4");
-    }
-
-    public void logInfoTrip() {
-        SQLiteDatabase db = getReadableDatabase();
-        String query = "SELECT * FROM "+TABLE_TRIPS;
-        Cursor cursor = db.rawQuery(query, null);
-        cursor.moveToFirst();
-        while (!cursor.isAfterLast()) {
-            Log.d("ID", ""+cursor.getString(cursor.getColumnIndex(COLUMN_ID)));
-            Log.d("STARTDATE",""+ cursor.getString(cursor.getColumnIndex(COLUMN_STARTDATE)));
-            Log.d("FINISHDATE",""+ cursor.getString(cursor.getColumnIndex(COLUMN_FINISHDATE)));
-            cursor.moveToNext();
-        }
-        cursor.close();
-        db.close();
-    }
-    public void logInfoLocation() {
-        SQLiteDatabase db = getReadableDatabase();
-        String query = "SELECT * FROM "+TABLE_LOCATIONS;
-        Cursor cursor = db.rawQuery(query, null);
-        cursor.moveToFirst();
-        while (!cursor.isAfterLast()) {
-            Log.d("LATITUDE", ""+cursor.getString(cursor.getColumnIndex(COLUMN_LATITUDE)));
-            Log.d("LONGITUDE",""+ cursor.getString(cursor.getColumnIndex(COLUMN_LONGTITUDE)));
-            cursor.moveToNext();
-        }
-        cursor.close();
-        db.close();
+        return getMediaFiles(trip_id,type,"LIMIT 5");
     }
 }

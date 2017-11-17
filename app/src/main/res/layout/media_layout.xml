@@ -8,7 +8,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/photo"
-        android:drawableRight="@android:drawable/ic_media_next" />
+        android:drawableRight="@android:drawable/ic_media_next"
+        android:drawableEnd="@android:drawable/ic_media_next" />
 
     <GridView
         android:id="@+id/photo_preview_grid"
@@ -18,13 +19,22 @@
         android:stretchMode="columnWidth"
         android:gravity="center"
         android:layout_below="@+id/photo_more"/>
+    <ImageButton
+        android:id="@+id/camera_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@android:drawable/ic_menu_camera"
+        android:layout_toRightOf="@id/photo_preview_grid"
+        android:layout_toEndOf="@id/photo_preview_grid"
+        />
     <Button
         android:id="@+id/video_more"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/video"
         android:layout_below="@id/photo_preview_grid"
-        android:drawableRight="@android:drawable/ic_media_next"/>
+        android:drawableRight="@android:drawable/ic_media_next"
+        android:drawableEnd="@android:drawable/ic_media_next" />
 
     <GridView
         android:id="@+id/video_preview_grid"
@@ -34,6 +44,13 @@
         android:stretchMode="columnWidth"
         android:gravity="center"
         android:layout_below="@id/video_more"/>
+    <ImageButton
+        android:id="@+id/video_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@android:drawable/presence_video_online"
+        android:layout_toEndOf="@id/video_preview_grid"
+        android:layout_toRightOf="@id/video_preview_grid" />
 
     <Button
         android:id="@+id/sound_more"
@@ -41,7 +58,8 @@
         android:layout_height="wrap_content"
         android:text="@string/sound_record"
         android:layout_below="@id/video_preview_grid"
-        android:drawableRight="@android:drawable/ic_media_next"/>
+        android:drawableRight="@android:drawable/ic_media_next"
+        android:drawableEnd="@android:drawable/ic_media_next" />
 
     <GridView
         android:id="@+id/sound_preview_grid"
@@ -52,6 +70,14 @@
         android:gravity="center"
         android:layout_below="@id/sound_more"/>
 
+    <ImageButton
+        android:id="@+id/sound_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@android:drawable/ic_btn_speak_now"
+        android:layout_toEndOf="@id/sound_preview_grid"
+        android:layout_toRightOf="@id/sound_preview_grid" />
+
     <Button
         android:id="@+id/note_more"
         android:layout_width="match_parent"
@@ -59,7 +85,7 @@
         android:text="@string/note"
         android:layout_below="@id/sound_preview_grid"
         android:drawableRight="@android:drawable/ic_media_next"
-        />
+        android:drawableEnd="@android:drawable/ic_media_next" />
 
     <GridView
         android:id="@+id/note_preview_grid"
@@ -69,4 +95,11 @@
         android:stretchMode="columnWidth"
         android:gravity="center"
         android:layout_below="@id/note_more" />
+    <ImageButton
+        android:id="@+id/note_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@android:drawable/ic_menu_agenda"
+        android:layout_toEndOf="@id/note_preview_grid"
+        android:layout_toRightOf="@id/note_preview_grid" />
 </RelativeLayout>

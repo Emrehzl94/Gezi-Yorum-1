@@ -7,37 +7,39 @@ import android.support.v4.app.FragmentPagerAdapter;
 
 import com.example.murat.gezi_yorum.fragments.TripInfo;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 /**
  * Custom adapter for viewPager
  */
 
 public class TripPagerAdapter extends FragmentPagerAdapter{
+    private HashMap<Integer,TripInfo> fragments;
+    private ArrayList<Integer> trip_ids;
 
-    private int NUM_ITEMS;
-    private TripInfo currentFragment;
-
-    public void setCount(int NUM_ITEMS) {
-        this.NUM_ITEMS = NUM_ITEMS;
-    }
-
-    public TripPagerAdapter(FragmentManager fragmentManager) {
+    public TripPagerAdapter(FragmentManager fragmentManager, ArrayList<Integer> trip_ids) {
         super(fragmentManager);
+        this.trip_ids = trip_ids;
+        fragments = new HashMap<>();
     }
 
     // Returns total number of pages
     @Override
     public int getCount() {
-        return NUM_ITEMS;
+        return trip_ids.size();
     }
 
     // Returns the fragment to display for that page
     @Override
     public Fragment getItem(int position) {
-        currentFragment = new TripInfo();
+        TripInfo fragment = new TripInfo();
         Bundle info = new Bundle();
-        info.putInt("position", position);
-        currentFragment.setArguments(info);
-        return currentFragment;
+        info.putInt("trip_id", trip_ids.get(position));
+        info.putInt("position",position);
+        fragment.setArguments(info);
+        fragments.put(position,fragment);
+        return fragment;
     }
 
     // Returns the page title for the top indicator
@@ -45,5 +47,5 @@ public class TripPagerAdapter extends FragmentPagerAdapter{
     public CharSequence getPageTitle(int position) {
         return "Page " + position;
     }
-    public TripInfo getCurrentFragment(){return currentFragment;}
+    public TripInfo getFragment(int position){return fragments.get(position);}
 }
