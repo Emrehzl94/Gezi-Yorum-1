@@ -12,6 +12,10 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 
 /**
@@ -19,6 +23,7 @@ import java.util.ArrayList;
  */
 
 public class MediaFile {
+    public Long id;
     public String type;
     public String path;
     public mLocation location;
@@ -31,9 +36,10 @@ public class MediaFile {
         this.location = new mLocation(latitude,longitude,altitude,time);
         this.trip_id = trip_id;
     }
-    public MediaFile(String type, String path,double latitude, double longitude, double altitude , long trip_id, long time,byte[] imageData){
+    public MediaFile(Long id,String type, String path,double latitude, double longitude, double altitude , long trip_id, long time,byte[] imageData){
         this(type,path,latitude,longitude,altitude,trip_id,time);
         thumbNail = BitmapFactory.decodeByteArray(imageData,0,imageData.length);
+        this.id = id;
     }
 
     /**
@@ -65,25 +71,66 @@ public class MediaFile {
      */
 
     public void addToMap(GoogleMap map){
+        map.addMarker(new MarkerOptions().position(location.convertLatLng())
+                .icon(BitmapDescriptorFactory.defaultMarker(getColorForMap()))
+                .title(String.valueOf(id))
+        );
+    }
+
+    public float getColorForMap(){
+        float color = 0;
         switch (type){
             case Constants.PHOTO:
-                map.addMarker(new MarkerOptions().position(location.convertLatLng())
-                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
-                );
+                color = BitmapDescriptorFactory.HUE_RED;
                 break;
             case Constants.VIDEO:
-                map.addMarker(new MarkerOptions().position(location.convertLatLng())
-                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+                color = BitmapDescriptorFactory.HUE_BLUE;
                 break;
             case Constants.SOUNDRECORD:
-                map.addMarker(new MarkerOptions().position(location.convertLatLng())
-                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+                color = BitmapDescriptorFactory.HUE_GREEN;
                 break;
             case Constants.NOTE:
-                map.addMarker(new MarkerOptions().position(location.convertLatLng())
-                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
+                color = BitmapDescriptorFactory.HUE_ORANGE;
                 break;
         }
+        return color;
+    }
+
+    public static String getSubdir(String type){
+        String subdir = "";
+        switch (type) {
+            case Constants.PHOTO:
+                subdir = "Photos";
+                break;
+            case Constants.VIDEO:
+                subdir = "Videos";
+                break;
+            case Constants.SOUNDRECORD:
+                subdir = "Audio";
+                break;
+            case Constants.NOTE:
+                subdir = "Notes";
+                break;
+        }
+        return subdir;
+    }
+    public static String getExtension(String type){
+        String extension = "";
+        switch (type) {
+            case Constants.PHOTO:
+                extension = "jpg";
+                break;
+            case Constants.VIDEO:
+                extension = "mp4";
+                break;
+            case Constants.SOUNDRECORD:
+                extension = "mp3";
+                break;
+            case Constants.NOTE:
+                extension = "txt";
+                break;
+        }
+        return extension;
     }
     /**
      * Returns thumbnail array created from media files
@@ -124,5 +171,31 @@ public class MediaFile {
                 break;
         }
         return mimeType;
+    }
+
+    public JSONObject toJSONObject(){
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("path",path);
+            jsonObject.put("type",type);
+            jsonObject.put("longitude",location.getLongitude());
+            jsonObject.put("latitude",location.getLatitude());
+            jsonObject.put("altitude",location.getAltitude());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return jsonObject;
+    }
+
+    public byte[] getByteArray(){
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        thumbNail.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+        return stream.toByteArray();
+    }
+    public byte[] getByteArrayOriginal(){
+        Bitmap original = BitmapFactory.decodeFile(path);
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        original.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+        return stream.toByteArray();
     }
 }

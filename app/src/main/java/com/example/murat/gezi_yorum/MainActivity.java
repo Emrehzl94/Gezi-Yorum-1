@@ -1,11 +1,14 @@
 package com.example.murat.gezi_yorum;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -29,6 +32,7 @@ import com.example.murat.gezi_yorum.helpers.LocationDbOpenHelper;
 import java.util.Date;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+    private static final int MAP_PERMISSION_REQUEST = 1;
     private SharedPreferences preferences;
     SharedPreferences.Editor editor;
     @Override
@@ -136,22 +140,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         fragmentTransaction.replace(R.id.content_main,fragment);
         fragmentTransaction.commit();
     }
-    public void showSnackbarMessage(String message, int lenght){
-        Snackbar.make(getCurrentFocus(),message,lenght).show();
+    public void showSnackbarMessage(String message, int length){
+        Snackbar.make(getCurrentFocus(),message,length).show();
     }
     public void startTrip(){
-        Snackbar.make(getCurrentFocus(), "Trip started", Snackbar.LENGTH_LONG).show();
-        startRecording();
-        long insert_id = (new LocationDbOpenHelper(this)).insertTripInfo(new Date().getTime(),Long.MAX_VALUE);
-        editor.putLong(Constants.TRIPID,insert_id);
+        showSnackbarMessage("Trip started", Snackbar.LENGTH_LONG);
+        long trip_id = (new LocationDbOpenHelper(this)).insertTripInfo(new Date().getTime(),Long.MAX_VALUE);
+        editor.putLong(Constants.TRIPID,trip_id);
         editor.putString(Constants.TRIPSTATE,Constants.ACTIVE);
         editor.apply();
+        startRecording(trip_id);
         ContinuingTrip trip = new ContinuingTrip();
         trip.setTrip_id(preferences.getLong(Constants.TRIPID,-1));
         changeFragment(trip);
     }
     public void endTrip(){
-        Snackbar.make(getCurrentFocus(), "Trip stopped", Snackbar.LENGTH_LONG).show();
+        showSnackbarMessage("Trip stopped", Snackbar.LENGTH_LONG);
         stopRecording();
         long trip_id = preferences.getLong(Constants.TRIPID,-1);
         new LocationDbOpenHelper(this).endTrip(trip_id,System.currentTimeMillis());
@@ -159,12 +163,34 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         editor.putString(Constants.TRIPSTATE,Constants.PASSIVE);
         editor.apply();
     }
-    public void startRecording(){
+    public void startRecording(long trip_id){
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION},MAP_PERMISSION_REQUEST);
+            return;
+        }
         Intent intent = new Intent(this,LocationSaveService.class);
+        intent.putExtra("trip_id",trip_id);
         startService(intent);
     }
     public void stopRecording(){
         Intent intent = new Intent(this,LocationSaveService.class);
         stopService(intent);
+    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        boolean granted = false;
+        switch (requestCode){
+            case MAP_PERMISSION_REQUEST:
+                if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                    granted = true;
+                }
+                break;
+        }
+        if(granted){
+            startTrip();
+        }else {
+            showSnackbarMessage("Gezi başlatılamadı.",Snackbar.LENGTH_LONG);
+        }
     }
 }

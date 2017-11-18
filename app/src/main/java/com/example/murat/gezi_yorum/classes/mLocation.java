@@ -7,6 +7,11 @@ import com.google.android.gms.maps.model.LatLng;
  */
 
 public class mLocation {
+    public static final String LONGTITUDE = "longtitude";
+    public static final String LATITUDE = "latitude";
+    public static final String ALTITUDE = "altitude";
+    public static final String TIME = "time";
+
     private double Longtitude;
     private double Latitude;
     private double Altitude;

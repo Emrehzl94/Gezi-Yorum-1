@@ -1,7 +1,6 @@
 package com.example.murat.gezi_yorum.fragments;
 
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.StrictMode;
 import android.support.v4.app.Fragment;
 import android.view.View;
@@ -36,6 +35,7 @@ public abstract class TripSummary extends Fragment {
     protected LocationDbOpenHelper helper;
     protected long trip_id;
 
+    protected GoogleMap map;
     protected Polyline addedPolyLine;
     protected ArrayList<LatLng> points;
 
@@ -152,9 +152,8 @@ public abstract class TripSummary extends Fragment {
 
     /**
      * Adding markers to map
-     * @param map Google Map
      */
-    public void addMarkersToMap(GoogleMap map){
+    public void addMarkersToMap(){
         for (MediaFile file : helper.getMediaFiles(trip_id,null,null)){
             file.addToMap(map);
         }

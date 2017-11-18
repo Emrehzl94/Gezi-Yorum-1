@@ -9,7 +9,6 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 
-import com.example.murat.gezi_yorum.classes.Constants;
 import com.example.murat.gezi_yorum.classes.MediaFile;
 
 import java.util.ArrayList;
@@ -17,6 +16,7 @@ import java.util.ArrayList;
 /**
  * List photos
  */
+
 
 public class MediaGridViewAdapter extends ArrayAdapter<Bitmap> {
     private Context context;

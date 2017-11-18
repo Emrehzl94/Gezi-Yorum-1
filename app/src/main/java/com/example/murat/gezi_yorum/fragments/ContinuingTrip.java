@@ -29,6 +29,7 @@ import com.example.murat.gezi_yorum.NoteTake;
 import com.example.murat.gezi_yorum.R;
 import com.example.murat.gezi_yorum.RecordAudio;
 import com.example.murat.gezi_yorum.classes.Constants;
+import com.example.murat.gezi_yorum.classes.LocationCSVHandler;
 import com.example.murat.gezi_yorum.classes.MediaFile;
 import com.example.murat.gezi_yorum.helpers.LocationDbOpenHelper;
 import com.google.android.gms.maps.CameraUpdate;
@@ -37,10 +38,10 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.LocationSource;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.io.File;
@@ -61,7 +62,6 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
     private View.OnClickListener pause, continue_listener;
     private MainActivity parentActivity;
     private OnLocationChangedListener listener;
-    private GoogleMap map;
     private LocationManager locationManager;
 
     private FloatingActionButton add_photo_fab;
@@ -149,7 +149,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         continue_listener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                parentActivity.startRecording();
+                parentActivity.startRecording(trip_id);
                 pause_continue.setOnClickListener(pause);
                 pause_continue.setText("Pause");
                 pause_continue.setBackgroundColor(Color.YELLOW);
@@ -197,9 +197,12 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
     public void onPause() {
         super.onPause();
         locationManager.removeUpdates(this);
-        map.clear();
+        if(map!=null) {
+            map.clear();
+        }
     }
 
+    private Marker lastClickedMarker;
     @Override
     public void onMapReady(GoogleMap googleMap) {
         if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -212,6 +215,19 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
+                if(marker.getZIndex() != 1){
+                    if(lastClickedMarker!=null){
+                        lastClickedMarker.setIcon(BitmapDescriptorFactory.defaultMarker(helper.getMediaFile(Long.parseLong(lastClickedMarker.getTitle())).getColorForMap()));
+                        lastClickedMarker.setZIndex(0);
+                    }
+                    marker.setIcon(BitmapDescriptorFactory.fromBitmap(helper.getMediaFile(Long.parseLong(marker.getTitle())).thumbNail));
+                    marker.setZIndex(1);
+                    lastClickedMarker = marker;
+                }else {
+                    helper.getMediaFile(Long.parseLong(marker.getTitle())).startActivityForView(getActivity());
+                    marker.setZIndex(0);
+                    lastClickedMarker = null;
+                }
                 behavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
                 behavior.setHideable(false);
                 map.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()));
@@ -228,6 +244,10 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
                     behavior.setHideable(true);
                     behavior.setState(BottomSheetBehavior.STATE_HIDDEN);
                 }
+                if(lastClickedMarker!=null){
+                    lastClickedMarker.setIcon(BitmapDescriptorFactory.defaultMarker(helper.getMediaFile(Long.parseLong(lastClickedMarker.getTitle())).getColorForMap()));
+                    lastClickedMarker.setZIndex(0);
+                }
             }
         });
 
@@ -243,7 +263,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
     public void drawPathOnMap(GoogleMap map ,boolean move) {
         if (map != null) {
             map.clear();
-            points = helper.getTripPath(trip_id);
+            points = new LocationCSVHandler(trip_id,getContext()).getLocations();
 
             PolylineOptions options = new PolylineOptions();
             if (!points.isEmpty()) {
@@ -263,14 +283,13 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
                     map.animateCamera(update);
                 }
                 addedPolyLine = map.addPolyline(options);
-                addMarkersToMap(map);
+                addMarkersToMap();
             }
         }
     }
 
     /**
      * Adding new point to polyline
-     * @param location provided location
      */
     @Override
     public void onLocationChanged(Location location) {
@@ -313,8 +332,9 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
      * starts new photo intent for taking photo
      */
     public void startNewPhotoIntent() {
+        if(!checkExternalStoragePermission()) return;
         Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-        lastOutputMedia = getOutpuMediaFile(Constants.PHOTO);
+        lastOutputMedia = getOutputMediaFile(Constants.PHOTO);
         cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, lastOutputMedia);
         startActivityForResult(cameraIntent, REQUEST_IMAGE_CAPTURE);
     }
@@ -323,8 +343,9 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
      * Starts new photo intent for video
      */
     public void startNewVideoIntent() {
+        if(!checkExternalStoragePermission()) return;
         Intent cameraIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
-        lastOutputMedia = getOutpuMediaFile(Constants.VIDEO);
+        lastOutputMedia = getOutputMediaFile(Constants.VIDEO);
         cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT,lastOutputMedia);
         startActivityForResult(cameraIntent, REQUEST_VIDEO_CAPTURE);
     }
@@ -333,8 +354,9 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
      * starts activity RecordAudio
      */
     public void startNewAudioIntent() {
+        if(!checkExternalStoragePermission()) return;
         Intent audioIntent = new Intent(getContext(), RecordAudio.class);
-        audioIntent.putExtra(MediaStore.EXTRA_OUTPUT,getOutpuMediaFile(Constants.SOUNDRECORD));
+        audioIntent.putExtra(MediaStore.EXTRA_OUTPUT, getOutputMediaFile(Constants.SOUNDRECORD));
         startActivityForResult(audioIntent, REQUEST_SOUND_RECORD);
     }
 
@@ -342,31 +364,38 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
      * start activity NateTake
      */
     public void startNewNoteIntent(){
-        
+        if(!checkExternalStoragePermission()) return;
         Intent noteIntent = new Intent(getContext(), NoteTake.class);
         startActivityForResult(noteIntent, REQUEST_TAKE_NOTE);
     }
+
+    /**
+     * Check for external storage permission. If permission is not granted request permission
+     * @return
+     */
+    private boolean checkExternalStoragePermission(){
+        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+            return false;
+        }
+        return true;
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(resultCode == Activity.RESULT_OK){
             String type = "";
-            Uri outputMedia = null;
             if(requestCode == REQUEST_IMAGE_CAPTURE){
                 type = Constants.PHOTO;
-                outputMedia = lastOutputMedia;
-                startNewPhotoIntent();
             }else if(requestCode == REQUEST_VIDEO_CAPTURE){
-                outputMedia = lastOutputMedia;
                 type = Constants.VIDEO;
             }else if(requestCode == REQUEST_SOUND_RECORD){
-                outputMedia = lastOutputMedia;
                 type = Constants.SOUNDRECORD;
             }else if(requestCode == REQUEST_TAKE_NOTE){
-                outputMedia = lastOutputMedia;
                 type = Constants.NOTE;
             }
             @SuppressLint("MissingPermission") Location lastknown = ((LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE)).getLastKnownLocation(LocationManager.GPS_PROVIDER);
-            MediaFile mediaFile = new MediaFile(type,outputMedia.getPath(),lastknown.getLatitude(),lastknown.getLongitude(), lastknown.getAltitude(),trip_id,System.currentTimeMillis());
+            MediaFile mediaFile = new MediaFile(type,lastOutputMedia.getPath(),lastknown.getLatitude(),lastknown.getLongitude(), lastknown.getAltitude(),trip_id,System.currentTimeMillis());
             mediaFile.generateThumbNail(getActivity());
             helper.insertMediaFile(mediaFile);
             ArrayList<MediaFile> relatedArray = getRelatedArray(type);
@@ -374,37 +403,19 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
             if(relatedArray.size()>5){
                 relatedArray.remove(5);
             }
-        }else {
-            setUpPreview();
+            if(requestCode == REQUEST_IMAGE_CAPTURE){
+                startNewPhotoIntent();
+            }
         }
+        setUpPreview();
 
     }
-    private Uri getOutpuMediaFile(String type){
-        String subdir = "";
-        String extension = "";
-        switch (type) {
-            case Constants.PHOTO:
-                subdir = "Photos";
-                extension = "jpg";
-                break;
-            case Constants.VIDEO:
-                subdir = "Videos";
-                extension = "mp4";
-                break;
-            case Constants.SOUNDRECORD:
-                subdir = "Audio";
-                extension = "mp3";
-                break;
-            case Constants.NOTE:
-                subdir = "Notes";
-                extension = "txt";
-                break;
-        }
-        File storageDir = new File(Environment.getExternalStoragePublicDirectory(getString(R.string.app_name)),subdir);
+    private Uri getOutputMediaFile(String type){
+        File storageDir = new File(Environment.getExternalStoragePublicDirectory(getString(R.string.app_name)),MediaFile.getSubdir(type));
         if(!storageDir.exists()){
             storageDir.mkdirs();
         }
         long time = System.currentTimeMillis();
-        return Uri.parse("file://"+storageDir.getPath() + File.separator + time+"."+extension);
+        return Uri.parse("file://"+storageDir.getPath() + File.separator + time+"."+MediaFile.getExtension(type));
     }
 }

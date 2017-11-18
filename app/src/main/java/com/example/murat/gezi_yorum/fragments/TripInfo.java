@@ -9,7 +9,8 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.example.murat.gezi_yorum.R;
-import com.example.murat.gezi_yorum.classes.MediaFile;
+import com.example.murat.gezi_yorum.classes.LocationCSVHandler;
+import com.example.murat.gezi_yorum.classes.ZipFileHandler;
 import com.example.murat.gezi_yorum.helpers.LocationDbOpenHelper;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -69,8 +70,9 @@ public class TripInfo extends TripSummary {
     }
     public void drawPathOnMap(GoogleMap map ,boolean move) {
         if (map != null) {
+            this.map = map;
             map.clear();
-            points = helper.getTripPath(trip_id);
+            points = new LocationCSVHandler(trip_id,getContext()).getLocations();
 
             PolylineOptions options = new PolylineOptions();
             if (!points.isEmpty()) {
@@ -90,8 +92,12 @@ public class TripInfo extends TripSummary {
                     map.animateCamera(update);
                 }
                 addedPolyLine = map.addPolyline(options);
-                addMarkersToMap(map);
+                addMarkersToMap();
             }
         }
+    }
+    public void shareTrip(){
+        ZipFileHandler handler = new ZipFileHandler(trip_id,getContext());
+        handler.createAndUploadZipFile();
     }
 }
