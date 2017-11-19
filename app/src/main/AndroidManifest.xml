@@ -4,7 +4,7 @@
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -36,8 +36,9 @@
             android:name=".RecordAudio"
             android:label="@string/title_activity_record_audio"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".NoteTake" />
-        <activity android:name=".MediaActivity"></activity>
+        <activity android:name=".GalleryActivity" />
+        <activity android:name=".PhotoActivity" />
+        <activity android:name=".VideoActivity"/>
     </application>
 
 </manifest>

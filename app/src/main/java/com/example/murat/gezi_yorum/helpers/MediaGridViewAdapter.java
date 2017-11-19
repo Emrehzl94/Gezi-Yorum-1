@@ -1,6 +1,6 @@
 package com.example.murat.gezi_yorum.helpers;
 
-import android.content.Context;
+import android.app.Activity;
 import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -19,23 +19,37 @@ import java.util.ArrayList;
 
 
 public class MediaGridViewAdapter extends ArrayAdapter<Bitmap> {
-    private Context context;
+    private Activity activity;
     private ArrayList<MediaFile> media;
 
-    public MediaGridViewAdapter(Context context, ArrayList<MediaFile> media) {
-        super(context, -1,MediaFile.getThumbnailArray(media));
-        this.context = context;
+    public MediaGridViewAdapter(Activity activity, ArrayList<MediaFile> media) {
+        super(activity.getApplicationContext(), -1,MediaFile.getThumbnailArray(media));
+        this.activity = activity;
         this.media = media;
+    }
+
+    @Override
+    public int getCount() {
+        return media.size() > 0 ? media.size() : 1;
     }
 
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        ImageView imageView = new ImageView(context);
+        ImageView imageView = new ImageView(activity);
         imageView.setScaleType(ImageView.ScaleType.FIT_XY);
         imageView.setPadding(2,2,2,2);
         imageView.setAdjustViewBounds(true);
-        imageView.setImageBitmap(media.get(position).thumbNail);
+        if(media.size()>0) {
+            imageView.setImageBitmap(media.get(position).thumbNail);
+        }else {
+            imageView.setImageResource(android.R.drawable.ic_menu_gallery);
+        }
         return imageView;
+    }
+    public void itemOnClick(int position){
+        if(media.size()>0){
+            media.get(position).startActivityForView(activity);
+        }
     }
 }

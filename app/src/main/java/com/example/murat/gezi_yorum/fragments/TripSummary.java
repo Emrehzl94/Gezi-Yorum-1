@@ -8,7 +8,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.GridView;
 
-import com.example.murat.gezi_yorum.MediaActivity;
+import com.example.murat.gezi_yorum.GalleryActivity;
 import com.example.murat.gezi_yorum.R;
 import com.example.murat.gezi_yorum.classes.Constants;
 import com.example.murat.gezi_yorum.classes.MediaFile;
@@ -27,11 +27,10 @@ import java.util.ArrayList;
  */
 
 public abstract class TripSummary extends Fragment {
-    protected GridView photo_preview, video_preview, sound_preview, note_peview;
+    protected GridView photo_preview, video_preview, sound_preview;
     protected ArrayList<MediaFile> photos;
     protected ArrayList<MediaFile> videos;
     protected ArrayList<MediaFile> sounds;
-    protected ArrayList<MediaFile> notes;
     protected LocationDbOpenHelper helper;
     protected long trip_id;
 
@@ -57,43 +56,39 @@ public abstract class TripSummary extends Fragment {
         photo_preview = view.findViewById(R.id.photo_preview_grid);
         video_preview = view.findViewById(R.id.video_preview_grid);
         sound_preview = view.findViewById(R.id.sound_preview_grid);
-        note_peview = view.findViewById(R.id.note_preview_grid);
-
-        photos = helper.getMediaFiles(trip_id, Constants.PHOTO,"LIMIT 5");
-        videos = helper.getMediaFiles(trip_id, Constants.VIDEO,"LIMIT 5");
-        sounds = helper.getMediaFiles(trip_id, Constants.SOUNDRECORD,"LIMIT 5");
-        notes = helper.getMediaFiles(trip_id, Constants.NOTE,"LIMIT 5");
 
         photo_preview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                photos.get(position).startActivityForView(getActivity());
+                ((MediaGridViewAdapter)photo_preview.getAdapter()).itemOnClick(position);
             }
         });
         video_preview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-               videos.get(position).startActivityForView(getActivity());
+                ((MediaGridViewAdapter)video_preview.getAdapter()).itemOnClick(position);
             }
         });
         sound_preview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-
+                ((MediaGridViewAdapter)sound_preview.getAdapter()).itemOnClick(position);
             }
         });
-        note_peview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+        new Runnable() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-
+            public void run() {
+                photos = helper.getMediaFiles(trip_id, Constants.PHOTO,"LIMIT 5");
+                videos = helper.getMediaFiles(trip_id, Constants.VIDEO,"LIMIT 5");
+                sounds = helper.getMediaFiles(trip_id, Constants.SOUNDRECORD,"LIMIT 5");
+                setUpPreview();
             }
-        });
-        setUpPreview();
+        }.run();
 
         Button photo_more = view.findViewById(R.id.photo_more);
         Button video_more = view.findViewById(R.id.video_more);
         Button sound_more = view.findViewById(R.id.sound_more);
-        Button note_more = view.findViewById(R.id.note_more);
         photo_more.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -112,18 +107,12 @@ public abstract class TripSummary extends Fragment {
                 startMediaActivity(Constants.SOUNDRECORD);
             }
         });
-        note_more.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startMediaActivity(Constants.NOTE);
-            }
-        });
+
     }
     protected void setUpPreview(){
-        photo_preview.setAdapter(new MediaGridViewAdapter(getContext(), photos));
-        video_preview.setAdapter(new MediaGridViewAdapter(getContext(), videos));
-        sound_preview.setAdapter(new MediaGridViewAdapter(getContext(), sounds));
-        note_peview.setAdapter(new MediaGridViewAdapter(getContext(), notes));
+        photo_preview.setAdapter(new MediaGridViewAdapter(getActivity(), photos));
+        video_preview.setAdapter(new MediaGridViewAdapter(getActivity(), videos));
+        sound_preview.setAdapter(new MediaGridViewAdapter(getActivity(), sounds));
     }
 
     /**
@@ -143,9 +132,6 @@ public abstract class TripSummary extends Fragment {
             case Constants.SOUNDRECORD:
                 relatedArray = sounds;
                 break;
-            case Constants.NOTE:
-                relatedArray = notes;
-                break;
         }
         return relatedArray;
     }
@@ -159,7 +145,7 @@ public abstract class TripSummary extends Fragment {
         }
     }
     private void startMediaActivity(String actionType){
-        Intent intent = new Intent(getContext(),MediaActivity.class);
+        Intent intent = new Intent(getContext(),GalleryActivity.class);
         intent.putExtra(Constants.ACTION,actionType);
         intent.putExtra(Constants.TRIPID,trip_id);
         startActivity(intent);

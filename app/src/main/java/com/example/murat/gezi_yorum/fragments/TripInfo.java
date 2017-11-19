@@ -10,7 +10,7 @@ import android.widget.TextView;
 
 import com.example.murat.gezi_yorum.R;
 import com.example.murat.gezi_yorum.classes.LocationCSVHandler;
-import com.example.murat.gezi_yorum.classes.ZipFileHandler;
+import com.example.murat.gezi_yorum.classes.ZipFileUploader;
 import com.example.murat.gezi_yorum.helpers.LocationDbOpenHelper;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -96,8 +96,7 @@ public class TripInfo extends TripSummary {
             }
         }
     }
-    public void shareTrip(){
-        ZipFileHandler handler = new ZipFileHandler(trip_id,getContext());
-        handler.createAndUploadZipFile();
+    public long getTripId(){
+        return trip_id;
     }
 }

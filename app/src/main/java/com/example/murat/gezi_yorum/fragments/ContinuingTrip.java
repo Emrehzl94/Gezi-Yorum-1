@@ -13,10 +13,12 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.os.Bundle;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,7 +27,6 @@ import android.widget.Button;
 
 import com.example.murat.gezi_yorum.LocationSaveService;
 import com.example.murat.gezi_yorum.MainActivity;
-import com.example.murat.gezi_yorum.NoteTake;
 import com.example.murat.gezi_yorum.R;
 import com.example.murat.gezi_yorum.RecordAudio;
 import com.example.murat.gezi_yorum.classes.Constants;
@@ -53,7 +54,6 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
     private int REQUEST_IMAGE_CAPTURE = 1;
     private int REQUEST_VIDEO_CAPTURE = 2;
     private int REQUEST_SOUND_RECORD= 3;
-    private int REQUEST_TAKE_NOTE= 4;
 
     private Uri lastOutputMedia;
 
@@ -67,7 +67,6 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
     private FloatingActionButton add_photo_fab;
     private FloatingActionButton add_video_fab;
     private FloatingActionButton add_sound_record_fab;
-    private FloatingActionButton add_note_fab;
     private boolean isFabMenuOpen = false;
     public void setTrip_id(long trip_id) {
         this.trip_id = trip_id;
@@ -88,7 +87,6 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         add_photo_fab = view.findViewById(R.id.add_photo);
         add_video_fab = view.findViewById(R.id.add_video);
         add_sound_record_fab = view.findViewById(R.id.add_sound);
-        add_note_fab = view.findViewById(R.id.add_note);
         add_fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -105,8 +103,6 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
                 add_video_fab.animate().translationY(multiplier*tx);
                 tx += add_sound_record_fab.getHeight() +100;
                 add_sound_record_fab.animate().translationY(multiplier*tx);
-                tx += add_note_fab.getHeight() + 100;
-                add_note_fab.animate().translationY(multiplier*tx);
             }
         });
         add_photo_fab.setOnClickListener(new View.OnClickListener() {
@@ -125,12 +121,6 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
             @Override
             public void onClick(View view) {
                 startNewAudioIntent();
-            }
-        });
-        add_note_fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startNewNoteIntent();
             }
         });
 
@@ -189,7 +179,12 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
             locationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, 0, 0, this);
         }
         if(map!=null){
-            drawPathOnMap(map,true);
+            new Runnable() {
+                @Override
+                public void run() {
+                    drawPathOnMap(map,true);
+                }
+            }.run();
         }
     }
 
@@ -251,7 +246,12 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
             }
         });
 
-        drawPathOnMap(map,true);
+        new Runnable() {
+            @Override
+            public void run() {
+                drawPathOnMap(map,true);
+            }
+        }.run();
 
     }
 
@@ -356,17 +356,9 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
     public void startNewAudioIntent() {
         if(!checkExternalStoragePermission()) return;
         Intent audioIntent = new Intent(getContext(), RecordAudio.class);
-        audioIntent.putExtra(MediaStore.EXTRA_OUTPUT, getOutputMediaFile(Constants.SOUNDRECORD));
+        lastOutputMedia = getOutputMediaFile(Constants.SOUNDRECORD);
+        audioIntent.putExtra(MediaStore.EXTRA_OUTPUT, lastOutputMedia);
         startActivityForResult(audioIntent, REQUEST_SOUND_RECORD);
-    }
-
-    /**
-     * start activity NateTake
-     */
-    public void startNewNoteIntent(){
-        if(!checkExternalStoragePermission()) return;
-        Intent noteIntent = new Intent(getContext(), NoteTake.class);
-        startActivityForResult(noteIntent, REQUEST_TAKE_NOTE);
     }
 
     /**
@@ -391,24 +383,14 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
                 type = Constants.VIDEO;
             }else if(requestCode == REQUEST_SOUND_RECORD){
                 type = Constants.SOUNDRECORD;
-            }else if(requestCode == REQUEST_TAKE_NOTE){
-                type = Constants.NOTE;
             }
             @SuppressLint("MissingPermission") Location lastknown = ((LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE)).getLastKnownLocation(LocationManager.GPS_PROVIDER);
             MediaFile mediaFile = new MediaFile(type,lastOutputMedia.getPath(),lastknown.getLatitude(),lastknown.getLongitude(), lastknown.getAltitude(),trip_id,System.currentTimeMillis());
-            mediaFile.generateThumbNail(getActivity());
-            helper.insertMediaFile(mediaFile);
-            ArrayList<MediaFile> relatedArray = getRelatedArray(type);
-            relatedArray.add(0,mediaFile);
-            if(relatedArray.size()>5){
-                relatedArray.remove(5);
-            }
+            new ThumbnailGeneration(mediaFile).run();
             if(requestCode == REQUEST_IMAGE_CAPTURE){
                 startNewPhotoIntent();
             }
         }
-        setUpPreview();
-
     }
     private Uri getOutputMediaFile(String type){
         File storageDir = new File(Environment.getExternalStoragePublicDirectory(getString(R.string.app_name)),MediaFile.getSubdir(type));
@@ -417,5 +399,40 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         }
         long time = System.currentTimeMillis();
         return Uri.parse("file://"+storageDir.getPath() + File.separator + time+"."+MediaFile.getExtension(type));
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        boolean granted = false;
+        switch (requestCode){
+            case 1:
+                if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                    granted = true;
+                }
+                break;
+        }
+        if(!granted){
+            parentActivity.showSnackbarMessage("Depolama izni olmadan medya kaydedilemez", Snackbar.LENGTH_LONG);
+        }
+    }
+
+    private class ThumbnailGeneration implements Runnable{
+        private MediaFile mediaFile;
+
+        ThumbnailGeneration(MediaFile mediaFile){
+            this.mediaFile = mediaFile;
+        }
+        @Override
+        public void run() {
+            mediaFile.generateThumbNail(getActivity());
+            helper.insertMediaFile(mediaFile);
+            ArrayList<MediaFile> relatedArray = getRelatedArray(mediaFile.type);
+            relatedArray.add(0,mediaFile);
+            if(relatedArray.size()>5){
+                relatedArray.remove(5);
+            }
+            setUpPreview();
+        }
     }
 }

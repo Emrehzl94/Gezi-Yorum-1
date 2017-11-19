@@ -10,7 +10,6 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -35,6 +34,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private static final int MAP_PERMISSION_REQUEST = 1;
     private SharedPreferences preferences;
     SharedPreferences.Editor editor;
+    private Fragment currentFragment;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -134,11 +134,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return true;
     }
     public void changeFragment(Fragment fragment){
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.popBackStackImmediate();
-        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.replace(R.id.content_main,fragment);
-        fragmentTransaction.commit();
+        currentFragment =fragment;
+        new Runnable() {
+            @Override
+            public void run() {
+                FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+                fragmentTransaction.replace(R.id.content_main,currentFragment);
+                fragmentTransaction.commit();
+            }
+        }.run();
     }
     public void showSnackbarMessage(String message, int length){
         Snackbar.make(getCurrentFocus(),message,length).show();
@@ -165,7 +169,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
     public void startRecording(long trip_id){
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION},MAP_PERMISSION_REQUEST);
+            ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.ACCESS_FINE_LOCATION},MAP_PERMISSION_REQUEST);
             return;
         }
         Intent intent = new Intent(this,LocationSaveService.class);
@@ -179,18 +183,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        boolean granted = false;
         switch (requestCode){
             case MAP_PERMISSION_REQUEST:
                 if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
-                    granted = true;
+                    startTrip();
+                }else {
+                    showSnackbarMessage("Gezi başlatılamadı.",Snackbar.LENGTH_LONG);
                 }
                 break;
-        }
-        if(granted){
-            startTrip();
-        }else {
-            showSnackbarMessage("Gezi başlatılamadı.",Snackbar.LENGTH_LONG);
         }
     }
 }

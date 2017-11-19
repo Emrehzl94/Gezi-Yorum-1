@@ -16,6 +16,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 
 /**
@@ -58,9 +60,6 @@ public class MediaFile {
                 case Constants.SOUNDRECORD:
                     thumbNail = BitmapFactory.decodeResource(activity.getResources(), android.R.drawable.ic_btn_speak_now);
                     break;
-                case Constants.NOTE:
-                    thumbNail = BitmapFactory.decodeResource(activity.getResources(), android.R.drawable.ic_menu_agenda);
-                    break;
             }
         }
     }
@@ -89,9 +88,6 @@ public class MediaFile {
             case Constants.SOUNDRECORD:
                 color = BitmapDescriptorFactory.HUE_GREEN;
                 break;
-            case Constants.NOTE:
-                color = BitmapDescriptorFactory.HUE_ORANGE;
-                break;
         }
         return color;
     }
@@ -108,9 +104,6 @@ public class MediaFile {
             case Constants.SOUNDRECORD:
                 subdir = "Audio";
                 break;
-            case Constants.NOTE:
-                subdir = "Notes";
-                break;
         }
         return subdir;
     }
@@ -125,9 +118,6 @@ public class MediaFile {
                 break;
             case Constants.SOUNDRECORD:
                 extension = "mp3";
-                break;
-            case Constants.NOTE:
-                extension = "txt";
                 break;
         }
         return extension;
@@ -169,6 +159,9 @@ public class MediaFile {
             case Constants.VIDEO:
                 mimeType = "video/*";
                 break;
+            case Constants.SOUNDRECORD:
+                mimeType = "audio/*";
+                break;
         }
         return mimeType;
     }
@@ -193,9 +186,14 @@ public class MediaFile {
         return stream.toByteArray();
     }
     public byte[] getByteArrayOriginal(){
-        Bitmap original = BitmapFactory.decodeFile(path);
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        original.compress(Bitmap.CompressFormat.JPEG, 100, stream);
-        return stream.toByteArray();
+        byte[] bytes = null;
+        try {
+            RandomAccessFile randomAccessFile = new RandomAccessFile(path,"r");
+            bytes = new byte[(int)randomAccessFile.length()];
+            randomAccessFile.readFully(bytes);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return bytes;
     }
 }

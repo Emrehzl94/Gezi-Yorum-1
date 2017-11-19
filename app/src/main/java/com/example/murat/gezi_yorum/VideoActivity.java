@@ -3,11 +3,11 @@ package com.example.murat.gezi_yorum;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-public class NoteTake extends AppCompatActivity {
+public class VideoActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_note_take);
+        setContentView(R.layout.activity_video);
     }
 }

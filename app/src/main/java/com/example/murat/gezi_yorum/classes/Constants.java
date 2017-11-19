@@ -14,6 +14,5 @@ public class Constants {
     public static final String PHOTO = "photo";
     public static final String VIDEO = "video";
     public static final String SOUNDRECORD = "record";
-    public static final String NOTE = "note";
 
 }
