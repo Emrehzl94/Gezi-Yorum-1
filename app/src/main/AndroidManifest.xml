@@ -32,10 +32,6 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
-        <activity
-            android:name=".RecordAudio"
-            android:label="@string/title_activity_record_audio"
-            android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".GalleryActivity" />
         <activity android:name=".PhotoActivity" />
         <activity android:name=".VideoActivity"/>

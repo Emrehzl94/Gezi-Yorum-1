@@ -20,6 +20,7 @@ import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,7 +29,6 @@ import android.widget.Button;
 import com.example.murat.gezi_yorum.LocationSaveService;
 import com.example.murat.gezi_yorum.MainActivity;
 import com.example.murat.gezi_yorum.R;
-import com.example.murat.gezi_yorum.RecordAudio;
 import com.example.murat.gezi_yorum.classes.Constants;
 import com.example.murat.gezi_yorum.classes.LocationCSVHandler;
 import com.example.murat.gezi_yorum.classes.MediaFile;
@@ -48,8 +48,13 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import java.io.File;
 import java.util.ArrayList;
 
+import cafe.adriel.androidaudiorecorder.AndroidAudioRecorder;
+
 
 public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, LocationSource, LocationListener {
+
+    private static final int EXTERNAl_STORAGE_PERMISSION = 1;
+    private static final int SOUNDRECORD_PERMISSION = 2;
 
     private int REQUEST_IMAGE_CAPTURE = 1;
     private int REQUEST_VIDEO_CAPTURE = 2;
@@ -354,11 +359,14 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
      * starts activity RecordAudio
      */
     public void startNewAudioIntent() {
-        if(!checkExternalStoragePermission()) return;
-        Intent audioIntent = new Intent(getContext(), RecordAudio.class);
+        if(!checkExternalStoragePermission() || !checkSoundRecordPermission()) return;
+        int color = Color.CYAN;
         lastOutputMedia = getOutputMediaFile(Constants.SOUNDRECORD);
-        audioIntent.putExtra(MediaStore.EXTRA_OUTPUT, lastOutputMedia);
-        startActivityForResult(audioIntent, REQUEST_SOUND_RECORD);
+        AndroidAudioRecorder.with(this)
+                .setFilePath(lastOutputMedia.getPath())
+                .setColor(color)
+                .setRequestCode(REQUEST_SOUND_RECORD)
+                .recordFromFragment();
     }
 
     /**
@@ -367,7 +375,15 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
      */
     private boolean checkExternalStoragePermission(){
         if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, EXTERNAl_STORAGE_PERMISSION);
+            return false;
+        }
+        return true;
+    }
+
+    private boolean checkSoundRecordPermission(){
+        if(ContextCompat.checkSelfPermission(getContext(), Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED){
+            requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, SOUNDRECORD_PERMISSION);
             return false;
         }
         return true;
@@ -404,16 +420,17 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        boolean granted = false;
         switch (requestCode){
-            case 1:
+            case EXTERNAl_STORAGE_PERMISSION:
                 if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
-                    granted = true;
+                    parentActivity.showSnackbarMessage("Depolama izni olmadan medya kaydedilemez", Snackbar.LENGTH_LONG);
                 }
                 break;
-        }
-        if(!granted){
-            parentActivity.showSnackbarMessage("Depolama izni olmadan medya kaydedilemez", Snackbar.LENGTH_LONG);
+            case SOUNDRECORD_PERMISSION:
+                if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                    parentActivity.showSnackbarMessage("Ses kayıt izni olmadan ses kaydı yapılamaz.", Snackbar.LENGTH_LONG);
+                }
+                break;
         }
     }
 
