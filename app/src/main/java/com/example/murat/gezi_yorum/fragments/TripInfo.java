@@ -68,34 +68,6 @@ public class TripInfo extends TripSummary {
         setUpView(view);
         return view;
     }
-    public void drawPathOnMap(GoogleMap map ,boolean move) {
-        if (map != null) {
-            this.map = map;
-            map.clear();
-            points = new LocationCSVHandler(trip_id,getContext()).getLocations();
-
-            PolylineOptions options = new PolylineOptions();
-            if (!points.isEmpty()) {
-                options.color(Color.RED);
-                options.width(15);
-                options.visible(true);
-                options.addAll(points);
-                LatLngBounds.Builder builder = new LatLngBounds.Builder();
-                for (LatLng point : points) {
-                    builder.include(point);
-                }
-                int routePadding = 200;
-                CameraUpdate update = CameraUpdateFactory.newLatLngBounds(builder.build(), routePadding);
-                if (move) {
-                    map.moveCamera(update);
-                } else {
-                    map.animateCamera(update);
-                }
-                addedPolyLine = map.addPolyline(options);
-                addMarkersToMap();
-            }
-        }
-    }
     public long getTripId(){
         return trip_id;
     }

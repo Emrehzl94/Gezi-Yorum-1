@@ -26,7 +26,7 @@
             android:label="@string/title_activity_main"
             android:theme="@style/AppTheme.NoActionBar" />
 
-        <service android:name=".LocationSaveService" />
+        <service android:name=".LocationSaveService"/>
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"

@@ -30,10 +30,8 @@ import com.example.murat.gezi_yorum.LocationSaveService;
 import com.example.murat.gezi_yorum.MainActivity;
 import com.example.murat.gezi_yorum.R;
 import com.example.murat.gezi_yorum.classes.Constants;
-import com.example.murat.gezi_yorum.classes.LocationCSVHandler;
 import com.example.murat.gezi_yorum.classes.MediaFile;
 import com.example.murat.gezi_yorum.helpers.LocationDbOpenHelper;
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.LocationSource;
@@ -41,19 +39,16 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.io.File;
-import java.util.ArrayList;
 
 import cafe.adriel.androidaudiorecorder.AndroidAudioRecorder;
 
 
 public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, LocationSource, LocationListener {
 
-    private static final int EXTERNAl_STORAGE_PERMISSION = 1;
+    private static final int EXTERNAL_STORAGE_PERMISSION = 1;
     private static final int SOUNDRECORD_PERMISSION = 2;
 
     private int REQUEST_IMAGE_CAPTURE = 1;
@@ -82,11 +77,16 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.continuing_trip_fragment, container, false);
 
-        helper = new LocationDbOpenHelper(getContext());
-        locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-        getActivity().setTitle("Devam eden");
-        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+        new Runnable() {
+            @Override
+            public void run() {
+                helper = new LocationDbOpenHelper(getContext());
+                locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+                getActivity().setTitle("Devam eden");
+                SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+                mapFragment.getMapAsync(ContinuingTrip.this);
+            }
+        }.run();
 
         FloatingActionButton add_fab = view.findViewById(R.id.add_media);
         add_photo_fab = view.findViewById(R.id.add_photo);
@@ -217,19 +217,18 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
             public boolean onMarkerClick(Marker marker) {
                 if(marker.getZIndex() != 1){
                     if(lastClickedMarker!=null){
-                        lastClickedMarker.setIcon(BitmapDescriptorFactory.defaultMarker(helper.getMediaFile(Long.parseLong(lastClickedMarker.getTitle())).getColorForMap()));
+                        lastClickedMarker.setIcon(BitmapDescriptorFactory.defaultMarker(markers.get(marker.getSnippet()).getColorForMap()));
                         lastClickedMarker.setZIndex(0);
                     }
-                    marker.setIcon(BitmapDescriptorFactory.fromBitmap(helper.getMediaFile(Long.parseLong(marker.getTitle())).thumbNail));
+                    marker.setIcon(BitmapDescriptorFactory.fromBitmap(markers.get(marker.getSnippet()).thumbNail));
                     marker.setZIndex(1);
                     lastClickedMarker = marker;
                 }else {
                     helper.getMediaFile(Long.parseLong(marker.getTitle())).startActivityForView(getActivity());
+                    marker.setIcon(BitmapDescriptorFactory.defaultMarker(markers.get(marker.getSnippet()).getColorForMap()));
                     marker.setZIndex(0);
                     lastClickedMarker = null;
                 }
-                behavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-                behavior.setHideable(false);
                 map.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()));
                 return true;
             }
@@ -258,39 +257,6 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
             }
         }.run();
 
-    }
-
-    /**
-     * Draws path on map
-     * @param map Google Map
-     * @param move Move if true, else animate
-     */
-    public void drawPathOnMap(GoogleMap map ,boolean move) {
-        if (map != null) {
-            map.clear();
-            points = new LocationCSVHandler(trip_id,getContext()).getLocations();
-
-            PolylineOptions options = new PolylineOptions();
-            if (!points.isEmpty()) {
-                options.color(Color.RED);
-                options.width(15);
-                options.visible(true);
-                options.addAll(points);
-                LatLngBounds.Builder builder = new LatLngBounds.Builder();
-                for (LatLng point : points) {
-                    builder.include(point);
-                }
-                int routePadding = 200;
-                CameraUpdate update = CameraUpdateFactory.newLatLngBounds(builder.build(), routePadding);
-                if (move) {
-                    map.moveCamera(update);
-                } else {
-                    map.animateCamera(update);
-                }
-                addedPolyLine = map.addPolyline(options);
-                addMarkersToMap();
-            }
-        }
     }
 
     /**
@@ -371,11 +337,11 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
 
     /**
      * Check for external storage permission. If permission is not granted request permission
-     * @return
+     * @return true if permission granted
      */
     private boolean checkExternalStoragePermission(){
         if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, EXTERNAl_STORAGE_PERMISSION);
+            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, EXTERNAL_STORAGE_PERMISSION);
             return false;
         }
         return true;
@@ -421,14 +387,16 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode){
-            case EXTERNAl_STORAGE_PERMISSION:
-                if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
+            case EXTERNAL_STORAGE_PERMISSION:
+                if(grantResults[0] != PackageManager.PERMISSION_GRANTED){
                     parentActivity.showSnackbarMessage("Depolama izni olmadan medya kaydedilemez", Snackbar.LENGTH_LONG);
                 }
                 break;
             case SOUNDRECORD_PERMISSION:
-                if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                if(grantResults[0] != PackageManager.PERMISSION_GRANTED){
                     parentActivity.showSnackbarMessage("Ses kayıt izni olmadan ses kaydı yapılamaz.", Snackbar.LENGTH_LONG);
+                }else {
+                    startNewAudioIntent();
                 }
                 break;
         }
@@ -443,12 +411,8 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         @Override
         public void run() {
             mediaFile.generateThumbNail(getActivity());
+            mediaFiles.add(0,mediaFile);
             helper.insertMediaFile(mediaFile);
-            ArrayList<MediaFile> relatedArray = getRelatedArray(mediaFile.type);
-            relatedArray.add(0,mediaFile);
-            if(relatedArray.size()>5){
-                relatedArray.remove(5);
-            }
             setUpPreview();
         }
     }

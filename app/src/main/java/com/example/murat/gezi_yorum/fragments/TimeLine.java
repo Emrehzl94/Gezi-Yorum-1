@@ -9,7 +9,6 @@ import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.RelativeLayout;
 
 import com.example.murat.gezi_yorum.classes.ZipFileUploader;
 import com.example.murat.gezi_yorum.helpers.LocationDbOpenHelper;
@@ -33,8 +32,7 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
 
     private TripPagerAdapter pagerAdapter;
     private LocationDbOpenHelper helper;
-    private FloatingActionButton sharetrip;
-
+    private FloatingActionButton shareTrip;
     private int currentPosition;
 
     @Override
@@ -42,30 +40,32 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
         super.onViewCreated(view, savedInstanceState);
 
         getActivity().setTitle(getString(R.string.timeline));
-        final SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
 
-        sharetrip = view.findViewById(R.id.share_trip);
-        sharetrip.setOnClickListener(new View.OnClickListener() {
+        shareTrip = view.findViewById(R.id.share_trip);
+        shareTrip.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 long trip_id = pagerAdapter.getFragment(currentPosition).getTripId();
                 new ZipFileUploader(trip_id,getContext()).execute();
             }
         });
-        helper = new LocationDbOpenHelper(getContext());
         viewPager = view.findViewById(R.id.pager);
-        LocationDbOpenHelper helper = new LocationDbOpenHelper(getContext());
-        ArrayList<Integer> trip_ids = helper.getTripsIDs();
-        pagerAdapter = new TripPagerAdapter(getChildFragmentManager(), trip_ids);
         new Runnable() {
             @Override
             public void run() {
+                SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+                mapFragment.getMapAsync(TimeLine.this);
+                helper = new LocationDbOpenHelper(getContext());
+                ArrayList<Integer> trip_ids = helper.getTripsIDs();
+                if(trip_ids.size() == 0){
+                    shareTrip.setEnabled(false);
+                }
+                pagerAdapter = new TripPagerAdapter(getChildFragmentManager(), trip_ids);
                 viewPager.setAdapter(pagerAdapter);
                 viewPager.setCurrentItem(pagerAdapter.getCount());
                 currentPosition = pagerAdapter.getCount()-1;
                 if(pagerAdapter.getCount()==0){
-                    sharetrip.setVisibility(View.INVISIBLE);
+                    shareTrip.setVisibility(View.INVISIBLE);
                 }
                 viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
                     @Override
@@ -92,6 +92,8 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
 
                     }
                 });
+                viewPager.setCurrentItem(pagerAdapter.getCount());
+                currentPosition = pagerAdapter.getCount()-1;
             }
         }.run();
 
@@ -126,10 +128,9 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
                 }else {
                     helper.getMediaFile(Long.parseLong(marker.getTitle())).startActivityForView(getActivity());
                     marker.setZIndex(0);
+                    marker.setIcon(BitmapDescriptorFactory.defaultMarker(helper.getMediaFile(Long.parseLong(marker.getTitle())).getColorForMap()));
                     lastClickedMarker = null;
                 }
-                behavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-                behavior.setHideable(false);
                 map.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()));
                 return true;
             }

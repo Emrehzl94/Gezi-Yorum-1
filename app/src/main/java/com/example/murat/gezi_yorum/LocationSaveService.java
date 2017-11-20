@@ -1,17 +1,21 @@
 package com.example.murat.gezi_yorum;
 
 import android.Manifest;
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Parcel;
 import android.support.v4.app.ActivityCompat;
 import android.widget.Toast;
 
@@ -36,26 +40,39 @@ public class LocationSaveService extends Service implements LocationListener {
     LocationManager locationManager;
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        super.onStartCommand(intent,flags,startId);
+        Intent activityIntent = new Intent(this, MainActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0,
+                activityIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+
+        Notification not = new Notification.Builder(this).
+                setContentTitle(getText(R.string.app_name)).
+                setContentText("Konum takibi açık").
+                setSmallIcon(R.mipmap.ic_launcher).
+                setContentIntent(pendingIntent).build();
+        startForeground(1, not);
+
         instance = this;
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         long trip_id = intent.getExtras().getLong("trip_id");
         csvHandler = new LocationCSVHandler(trip_id,getApplicationContext());
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(getApplicationContext(), "Service cannot started. Location permission is not granted.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Service cannot started. Location permission is not granted.", Toast.LENGTH_LONG).show();
             this.stopSelf();
         }else {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME, MIN_DISTANCE, this);
-            Toast.makeText(getApplicationContext(), "Service started", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Service started", Toast.LENGTH_LONG).show();
         }
         return START_STICKY;
     }
 
     @Override
     public void onDestroy() {
-        super.onDestroy();
         locationManager.removeUpdates(this);
-        Toast.makeText(getApplicationContext(),"Service stopped",Toast.LENGTH_LONG).show();
+        Toast.makeText(this,"Service stopped",Toast.LENGTH_LONG).show();
         instance = null;
+        super.onDestroy();
     }
     @Override
     public IBinder onBind(Intent intent) {
@@ -64,11 +81,8 @@ public class LocationSaveService extends Service implements LocationListener {
 
     @Override
     public void onLocationChanged(Location location) {
-        Double latitude = location.getLatitude();
-        Double longitude = location.getLongitude();
-        Double altitude = location.getAltitude();
-        csvHandler.saveLocation(new mLocation(latitude,longitude,altitude,System.currentTimeMillis()));
-        Toast.makeText(getApplicationContext(),"Konum kaydedildi.",Toast.LENGTH_SHORT).show();
+        csvHandler.saveLocation(new mLocation(location));
+        Toast.makeText(this,"Konum kaydedildi.",Toast.LENGTH_SHORT).show();
     }
 
     @Override

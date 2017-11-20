@@ -5,15 +5,10 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.graphics.Bitmap;
 import android.support.annotation.Nullable;
 
 import com.example.murat.gezi_yorum.classes.MediaFile;
-import com.example.murat.gezi_yorum.classes.mLocation;
-import com.google.android.gms.maps.model.LatLng;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -136,16 +131,15 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
         values.put(COLUMN_DATE,mediaFile.location.getTime());
         values.put(COLUMN_THUMBNAIL,byteArray);
         SQLiteDatabase database = getWritableDatabase();
-        Long id = database.insert(TABLE_MEDIA, null, values);
-        mediaFile.id = id;
+        mediaFile.id = database.insert(TABLE_MEDIA, null, values);
     }
 
     /**
      * Returns media files taken in trip
-     * @param trip_id
-     * @param type
-     * @param additionalQuery
-     * @return
+     * @param trip_id Trip id
+     * @param type Media Type
+     * @param additionalQuery additional SQL query
+     * @return mediaFiles
      */
     public ArrayList<MediaFile> getMediaFiles(long trip_id, @Nullable String type ,@Nullable String additionalQuery) {
         SQLiteDatabase db = getReadableDatabase();
@@ -153,7 +147,7 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
         if(type != null){
             query+=" AND "+ COLUMN_TYPE + "='" +type+"'";
         }
-        query += " ORDER BY "+ COLUMN_DATE + " DESC ";
+        query += " ORDER BY "+ COLUMN_DATE + " DESC, "+COLUMN_LATITUDE +","+COLUMN_LONGTITUDE;
         if (additionalQuery != null){
             query += additionalQuery;
         }

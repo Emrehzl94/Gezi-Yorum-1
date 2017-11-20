@@ -10,6 +10,7 @@ import android.provider.MediaStore;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.json.JSONException;
@@ -69,10 +70,11 @@ public class MediaFile {
      * @param map GoogleMap
      */
 
-    public void addToMap(GoogleMap map){
-        map.addMarker(new MarkerOptions().position(location.convertLatLng())
+    public Marker addToMap(GoogleMap map){
+        return map.addMarker(new MarkerOptions().position(location.convertLatLng())
                 .icon(BitmapDescriptorFactory.defaultMarker(getColorForMap()))
                 .title(String.valueOf(id))
+                .snippet(path)
         );
     }
 
@@ -166,7 +168,7 @@ public class MediaFile {
         return mimeType;
     }
 
-    public JSONObject toJSONObject(){
+    JSONObject toJSONObject(){
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("path",path);
@@ -185,15 +187,5 @@ public class MediaFile {
         thumbNail.compress(Bitmap.CompressFormat.JPEG, 100, stream);
         return stream.toByteArray();
     }
-    public byte[] getByteArrayOriginal(){
-        byte[] bytes = null;
-        try {
-            RandomAccessFile randomAccessFile = new RandomAccessFile(path,"r");
-            bytes = new byte[(int)randomAccessFile.length()];
-            randomAccessFile.readFully(bytes);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return bytes;
-    }
+
 }
