@@ -10,7 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.example.murat.gezi_yorum.classes.ZipFileUploader;
+import com.example.murat.gezi_yorum.Entity.ZipFileUploader;
 import com.example.murat.gezi_yorum.helpers.LocationDbOpenHelper;
 import com.example.murat.gezi_yorum.helpers.TripPagerAdapter;
 import com.example.murat.gezi_yorum.R;
@@ -50,52 +50,42 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
             }
         });
         viewPager = view.findViewById(R.id.pager);
-        new Runnable() {
+        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+        mapFragment.getMapAsync(TimeLine.this);
+        helper = new LocationDbOpenHelper(getContext());
+        ArrayList<Integer> trip_ids = helper.getTripsIDs();
+        if(trip_ids.size() == 0){
+            shareTrip.setEnabled(false);
+        }
+        pagerAdapter = new TripPagerAdapter(getChildFragmentManager(), trip_ids);
+        viewPager.setAdapter(pagerAdapter);
+        viewPager.setCurrentItem(pagerAdapter.getCount());
+        currentPosition = pagerAdapter.getCount()-1;
+        if(pagerAdapter.getCount()==0){
+            shareTrip.setVisibility(View.INVISIBLE);
+        }
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
-            public void run() {
-                SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
-                mapFragment.getMapAsync(TimeLine.this);
-                helper = new LocationDbOpenHelper(getContext());
-                ArrayList<Integer> trip_ids = helper.getTripsIDs();
-                if(trip_ids.size() == 0){
-                    shareTrip.setEnabled(false);
-                }
-                pagerAdapter = new TripPagerAdapter(getChildFragmentManager(), trip_ids);
-                viewPager.setAdapter(pagerAdapter);
-                viewPager.setCurrentItem(pagerAdapter.getCount());
-                currentPosition = pagerAdapter.getCount()-1;
-                if(pagerAdapter.getCount()==0){
-                    shareTrip.setVisibility(View.INVISIBLE);
-                }
-                viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-                    @Override
-                    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
-                    }
-
-                    @Override
-                    public void onPageSelected(int position) {
-                        if(map != null){
-                            lastClickedMarker = null;
-                            currentPosition = position;
-                            new Runnable() {
-                                @Override
-                                public void run() {
-                                    pagerAdapter.getFragment(currentPosition).drawPathOnMap(map,false);
-                                }
-                            }.run();
-                        }
-                    }
-
-                    @Override
-                    public void onPageScrollStateChanged(int state) {
-
-                    }
-                });
-                viewPager.setCurrentItem(pagerAdapter.getCount());
-                currentPosition = pagerAdapter.getCount()-1;
             }
-        }.run();
+
+            @Override
+            public void onPageSelected(int position) {
+                if(map != null){
+                    lastClickedMarker = null;
+                    currentPosition = position;
+                    pagerAdapter.getFragment(currentPosition).drawPathOnMap(map,false);
+                }
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
+        viewPager.setCurrentItem(pagerAdapter.getCount());
+        currentPosition = pagerAdapter.getCount()-1;
 
         View bottomsheet = view.findViewById(R.id.bottomsheet);
         behavior = BottomSheetBehavior.from(bottomsheet);
@@ -152,12 +142,7 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
             }
         });
         if(pagerAdapter.getCount()>0) {
-            new Runnable() {
-                @Override
-                public void run() {
-                    pagerAdapter.getFragment(pagerAdapter.getCount()-1).drawPathOnMap(map,true);
-                }
-            }.run();
+            pagerAdapter.getFragment(pagerAdapter.getCount()-1).drawPathOnMap(map,true);
         }
     }
 
@@ -167,5 +152,5 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
     public void setPrevPage(){
         viewPager.setCurrentItem(viewPager.getCurrentItem()-1);
     }
-
+    public GoogleMap getMap() {return map;}
 }

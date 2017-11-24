@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.support.annotation.Nullable;
 
-import com.example.murat.gezi_yorum.classes.MediaFile;
+import com.example.murat.gezi_yorum.Entity.MediaFile;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;

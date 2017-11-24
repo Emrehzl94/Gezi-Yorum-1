@@ -1,4 +1,4 @@
-package com.example.murat.gezi_yorum.classes;
+package com.example.murat.gezi_yorum.Entity;
 
 import android.location.Location;
 

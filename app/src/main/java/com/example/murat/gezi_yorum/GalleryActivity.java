@@ -6,8 +6,8 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
 
-import com.example.murat.gezi_yorum.classes.Constants;
-import com.example.murat.gezi_yorum.classes.MediaFile;
+import com.example.murat.gezi_yorum.Entity.Constants;
+import com.example.murat.gezi_yorum.Entity.MediaFile;
 import com.example.murat.gezi_yorum.helpers.LocationDbOpenHelper;
 import com.example.murat.gezi_yorum.helpers.MediaGridViewAdapter;
 
@@ -19,7 +19,7 @@ public class GalleryActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.media_watch_activity);
-        final GridView mediaView = (GridView) findViewById(R.id.media_view);
+        final GridView mediaView = findViewById(R.id.media_view);
 
         Bundle extras = getIntent().getExtras();
         String action = extras.getString(Constants.ACTION);

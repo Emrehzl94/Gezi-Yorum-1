@@ -1,10 +1,9 @@
-package com.example.murat.gezi_yorum.classes;
+package com.example.murat.gezi_yorum.Entity;
 
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Environment;
-import android.util.Log;
 
 import com.example.murat.gezi_yorum.R;
 import com.example.murat.gezi_yorum.helpers.LocationDbOpenHelper;

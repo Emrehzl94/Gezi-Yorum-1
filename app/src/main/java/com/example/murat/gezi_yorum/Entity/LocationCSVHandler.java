@@ -1,4 +1,4 @@
-package com.example.murat.gezi_yorum.classes;
+package com.example.murat.gezi_yorum.Entity;
 
 import android.content.Context;
 
@@ -25,7 +25,7 @@ public class LocationCSVHandler {
             create();
         }
     }
-    public static File getRouteFilePath(long trip_id, Context context){
+    static File getRouteFilePath(long trip_id, Context context){
         return new File(context.getFilesDir() + "path_"+trip_id+".csv");
     }
     private void create(){

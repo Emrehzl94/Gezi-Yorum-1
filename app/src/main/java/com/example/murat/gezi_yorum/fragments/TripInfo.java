@@ -1,6 +1,5 @@
 package com.example.murat.gezi_yorum.fragments;
 
-import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,15 +8,8 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.example.murat.gezi_yorum.R;
-import com.example.murat.gezi_yorum.classes.LocationCSVHandler;
-import com.example.murat.gezi_yorum.classes.ZipFileUploader;
 import com.example.murat.gezi_yorum.helpers.LocationDbOpenHelper;
-import com.google.android.gms.maps.CameraUpdate;
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.HashMap;
 
@@ -70,5 +62,8 @@ public class TripInfo extends TripSummary {
     }
     public long getTripId(){
         return trip_id;
+    }
+    GoogleMap getMap(){
+        return parentFragment.getMap();
     }
 }

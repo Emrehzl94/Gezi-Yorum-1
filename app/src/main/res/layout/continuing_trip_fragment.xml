@@ -47,7 +47,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <android.support.v4.widget.NestedScrollView
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/bottomsheet"
@@ -58,15 +58,13 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
-            <include android:id="@+id/medias" layout="@layout/media_layout"
-                android:layout_height="wrap_content"
-                android:layout_width="wrap_content"/>
+
 
             <LinearLayout
+                android:id="@+id/control"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_centerHorizontal="true"
-                android:layout_below="@id/medias">
+                android:layout_centerHorizontal="true">
                 <Button
                     android:id="@+id/pause_continue"
                     android:layout_width="wrap_content"
@@ -81,7 +79,11 @@
                     android:text="Stop"
                     />
             </LinearLayout>
+            <include android:id="@+id/medias" layout="@layout/media_layout"
+                android:layout_height="match_parent"
+                android:layout_width="match_parent"
+                android:layout_below="@id/control"/>
         </RelativeLayout>
-    </android.support.v4.widget.NestedScrollView>
+    </RelativeLayout>
 
 </android.support.design.widget.CoordinatorLayout>

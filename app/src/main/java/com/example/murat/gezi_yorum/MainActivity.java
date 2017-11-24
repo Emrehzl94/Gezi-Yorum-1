@@ -20,7 +20,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.example.murat.gezi_yorum.classes.Constants;
+import com.example.murat.gezi_yorum.Entity.Constants;
 import com.example.murat.gezi_yorum.fragments.ContinuingTrip;
 import com.example.murat.gezi_yorum.fragments.Home;
 import com.example.murat.gezi_yorum.fragments.Search;
@@ -43,16 +43,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         preferences = getPreferences(Context.MODE_PRIVATE);
         editor = preferences.edit();
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
         changeFragment(new Home());
@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
@@ -129,20 +129,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             changeFragment(fragment);
         }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
     public void changeFragment(Fragment fragment){
         currentFragment =fragment;
-        new Runnable() {
+        new Thread(new Runnable() {
             @Override
             public void run() {
                 FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
                 fragmentTransaction.replace(R.id.content_main,currentFragment);
                 fragmentTransaction.commit();
             }
-        }.run();
+        }).start();
     }
     public void showSnackbarMessage(String message, int length){
         Snackbar.make(getCurrentFocus(),message,length).show();

@@ -9,7 +9,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 
-import com.example.murat.gezi_yorum.classes.MediaFile;
+import com.example.murat.gezi_yorum.Entity.MediaFile;
 
 import java.util.ArrayList;
 

@@ -2,6 +2,7 @@ package com.example.murat.gezi_yorum.fragments;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.Handler;
 import android.os.StrictMode;
 import android.support.v4.app.Fragment;
 import android.view.View;
@@ -10,9 +11,9 @@ import android.widget.GridView;
 
 import com.example.murat.gezi_yorum.GalleryActivity;
 import com.example.murat.gezi_yorum.R;
-import com.example.murat.gezi_yorum.classes.Constants;
-import com.example.murat.gezi_yorum.classes.LocationCSVHandler;
-import com.example.murat.gezi_yorum.classes.MediaFile;
+import com.example.murat.gezi_yorum.Entity.Constants;
+import com.example.murat.gezi_yorum.Entity.LocationCSVHandler;
+import com.example.murat.gezi_yorum.Entity.MediaFile;
 import com.example.murat.gezi_yorum.helpers.LocationDbOpenHelper;
 import com.example.murat.gezi_yorum.helpers.MediaGridViewAdapter;
 import com.google.android.gms.maps.CameraUpdate;
@@ -20,7 +21,6 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
@@ -44,6 +44,7 @@ public abstract class TripSummary extends Fragment {
     protected Polyline addedPolyLine;
     protected ArrayList<LatLng> points;
 
+    abstract GoogleMap getMap();
     /**
      * Seting up preview for media
      * @param view viev element
@@ -60,19 +61,27 @@ public abstract class TripSummary extends Fragment {
             e.printStackTrace();
         }
         preview = view.findViewById(R.id.preview);
-        new Runnable() {
+        Handler UIHandler = new Handler();
+        UIHandler.post(new Runnable() {
             @Override
             public void run() {
-               mediaFiles = helper.getMediaFiles(trip_id,null,null);
-               preview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                   @Override
-                   public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                       mediaFiles.get(position).startActivityForView(getActivity());
-                   }
-               });
-               setUpPreview();
+                mediaFiles = helper.getMediaFiles(trip_id,null,null);
+                preview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+                        MediaFile file = mediaFiles.size()>position ?  mediaFiles.get(position) : null;
+                        if(file != null)
+                            file.startActivityForView(getActivity());
+                    }
+                });
+                setUpPreview();
+                if(map != null){
+                    drawPathOnMap(map,true);
+                }else {
+                    drawPathOnMap(getMap(),true);
+                }
             }
-        }.run();
+        });
 
 
     }
@@ -86,7 +95,7 @@ public abstract class TripSummary extends Fragment {
      */
     public void addMarkersToMap(GoogleMap map){
         markers = new HashMap<>();
-        if(mediaFiles.size() == 0) return;
+        if(mediaFiles ==null || mediaFiles.size() == 0) return;
         MediaFile previous = mediaFiles.get(0);
         markers.put(previous.addToMap(map).getSnippet(),previous);
         for (MediaFile file : mediaFiles){

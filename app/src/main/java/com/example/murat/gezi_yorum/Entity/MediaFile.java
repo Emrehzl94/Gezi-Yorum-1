@@ -1,4 +1,4 @@
-package com.example.murat.gezi_yorum.classes;
+package com.example.murat.gezi_yorum.Entity;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -17,8 +17,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.util.ArrayList;
 
 /**

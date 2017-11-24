@@ -1,4 +1,4 @@
-package com.example.murat.gezi_yorum.classes;
+package com.example.murat.gezi_yorum.Entity;
 
 /**
  * Constants used frequently in application

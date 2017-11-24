@@ -29,8 +29,8 @@ import android.widget.Button;
 import com.example.murat.gezi_yorum.LocationSaveService;
 import com.example.murat.gezi_yorum.MainActivity;
 import com.example.murat.gezi_yorum.R;
-import com.example.murat.gezi_yorum.classes.Constants;
-import com.example.murat.gezi_yorum.classes.MediaFile;
+import com.example.murat.gezi_yorum.Entity.Constants;
+import com.example.murat.gezi_yorum.Entity.MediaFile;
 import com.example.murat.gezi_yorum.helpers.LocationDbOpenHelper;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -72,21 +72,16 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         this.trip_id = trip_id;
     }
 
+    GoogleMap getMap(){
+        return map;
+    }
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.continuing_trip_fragment, container, false);
-
-        new Runnable() {
-            @Override
-            public void run() {
-                helper = new LocationDbOpenHelper(getContext());
-                locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-                getActivity().setTitle("Devam eden");
-                SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
-                mapFragment.getMapAsync(ContinuingTrip.this);
-            }
-        }.run();
+        getActivity().setTitle("Devam eden");
+        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+        mapFragment.getMapAsync(ContinuingTrip.this);
 
         FloatingActionButton add_fab = view.findViewById(R.id.add_media);
         add_photo_fab = view.findViewById(R.id.add_photo);
@@ -171,9 +166,8 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         behavior.setState(BottomSheetBehavior.STATE_DRAGGING);
         behavior.setHideable(false);
         behavior.setPeekHeight(300);
-
+        helper = new LocationDbOpenHelper(getContext());
         setUpView(view);
-
         return view;
     }
 
@@ -181,15 +175,11 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
     public void onResume() {
         super.onResume();
         if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
             locationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, 0, 0, this);
         }
         if(map!=null){
-            new Runnable() {
-                @Override
-                public void run() {
-                    drawPathOnMap(map,true);
-                }
-            }.run();
+            drawPathOnMap(map,true);
         }
     }
 
@@ -249,13 +239,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
                 }
             }
         });
-
-        new Runnable() {
-            @Override
-            public void run() {
-                drawPathOnMap(map,true);
-            }
-        }.run();
+        drawPathOnMap(map,true);
 
     }
 
