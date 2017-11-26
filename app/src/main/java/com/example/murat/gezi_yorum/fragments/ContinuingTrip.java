@@ -12,6 +12,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Environment;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -352,7 +353,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
             }
             @SuppressLint("MissingPermission") Location lastknown = ((LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE)).getLastKnownLocation(LocationManager.GPS_PROVIDER);
             MediaFile mediaFile = new MediaFile(type,lastOutputMedia.getPath(),lastknown.getLatitude(),lastknown.getLongitude(), lastknown.getAltitude(),trip_id,System.currentTimeMillis());
-            new ThumbnailGeneration(mediaFile).run();
+            new Handler().post(new ThumbnailGeneration(mediaFile));
             if(requestCode == REQUEST_IMAGE_CAPTURE){
                 startNewPhotoIntent();
             }
@@ -386,7 +387,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         }
     }
 
-    private class ThumbnailGeneration implements Runnable{
+    public class ThumbnailGeneration implements Runnable{
         private MediaFile mediaFile;
 
         ThumbnailGeneration(MediaFile mediaFile){

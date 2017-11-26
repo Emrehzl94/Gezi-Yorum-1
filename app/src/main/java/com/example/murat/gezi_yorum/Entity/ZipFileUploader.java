@@ -4,20 +4,27 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.util.Log;
 
 import com.example.murat.gezi_yorum.R;
 import com.example.murat.gezi_yorum.helpers.LocationDbOpenHelper;
+import com.example.murat.gezi_yorum.helpers.MultipartUtility;
 
 import org.json.JSONArray;
 
 import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Scanner;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -32,6 +39,12 @@ public class ZipFileUploader extends AsyncTask<String,Integer,String> {
     private LocationDbOpenHelper helper;
     private String progressMessage = "";
     private ProgressDialog progressDialog;
+
+    String attachmentName = "zipfile";
+    String attachmentFileName = "zipfile.zip";
+    String crlf = "\r\n";
+    String twoHyphens = "--";
+    String boundary =  "*****";
 
     public ZipFileUploader(long trip_id, Context context){
         this.trip_id = trip_id;
@@ -49,6 +62,24 @@ public class ZipFileUploader extends AsyncTask<String,Integer,String> {
     }
 
     private void createAndUploadZipFile(){
+        create();
+        upload();
+    }
+    private void upload(){
+        progressMessage = "Dosya yükleniyor...";
+        String URL = "http://163.172.176.169:8080/Geziyorum/uploadFile";
+         //String URL = "http://trendbul.yavuzmacit.com/fileupload.php";
+        try {
+            MultipartUtility multipart = new MultipartUtility(URL,"UTF-8");
+            multipart.addFormField("name",zipFile.getName());
+            multipart.addFilePart("file",zipFile);
+            String response = multipart.finish();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+    private void create(){
         try {
             if(!zipFile.exists()){
                 zipFile.createNewFile();
@@ -82,7 +113,7 @@ public class ZipFileUploader extends AsyncTask<String,Integer,String> {
             e.printStackTrace();
         }
     }
-    private void writeByteArrayOriginal(File file, ZipOutputStream zipOutputStream){
+    private void writeByteArrayOriginal(File file, OutputStream zipOutputStream){
         ByteArrayOutputStream ous = null;
         InputStream ios = null;
         try {

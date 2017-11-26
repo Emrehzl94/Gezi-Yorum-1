@@ -4,15 +4,11 @@
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password</string>
-    <string name="action_sign_in">Sign in or register</string>
-    <string name="action_sign_in_short">Sign in</string>
+    <string name="action_sign_in">Sign in</string>
     <string name="error_invalid_email">This email address is invalid</string>
     <string name="error_invalid_password">This password is too short</string>
     <string name="error_incorrect_password">This password is incorrect</string>
     <string name="error_field_required">This field is required</string>
-    <string name="permission_rationale" translatable="false">"Contacts permissions are needed for providing email
-        completions."
-    </string>
     <string name="title_activity_main">Home</string>
 
     <string name="navigation_drawer_open" translatable="false">Open navigation drawer</string>
@@ -24,10 +20,15 @@
     <string name="timeline">Time Line</string>
     <string name="header">Header</string>
     <string name="title_activity_maps">Map</string>
-    <string name="title_activity_start_trip">StartTripActivity</string>
+    <string name="title_activity_start_trip">Start Trip</string>
     <string name="trip">Trip</string>
     <string name="photo">Photo</string>
     <string name="video" translatable="false">Video</string>
     <string name="sound_record">Sound Record</string>
-    <string name="title_activity_record_audio">RecordAudio</string>
+    <string name="title_activity_record_audio">Audio Record</string>
+    <string name="register">Register</string>
+    <string name="title_activity_register">Register</string>
+    <string name="username">Username</string>
+    <string name="password_again">Password (again)</string>
+    <string name="passwords_not_same">Passwords are not same.</string>
 </resources>

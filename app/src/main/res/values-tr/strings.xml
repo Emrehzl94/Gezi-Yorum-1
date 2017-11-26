@@ -2,14 +2,12 @@
 <resources>
     <string name="app_name">Gezi Yorum</string>
     <string name="action_settings">Ayarlar</string>
-    <string name="action_sign_in">Oturum aç ya da kaydol</string>
-    <string name="action_sign_in_short">Oturum Aç</string>
+    <string name="action_sign_in">Oturum Aç</string>
     <string name="error_field_required">Bu alan gerekli</string>
     <string name="error_incorrect_password">Şifre yanlış</string>
     <string name="error_invalid_email">E-posta adresi geçersiz</string>
     <string name="error_invalid_password">Şifre çok kısa</string>
     <string name="navigation_drawer_close"/>
-    <string name="permission_rationale"/>
     <string name="prompt_email">E-posta</string>
     <string name="prompt_password">Şifre</string>
     <string name="title_activity_main">Ana Sayfa</string>
@@ -19,4 +17,11 @@
     <string name="trip">Gezi</string>
     <string name="photo">Fotoğraf</string>
     <string name="sound_record">Ses Kaydı</string>
+    <string name="title_activity_record_audio">Ses Kaydet</string>
+    <string name="header">Başlık</string>
+    <string name="title_activity_maps">Harita</string>
+    <string name="title_activity_start_trip">Gezi Başlat</string>
+    <string name="register">Kaydol</string>
+    <string name="username">Kullanıcı Adı</string>
+    <string name="passwords_not_same">Şifreler uyuşmuyor.</string>
 </resources>
