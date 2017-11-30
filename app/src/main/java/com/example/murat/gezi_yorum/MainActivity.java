@@ -1,14 +1,11 @@
 package com.example.murat.gezi_yorum;
 
-import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.design.widget.NavigationView;
@@ -26,25 +23,19 @@ import com.example.murat.gezi_yorum.fragments.Home;
 import com.example.murat.gezi_yorum.fragments.Search;
 import com.example.murat.gezi_yorum.fragments.StartTripFragment;
 import com.example.murat.gezi_yorum.fragments.TimeLine;
-import com.example.murat.gezi_yorum.helpers.LocationDbOpenHelper;
-
-import java.util.Date;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
-    private static final int MAP_PERMISSION_REQUEST = 1;
     private SharedPreferences preferences;
-    SharedPreferences.Editor editor;
     private Fragment currentFragment;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        preferences = getPreferences(Context.MODE_PRIVATE);
-        editor = preferences.edit();
-
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        preferences = getPreferences(Context.MODE_PRIVATE);
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -64,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            super.onBackPressed();
+            finishAffinity();
         }
     }
 
@@ -108,10 +99,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 fragment = new Search();
                 break;
             }case (R.id.nav_trip):{
-                if(Constants.ACTIVE.equals(preferences.getString(Constants.TRIPSTATE, Constants.PASSIVE))){
-                    ContinuingTrip continuingTrip = new ContinuingTrip();
-                    continuingTrip.setTrip_id(preferences.getLong(Constants.TRIPID,-1));
-                    fragment = continuingTrip;
+                if(Constants.STARTED.equals(preferences.getString(Constants.TRIPSTATE, Constants.ENDED))){
+                    fragment = new ContinuingTrip();
                 }else {
                     fragment = new StartTripFragment();
                 }
@@ -122,6 +111,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
             }case (R.id.nav_send): {
 
+            }case (R.id.nav_log_out): {
+                setResult(Activity.RESULT_CANCELED);
+                finish();
             }
         }
 
@@ -146,52 +138,5 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
     public void showSnackbarMessage(String message, int length){
         Snackbar.make(getCurrentFocus(),message,length).show();
-    }
-    public void startTrip(){
-        showSnackbarMessage("Trip started", Snackbar.LENGTH_LONG);
-        long trip_id = (new LocationDbOpenHelper(this)).insertTripInfo(new Date().getTime(),Long.MAX_VALUE);
-        editor.putLong(Constants.TRIPID,trip_id);
-        editor.putString(Constants.TRIPSTATE,Constants.ACTIVE);
-        editor.apply();
-        startRecording(trip_id);
-        ContinuingTrip trip = new ContinuingTrip();
-        trip.setTrip_id(preferences.getLong(Constants.TRIPID,-1));
-        changeFragment(trip);
-    }
-    public void endTrip(){
-        showSnackbarMessage("Trip stopped", Snackbar.LENGTH_LONG);
-        stopRecording();
-        long trip_id = preferences.getLong(Constants.TRIPID,-1);
-        new LocationDbOpenHelper(this).endTrip(trip_id,System.currentTimeMillis());
-        editor.putLong(Constants.TRIPID,-1);
-        editor.putString(Constants.TRIPSTATE,Constants.PASSIVE);
-        editor.apply();
-    }
-    public void startRecording(long trip_id){
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.ACCESS_FINE_LOCATION},MAP_PERMISSION_REQUEST);
-            return;
-        }
-        Intent intent = new Intent(getBaseContext(),LocationSaveService.class);
-        intent.putExtra("trip_id",trip_id);
-
-        startService(intent);
-    }
-    public void stopRecording(){
-        Intent intent = new Intent(this,LocationSaveService.class);
-        stopService(intent);
-    }
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode){
-            case MAP_PERMISSION_REQUEST:
-                if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
-                    startTrip();
-                }else {
-                    showSnackbarMessage("Gezi başlatılamadı.",Snackbar.LENGTH_LONG);
-                }
-                break;
-        }
     }
 }

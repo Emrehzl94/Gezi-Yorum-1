@@ -1,10 +1,11 @@
-package com.example.murat.gezi_yorum.helpers;
+package com.example.murat.gezi_yorum.Utils;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
+import com.example.murat.gezi_yorum.Entity.Constants;
 import com.example.murat.gezi_yorum.fragments.TripInfo;
 
 import java.util.ArrayList;
@@ -16,9 +17,9 @@ import java.util.HashMap;
 
 public class TripPagerAdapter extends FragmentPagerAdapter{
     private HashMap<Integer,TripInfo> fragments;
-    private ArrayList<Integer> trip_ids;
+    private ArrayList<Long> trip_ids;
 
-    public TripPagerAdapter(FragmentManager fragmentManager, ArrayList<Integer> trip_ids) {
+    public TripPagerAdapter(FragmentManager fragmentManager, ArrayList<Long> trip_ids) {
         super(fragmentManager);
         this.trip_ids = trip_ids;
         fragments = new HashMap<>();
@@ -35,7 +36,7 @@ public class TripPagerAdapter extends FragmentPagerAdapter{
     public Fragment getItem(int position) {
         TripInfo fragment = new TripInfo();
         Bundle info = new Bundle();
-        info.putInt("trip_id", trip_ids.get(position));
+        info.putLong(Constants.TRIPID, trip_ids.get(position));
         info.putInt("position",position);
         fragment.setArguments(info);
         fragments.put(position,fragment);

@@ -1,4 +1,4 @@
-package com.example.murat.gezi_yorum.helpers;
+package com.example.murat.gezi_yorum.Utils;
 
 import android.app.Activity;
 import android.graphics.Bitmap;

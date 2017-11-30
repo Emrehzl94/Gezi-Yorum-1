@@ -2,7 +2,10 @@ package com.example.murat.gezi_yorum;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.AsyncTask;
 
@@ -14,37 +17,35 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 
-import com.example.murat.gezi_yorum.helpers.URLRequestHandler;
+import com.example.murat.gezi_yorum.Entity.Constants;
+import com.example.murat.gezi_yorum.Utils.URLRequestHandler;
 
 
 /**
  * A login screen that offers login via email/password.
  */
 public class LoginActivity extends AppCompatActivity {
+    private static final int MAIN_ACTIVITY_RESULT = 1;
 
-    /**
-     * A dummy authentication store containing known user names and passwords.
-     * TODO: remove after connecting to a real authentication system.
-     */
-    private static final String[] DUMMY_CREDENTIALS = new String[]{
-            "foo@example.com:hello", "bar@example.com:world"
-    };
-    /**
-     * Keep track of the login task to ensure we can cancel it if requested.
-     */
     private UserLoginTask mAuthTask = null;
 
-    // UI references.
     private AutoCompleteTextView emailEdit;
     private EditText passwordEdit;
     private View progressView;
     private View loginFormView;
-
+    private SharedPreferences preferences;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        preferences = getPreferences(Context.MODE_PRIVATE);
         // Set up the login form.
+        String token = preferences.getString(Constants.TOKEN,"none");
+        if(!token.equals("none")){
+            Intent intent = new Intent(this,MainActivity.class);
+            startActivityForResult(intent, MAIN_ACTIVITY_RESULT);
+        }
         emailEdit = findViewById(R.id.email);
 
         passwordEdit = findViewById(R.id.password);
@@ -93,54 +94,34 @@ public class LoginActivity extends AppCompatActivity {
         boolean cancel = false;
         View focusView = null;
 
-        // Check for a valid password, if the user entered one.
         if (TextUtils.isEmpty(password)) {
             passwordEdit.setError(getString(R.string.error_invalid_password));
             focusView = passwordEdit;
             cancel = true;
         }
 
-        // Check for a valid email address.
-        /*if (TextUtils.isEmpty(email)) {
-            emailEdit.setError(getString(R.string.error_field_required));
-            focusView = emailEdit;
-            cancel = true;
-        } else if (!isEmailValid(email)) {
-            emailEdit.setError(getString(R.string.error_invalid_email));
-            focusView = emailEdit;
-            cancel = true;
-        }*/
-
         if (cancel) {
-            // There was an error; don't attempt login and focus the first
-            // form field with an error.
             focusView.requestFocus();
         } else {
-            // Show a progress spinner, and kick off a background task to
-            // perform the user login attempt.
             showProgress(true);
             mAuthTask = new UserLoginTask(email, password);
             mAuthTask.execute((Void) null);
         }
     }
 
-    private boolean isEmailValid(String email) {
-        //TODO: Replace this with your own logic
-        return email.contains("@");
-    }
-
-    private boolean isPasswordValid(String password) {
-        //TODO: Replace this with your own logic
-        return password.length() > 0;
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(resultCode == Activity.RESULT_CANCELED){
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putString(Constants.TOKEN,"none");
+            editor.apply();
+        }
     }
 
     /**
      * Shows the progress UI and hides the login form.
      */
     private void showProgress(final boolean show) {
-        // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
-        // for very easy animations. If available, use these APIs to fade-in
-        // the progress spinner.
         int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
 
         loginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
@@ -182,19 +163,13 @@ public class LoginActivity extends AppCompatActivity {
             String url = "http://163.172.176.169:8080/Geziyorum/login";
             URLRequestHandler handler = new URLRequestHandler(data,url);
             if(!handler.getResponseMessage()){
-                //şifre veya kullanıcı adı hatalı
+                //wrong user name or password
                 return false;
             }
             String response = handler.getResponse();
-            //TODO: save response to shared preferences
-
-            for (String credential : DUMMY_CREDENTIALS) {
-                String[] pieces = credential.split(":");
-                if (pieces[0].equals(mEmail)) {
-                    // Account exists, return true if the password matches.
-                    return pieces[1].equals(mPassword);
-                }
-            }
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putString(Constants.TOKEN,response);
+            editor.apply();
             return true;
         }
 

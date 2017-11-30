@@ -1,7 +1,8 @@
-package com.example.murat.gezi_yorum.Entity;
+package com.example.murat.gezi_yorum.Utils;
 
 import android.content.Context;
 
+import com.example.murat.gezi_yorum.Entity.mLocation;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.io.File;
@@ -19,14 +20,14 @@ import java.util.StringTokenizer;
 
 public class LocationCSVHandler {
     private File file;
-    public LocationCSVHandler(long trip_id, Context context){
-        this.file = getRouteFilePath(trip_id, context);
+    public LocationCSVHandler(long trip_id, long path_id, Context context){
+        this.file = getRouteFilePath(trip_id, path_id, context);
         if(!file.exists()){
             create();
         }
     }
-    static File getRouteFilePath(long trip_id, Context context){
-        return new File(context.getFilesDir() + "path_"+trip_id+".csv");
+    static File getRouteFilePath(long trip_id, long path_id, Context context){
+        return new File(context.getFilesDir() + "path_"+trip_id+"_"+path_id+".csv");
     }
     private void create(){
         try {

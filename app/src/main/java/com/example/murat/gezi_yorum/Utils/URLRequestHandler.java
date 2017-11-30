@@ -1,4 +1,4 @@
-package com.example.murat.gezi_yorum.helpers;
+package com.example.murat.gezi_yorum.Utils;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

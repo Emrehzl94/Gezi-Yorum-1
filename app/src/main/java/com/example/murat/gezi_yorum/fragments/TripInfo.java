@@ -8,8 +8,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.example.murat.gezi_yorum.R;
-import com.example.murat.gezi_yorum.helpers.LocationDbOpenHelper;
-import com.google.android.gms.maps.GoogleMap;
+import com.example.murat.gezi_yorum.Utils.LocationDbOpenHelper;
 
 import java.util.HashMap;
 
@@ -62,8 +61,5 @@ public class TripInfo extends TripSummary {
     }
     public long getTripId(){
         return trip_id;
-    }
-    GoogleMap getMap(){
-        return parentFragment.getMap();
     }
 }

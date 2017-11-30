@@ -1,19 +1,16 @@
-package com.example.murat.gezi_yorum.Entity;
+package com.example.murat.gezi_yorum.Utils;
 
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Environment;
-import android.util.Log;
 
+import com.example.murat.gezi_yorum.Entity.MediaFile;
 import com.example.murat.gezi_yorum.R;
-import com.example.murat.gezi_yorum.helpers.LocationDbOpenHelper;
-import com.example.murat.gezi_yorum.helpers.MultipartUtility;
 
 import org.json.JSONArray;
 
 import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -21,10 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Scanner;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -34,22 +28,19 @@ import java.util.zip.ZipOutputStream;
 
 public class ZipFileUploader extends AsyncTask<String,Integer,String> {
     private File zipFile;
-    private File pathFile;
+    private ArrayList<File> pathFiles;
     private long trip_id;
     private LocationDbOpenHelper helper;
     private String progressMessage = "";
     private ProgressDialog progressDialog;
 
-    String attachmentName = "zipfile";
-    String attachmentFileName = "zipfile.zip";
-    String crlf = "\r\n";
-    String twoHyphens = "--";
-    String boundary =  "*****";
-
     public ZipFileUploader(long trip_id, Context context){
         this.trip_id = trip_id;
         this.zipFile = new File(Environment.getExternalStoragePublicDirectory(context.getString(R.string.app_name)) + "/trip_"+trip_id+".zip");
-        this.pathFile = LocationCSVHandler.getRouteFilePath(trip_id, context);
+        this.pathFiles = new ArrayList<>();
+        for(long path_id : new LocationDbOpenHelper(context).getPathsIDs(trip_id)){
+            pathFiles.add(LocationCSVHandler.getRouteFilePath(trip_id,path_id,context));
+        }
 
         progressDialog = new ProgressDialog(context);
         progressDialog.setMessage("Dosyalar Hazırlanıyor...");
@@ -85,13 +76,16 @@ public class ZipFileUploader extends AsyncTask<String,Integer,String> {
                 zipFile.createNewFile();
             }
             ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(zipFile));
-            ZipEntry pathEntry = new ZipEntry(pathFile.getName());
-            zipOutputStream.putNextEntry(pathEntry);
-
-            RandomAccessFile randomAccessFile= new RandomAccessFile(pathFile,"r");
-            byte[] bytes = new byte[(int)randomAccessFile.length()];
-            randomAccessFile.readFully(bytes);
-            zipOutputStream.write(bytes);
+            //TODO: pathMetaData will add to zip in right format.
+            JSONArray pathMetaData = new JSONArray();
+            for (File pathFile : pathFiles) {
+                ZipEntry pathEntry = new ZipEntry("Paths/"+pathFile.getName());
+                zipOutputStream.putNextEntry(pathEntry);
+                RandomAccessFile randomAccessFile = new RandomAccessFile(pathFile, "r");
+                byte[] bytes = new byte[(int) randomAccessFile.length()];
+                randomAccessFile.readFully(bytes);
+                zipOutputStream.write(bytes);
+            }
 
             ArrayList<MediaFile> mediaFiles = helper.getMediaFiles(trip_id,null,null);
             JSONArray mediaMetaData = new JSONArray();
@@ -104,7 +98,6 @@ public class ZipFileUploader extends AsyncTask<String,Integer,String> {
                 writeByteArrayOriginal(entryFile,zipOutputStream);
                 mediaMetaData.put(file.toJSONObject());
             }
-
             ZipEntry mediaMetaDataEntry = new ZipEntry("media_metadata.JSON");
             zipOutputStream.putNextEntry(mediaMetaDataEntry);
             zipOutputStream.write(mediaMetaData.toString().getBytes());

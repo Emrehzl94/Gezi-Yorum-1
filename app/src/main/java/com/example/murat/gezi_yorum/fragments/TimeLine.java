@@ -10,9 +10,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.example.murat.gezi_yorum.Entity.ZipFileUploader;
-import com.example.murat.gezi_yorum.helpers.LocationDbOpenHelper;
-import com.example.murat.gezi_yorum.helpers.TripPagerAdapter;
+import com.example.murat.gezi_yorum.Utils.ZipFileUploader;
+import com.example.murat.gezi_yorum.Utils.LocationDbOpenHelper;
+import com.example.murat.gezi_yorum.Utils.TripPagerAdapter;
 import com.example.murat.gezi_yorum.R;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -53,7 +53,7 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(TimeLine.this);
         helper = new LocationDbOpenHelper(getContext());
-        ArrayList<Integer> trip_ids = helper.getTripsIDs();
+        ArrayList<Long> trip_ids = helper.getTripsIDs();
         if(trip_ids.size() == 0){
             shareTrip.setEnabled(false);
         }
@@ -75,7 +75,7 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
                 if(map != null){
                     lastClickedMarker = null;
                     currentPosition = position;
-                    pagerAdapter.getFragment(currentPosition).drawPathOnMap(map,false);
+                    pagerAdapter.getFragment(currentPosition).requestToDrawPathOnMap(map,false);
                 }
             }
 
@@ -142,7 +142,7 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
             }
         });
         if(pagerAdapter.getCount()>0) {
-            pagerAdapter.getFragment(pagerAdapter.getCount()-1).drawPathOnMap(map,true);
+            pagerAdapter.getFragment(pagerAdapter.getCount()-1).requestToDrawPathOnMap(map,true);
         }
     }
 
@@ -152,5 +152,4 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
     public void setPrevPage(){
         viewPager.setCurrentItem(viewPager.getCurrentItem()-1);
     }
-    public GoogleMap getMap() {return map;}
 }

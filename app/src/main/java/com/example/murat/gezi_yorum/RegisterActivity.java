@@ -8,7 +8,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.EditText;
 
-import com.example.murat.gezi_yorum.helpers.URLRequestHandler;
+import com.example.murat.gezi_yorum.Utils.URLRequestHandler;
 
 public class RegisterActivity extends AppCompatActivity {
     private EditText username_edit, pass1_edit, pass2_edit, email_edit;

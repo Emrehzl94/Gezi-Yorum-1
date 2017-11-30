@@ -8,8 +8,8 @@ import android.widget.GridView;
 
 import com.example.murat.gezi_yorum.Entity.Constants;
 import com.example.murat.gezi_yorum.Entity.MediaFile;
-import com.example.murat.gezi_yorum.helpers.LocationDbOpenHelper;
-import com.example.murat.gezi_yorum.helpers.MediaGridViewAdapter;
+import com.example.murat.gezi_yorum.Utils.LocationDbOpenHelper;
+import com.example.murat.gezi_yorum.Utils.MediaGridViewAdapter;
 
 import java.util.ArrayList;
 

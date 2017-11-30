@@ -9,10 +9,10 @@ import com.google.android.gms.maps.model.LatLng;
  */
 
 public class mLocation {
-    static final String LONGTITUDE = "longtitude";
-    static final String LATITUDE = "latitude";
-    static final String ALTITUDE = "altitude";
-    static final String TIME = "time";
+    public static final String LONGTITUDE = "longtitude";
+    public static final String LATITUDE = "latitude";
+    public static final String ALTITUDE = "altitude";
+    public static final String TIME = "time";
 
     private double Longitude;
     private double Latitude;

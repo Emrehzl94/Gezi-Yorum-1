@@ -1,4 +1,4 @@
-package com.example.murat.gezi_yorum.helpers;
+package com.example.murat.gezi_yorum.Utils;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -32,6 +32,8 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
     private static final String COLUMN_STARTDATE = "startDate";
     private static final String COLUMN_FINISHDATE = "finishDate";
 
+    private static final String TABLE_PATHS = "Paths";
+
     private static final String TABLE_MEDIA = "Media";
     private static final String COLUMN_TYPE = "type";
     private static final String COLUMN_LONGTITUDE= "longtitude";
@@ -53,6 +55,11 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
                 "("+COLUMN_ID+" integer PRIMARY KEY AUTOINCREMENT," +
                  COLUMN_STARTDATE +" INTEGER not null," +
                  COLUMN_FINISHDATE+" INTEGER not null)";
+        String pathTableCreateQuery = "CREATE TABLE " + TABLE_PATHS +
+                "("+COLUMN_ID+" integer PRIMARY KEY AUTOINCREMENT," +
+                COLUMN_STARTDATE +" INTEGER not null," +
+                COLUMN_FINISHDATE+" INTEGER not null," +
+                COLUMN_TRIPID + " INTEGER not null)";
         String mediaTableCreateQuery = "CREATE TABLE " + TABLE_MEDIA +
                 " (" + COLUMN_ID + " integer PRIMARY KEY AUTOINCREMENT," +
                 COLUMN_TYPE +" varchar(255)," +
@@ -64,37 +71,91 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
                 COLUMN_DATE + " integer," +
                 COLUMN_THUMBNAIL+" blob NOT NULL ); ";
         db.execSQL(tripsTableCreateQuery);
+        db.execSQL(pathTableCreateQuery);
         db.execSQL(mediaTableCreateQuery);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_TRIPS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_PATHS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_MEDIA);
         onCreate(db);
     }
-    public long insertTripInfo(long startdate,long finishdate){
+
+    /**
+     * Inserts new trip to database
+     * @return trip_id
+     */
+    public long startNewTrip(){
         ContentValues values = new ContentValues();
-        values.put(COLUMN_STARTDATE,startdate);
-        values.put(COLUMN_FINISHDATE,finishdate);
+        values.put(COLUMN_STARTDATE,System.currentTimeMillis());
+        values.put(COLUMN_FINISHDATE,Long.MAX_VALUE);
         SQLiteDatabase database = getWritableDatabase();
         return database.insert(TABLE_TRIPS,null ,values);
     }
-    public void endTrip(long trip_id, long finishdate){
+
+    /**
+     * Ends trip
+     * @param path_id path id
+     */
+    public void endTrip(long path_id){
         ContentValues values = new ContentValues();
-        values.put(COLUMN_FINISHDATE,finishdate);
+        values.put(COLUMN_FINISHDATE,System.currentTimeMillis());
         SQLiteDatabase database = getWritableDatabase();
-        database.update(TABLE_TRIPS, values, COLUMN_ID + "=" + trip_id, null);
+        database.update(TABLE_TRIPS, values, COLUMN_ID + "=" + path_id, null);
     }
-    public ArrayList<Integer> getTripsIDs(){
+
+    /**
+     * Starts new path recording
+     * @param trip_id trip id
+     * @return path_id
+     */
+    public long startNewPath(long trip_id){
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_STARTDATE,System.currentTimeMillis());
+        values.put(COLUMN_FINISHDATE,Long.MAX_VALUE);
+        values.put(COLUMN_TRIPID,trip_id);
+        SQLiteDatabase database = getWritableDatabase();
+        return database.insert(TABLE_PATHS,null ,values);
+    }
+
+    /**
+     * Ends path
+     * @param trip_id trip id
+     */
+    public void endPath(long trip_id){
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_FINISHDATE,System.currentTimeMillis());
+        SQLiteDatabase database = getWritableDatabase();
+        database.update(TABLE_PATHS, values, COLUMN_ID + "=" + trip_id, null);
+    }
+    public ArrayList<Long> getTripsIDs(){
         String query = "SELECT "+COLUMN_ID+" FROM "+TABLE_TRIPS +" WHERE "+COLUMN_FINISHDATE+"!="+Long.MAX_VALUE;
         SQLiteDatabase database = getReadableDatabase();
         Cursor cursor = database.rawQuery(query,null);
         cursor.moveToFirst();
-        ArrayList<Integer> trip_ids = new ArrayList<>();
+        ArrayList<Long> trip_ids = new ArrayList<>();
         int id_column_index = cursor.getColumnIndex(COLUMN_ID);
         while (!cursor.isAfterLast()) {
-            trip_ids.add(cursor.getInt(id_column_index));
+            trip_ids.add(cursor.getLong(id_column_index));
+            cursor.moveToNext();
+        }
+        cursor.close();
+        database.close();
+        return trip_ids;
+    }
+
+    public ArrayList<Long> getPathsIDs(long trip_id){
+        String query = "SELECT "+COLUMN_ID+" FROM "+TABLE_PATHS +
+                " WHERE "+COLUMN_TRIPID+"="+trip_id;
+        SQLiteDatabase database = getReadableDatabase();
+        Cursor cursor = database.rawQuery(query,null);
+        cursor.moveToFirst();
+        ArrayList<Long> trip_ids = new ArrayList<>();
+        int id_column_index = cursor.getColumnIndex(COLUMN_ID);
+        while (!cursor.isAfterLast()) {
+            trip_ids.add(cursor.getLong(id_column_index));
             cursor.moveToNext();
         }
         cursor.close();
@@ -106,7 +167,7 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
         SQLiteDatabase database = getReadableDatabase();
         Cursor cursor = database.rawQuery(query,null);
         cursor.moveToFirst();
-        HashMap<String,String> trip_info = new HashMap<>();
+        HashMap<String, String> trip_info = new HashMap<>();
         DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss dd-MM-YYYY");
         Long starttime = cursor.getLong(cursor.getColumnIndex(COLUMN_STARTDATE));
         trip_info.put("startdate",dateFormat.format(new Date(starttime)));

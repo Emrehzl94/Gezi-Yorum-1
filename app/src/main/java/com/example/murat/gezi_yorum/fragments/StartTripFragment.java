@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.example.murat.gezi_yorum.Entity.Constants;
 import com.example.murat.gezi_yorum.MainActivity;
 import com.example.murat.gezi_yorum.R;
 
@@ -29,8 +30,12 @@ public class StartTripFragment extends Fragment{
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                ContinuingTrip continuingTrip = new ContinuingTrip();
+                Bundle extras = new Bundle();
+                extras.putString(Constants.MESSAGE,Constants.STARTNEWTRIP);
+                continuingTrip.setArguments(extras);
                 MainActivity parentActivity = (MainActivity) getActivity();
-                parentActivity.startTrip();
+                parentActivity.changeFragment(continuingTrip);
             }
         });
         fab.setBackgroundColor(Color.GREEN);

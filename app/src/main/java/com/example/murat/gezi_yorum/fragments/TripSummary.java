@@ -12,10 +12,10 @@ import android.widget.GridView;
 import com.example.murat.gezi_yorum.GalleryActivity;
 import com.example.murat.gezi_yorum.R;
 import com.example.murat.gezi_yorum.Entity.Constants;
-import com.example.murat.gezi_yorum.Entity.LocationCSVHandler;
+import com.example.murat.gezi_yorum.Utils.LocationCSVHandler;
 import com.example.murat.gezi_yorum.Entity.MediaFile;
-import com.example.murat.gezi_yorum.helpers.LocationDbOpenHelper;
-import com.example.murat.gezi_yorum.helpers.MediaGridViewAdapter;
+import com.example.murat.gezi_yorum.Utils.LocationDbOpenHelper;
+import com.example.murat.gezi_yorum.Utils.MediaGridViewAdapter;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -44,10 +44,10 @@ public abstract class TripSummary extends Fragment {
     protected Polyline addedPolyLine;
     protected ArrayList<LatLng> points;
 
-    abstract GoogleMap getMap();
+    protected boolean preview_setted = false;
     /**
      * Seting up preview for media
-     * @param view viev element
+     * @param view view element
      */
     protected void setUpView(View view){
         try {
@@ -61,8 +61,7 @@ public abstract class TripSummary extends Fragment {
             e.printStackTrace();
         }
         preview = view.findViewById(R.id.preview);
-        Handler UIHandler = new Handler();
-        UIHandler.post(new Runnable() {
+        new Handler().post(new Runnable() {
             @Override
             public void run() {
                 mediaFiles = helper.getMediaFiles(trip_id,null,null);
@@ -75,11 +74,7 @@ public abstract class TripSummary extends Fragment {
                     }
                 });
                 setUpPreview();
-                if(map != null){
-                    drawPathOnMap(map,true);
-                }else {
-                    drawPathOnMap(getMap(),true);
-                }
+                preview_setted = true;
             }
         });
 
@@ -113,36 +108,60 @@ public abstract class TripSummary extends Fragment {
     }
 
     /**
-     * Draws trip path on map
+     * Handles drawing sequence because path cannot be drawen on the map before media files loaded
+     * @param googleMap GoogleMap
+     * @param move move map or animate
+     */
+    public void requestToDrawPathOnMap(GoogleMap googleMap, final boolean move){
+        if(googleMap == null) return;
+        this.map = googleMap;
+        new Handler().post(new Runnable() {
+            @Override
+            public void run() {
+                if(map != null) {
+                    while (!preview_setted){
+                        try {
+                            Thread.sleep(50);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    map.clear();
+                    LatLngBounds.Builder builder = new LatLngBounds.Builder();
+
+                    int routePadding = 200;
+                    for (long path_id : helper.getPathsIDs(trip_id)) {
+                        addPathOnMap(map, move, path_id);
+                        for (LatLng point : points) {
+                            builder.include(point);
+                        }
+                    }
+                    CameraUpdate update = CameraUpdateFactory.newLatLngBounds(builder.build(), routePadding);
+                    if (move) {
+                        map.moveCamera(update);
+                    } else {
+                        map.animateCamera(update);
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * Draws trip path on map, adds new polyline
      * @param map Google Map
      * @param move Move if true, else animate
      */
 
-    public void drawPathOnMap(GoogleMap map ,boolean move){
-        if (map != null) {
-            map.clear();
-            points = new LocationCSVHandler(trip_id,getContext()).getLocations();
+    protected void addPathOnMap(GoogleMap map , boolean move, long path_id){
+        points = new LocationCSVHandler(trip_id, path_id,getContext()).getLocations();
 
-            PolylineOptions options = new PolylineOptions();
-            if (!points.isEmpty()) {
-                options.color(Color.RED);
-                options.width(15);
-                options.visible(true);
-                options.addAll(points);
-                LatLngBounds.Builder builder = new LatLngBounds.Builder();
-                for (LatLng point : points) {
-                    builder.include(point);
-                }
-                int routePadding = 200;
-                CameraUpdate update = CameraUpdateFactory.newLatLngBounds(builder.build(), routePadding);
-                if (move) {
-                    map.moveCamera(update);
-                } else {
-                    map.animateCamera(update);
-                }
-                addedPolyLine = map.addPolyline(options);
-                addMarkersToMap(map);
-            }
-        }
+        PolylineOptions options = new PolylineOptions();
+        options.color(Color.RED);
+        options.width(15);
+        options.visible(true);
+        options.addAll(points);
+        addedPolyLine = map.addPolyline(options);
+        addMarkersToMap(map);
     }
 }

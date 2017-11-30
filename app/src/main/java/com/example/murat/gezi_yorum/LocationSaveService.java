@@ -15,7 +15,8 @@ import android.os.IBinder;
 import android.support.v4.app.ActivityCompat;
 import android.widget.Toast;
 
-import com.example.murat.gezi_yorum.Entity.LocationCSVHandler;
+import com.example.murat.gezi_yorum.Entity.Constants;
+import com.example.murat.gezi_yorum.Utils.LocationCSVHandler;
 import com.example.murat.gezi_yorum.Entity.mLocation;
 
 /**
@@ -23,7 +24,7 @@ import com.example.murat.gezi_yorum.Entity.mLocation;
  */
 
 public class LocationSaveService extends Service implements LocationListener {
-    private static final int MIN_TIME = 10000;
+    private static final int MIN_TIME = 1000;
     private static final int MIN_DISTANCE = 3;
     public static LocationSaveService instance;
 
@@ -46,8 +47,9 @@ public class LocationSaveService extends Service implements LocationListener {
 
         instance = this;
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        long trip_id = intent.getExtras().getLong("trip_id");
-        csvHandler = new LocationCSVHandler(trip_id,getApplicationContext());
+        long trip_id = intent.getExtras().getLong(Constants.TRIPID);
+        long path_id = intent.getExtras().getLong(Constants.PATH_ID);
+        csvHandler = new LocationCSVHandler(trip_id, path_id, getApplicationContext());
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Toast.makeText(this, "Service cannot started. Location permission is not granted.", Toast.LENGTH_LONG).show();
             this.stopSelf();

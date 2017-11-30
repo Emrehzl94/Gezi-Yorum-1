@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
@@ -32,7 +33,7 @@ import com.example.murat.gezi_yorum.MainActivity;
 import com.example.murat.gezi_yorum.R;
 import com.example.murat.gezi_yorum.Entity.Constants;
 import com.example.murat.gezi_yorum.Entity.MediaFile;
-import com.example.murat.gezi_yorum.helpers.LocationDbOpenHelper;
+import com.example.murat.gezi_yorum.Utils.LocationDbOpenHelper;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.LocationSource;
@@ -49,9 +50,13 @@ import cafe.adriel.androidaudiorecorder.AndroidAudioRecorder;
 
 public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, LocationSource, LocationListener {
 
-    private static final int EXTERNAL_STORAGE_PERMISSION = 1;
-    private static final int SOUNDRECORD_PERMISSION = 2;
-
+    private static final int EXTERNAL_STORAGE_CAMERA_PERMISSION = 1;
+    private static final int EXTERNAL_STORAGE_VIDEO_PERMISSION = 2;
+    private static final int EXTERNAL_STORAGE_SOUNDRECORD_PERMISSION = 3;
+    private static final int SOUNDRECORD_PERMISSION = 4;
+    private static final int LOCATION_PERMISSION_REQUEST_ON_START = 5;
+    private static final int LOCATION_PERMISSION_REQUEST_ON_CONTIUNE = 6;
+    private static final int LOCATION_PERMISSION_REQUEST_ON_FAIL = 7;
     private int REQUEST_IMAGE_CAPTURE = 1;
     private int REQUEST_VIDEO_CAPTURE = 2;
     private int REQUEST_SOUND_RECORD= 3;
@@ -65,17 +70,19 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
     private OnLocationChangedListener listener;
     private LocationManager locationManager;
 
+    private SharedPreferences preferences;
+
     private FloatingActionButton add_photo_fab;
     private FloatingActionButton add_video_fab;
     private FloatingActionButton add_sound_record_fab;
+
+    private long path_id;
     private boolean isFabMenuOpen = false;
+    private String state;
     public void setTrip_id(long trip_id) {
         this.trip_id = trip_id;
     }
 
-    GoogleMap getMap(){
-        return map;
-    }
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
@@ -84,6 +91,20 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(ContinuingTrip.this);
 
+        parentActivity = (MainActivity) getActivity();
+        helper = new LocationDbOpenHelper(getContext());
+        preferences = parentActivity.getPreferences(Context.MODE_PRIVATE);
+
+        trip_id = preferences.getLong(Constants.TRIPID,-1);
+        path_id = preferences.getLong(Constants.PATH_ID, -1);
+        state = preferences.getString(Constants.RECORDSTATE,Constants.PASSIVE);
+        Bundle arguments = getArguments();
+        if(arguments!=null) {
+            String message = arguments.getString(Constants.MESSAGE);
+            //This means coming from StartTripFragment
+            if (message != null && message.equals(Constants.STARTNEWTRIP))
+                startNewTrip();
+        }
         FloatingActionButton add_fab = view.findViewById(R.id.add_media);
         add_photo_fab = view.findViewById(R.id.add_photo);
         add_video_fab = view.findViewById(R.id.add_video);
@@ -127,11 +148,10 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
 
         pause_continue = view.findViewById(R.id.pause_continue);
         Button stop = view.findViewById(R.id.stop);
-        parentActivity = (MainActivity) getActivity();
         pause = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                parentActivity.stopRecording();
+                stopPathRecording();
                 pause_continue.setOnClickListener(continue_listener);
                 pause_continue.setText("Contiune");
                 pause_continue.setBackgroundColor(Color.GREEN);
@@ -140,17 +160,23 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         continue_listener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                parentActivity.startRecording(trip_id);
+                startPathRecording();
                 pause_continue.setOnClickListener(pause);
                 pause_continue.setText("Pause");
                 pause_continue.setBackgroundColor(Color.YELLOW);
             }
         };
-        if (LocationSaveService.instance == null) {
+        if (state.equals(Constants.PASSIVE)) {
             pause_continue.setOnClickListener(continue_listener);
             pause_continue.setText("Contiune");
             pause_continue.setBackgroundColor(Color.GREEN);
         } else {
+            if(LocationSaveService.instance == null && checkLocationPermission(LOCATION_PERMISSION_REQUEST_ON_FAIL)){
+                Intent intent = new Intent(getContext(), LocationSaveService.class);
+                intent.putExtra(Constants.TRIPID,trip_id);
+                intent.putExtra(Constants.PATH_ID,path_id);
+                parentActivity.startService(intent);
+            }
             pause_continue.setOnClickListener(pause);
             pause_continue.setText("Pause");
             pause_continue.setBackgroundColor(Color.YELLOW);
@@ -158,7 +184,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         stop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                parentActivity.endTrip();
+                endTrip();
             }
         });
 
@@ -167,7 +193,6 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         behavior.setState(BottomSheetBehavior.STATE_DRAGGING);
         behavior.setHideable(false);
         behavior.setPeekHeight(300);
-        helper = new LocationDbOpenHelper(getContext());
         setUpView(view);
         return view;
     }
@@ -180,17 +205,69 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
             locationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, 0, 0, this);
         }
         if(map!=null){
-            drawPathOnMap(map,true);
+            requestToDrawPathOnMap(map,true);
         }
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        locationManager.removeUpdates(this);
-        if(map!=null) {
-            map.clear();
+        if(locationManager != null) {
+            locationManager.removeUpdates(this);
+            if (map != null) {
+                map.clear();
+            }
         }
+    }
+
+    public void startNewTrip(){
+        if(!checkLocationPermission(LOCATION_PERMISSION_REQUEST_ON_START)) return;
+        parentActivity.showSnackbarMessage("Trip started", Snackbar.LENGTH_LONG);
+        trip_id = helper.startNewTrip();
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putLong(Constants.TRIPID,trip_id);
+        editor.putString(Constants.TRIPSTATE, Constants.STARTED);
+        editor.apply();
+        startPathRecording();
+    }
+    public void endTrip(){
+        parentActivity.showSnackbarMessage("Trip stopped", Snackbar.LENGTH_LONG);
+        SharedPreferences.Editor editor = preferences.edit();
+        stopPathRecording();
+        helper.endTrip(trip_id);
+        editor.putLong(Constants.TRIPID,-1);
+        editor.putString(Constants.TRIPSTATE,Constants.ENDED);
+        editor.apply();
+    }
+    public void startPathRecording(){
+        if(!checkLocationPermission(LOCATION_PERMISSION_REQUEST_ON_CONTIUNE)) return;
+        path_id = helper.startNewPath(trip_id);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putLong(Constants.PATH_ID,path_id);
+        editor.putString(Constants.RECORDSTATE,Constants.ACTIVE);
+        editor.apply();
+        Intent intent = new Intent(getContext(),LocationSaveService.class);
+        intent.putExtra(Constants.TRIPID,trip_id);
+        intent.putExtra(Constants.PATH_ID,path_id);
+        getActivity().startService(intent);
+        addPathOnMap(map, false, path_id);
+    }
+    public void stopPathRecording(){
+        Intent intent = new Intent(getContext(),LocationSaveService.class);
+        getActivity().stopService(intent);
+        helper.endPath(path_id);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putLong(Constants.PATH_ID,-1);
+        editor.putString(Constants.RECORDSTATE,Constants.PASSIVE);
+        editor.apply();
+    }
+
+    private boolean checkLocationPermission(int request){
+        if (ActivityCompat.checkSelfPermission(parentActivity, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(parentActivity, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, request);
+            return false;
+        }
+        return true;
     }
 
     private Marker lastClickedMarker;
@@ -240,7 +317,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
                 }
             }
         });
-        drawPathOnMap(map,true);
+        requestToDrawPathOnMap(map,true);
 
     }
 
@@ -288,7 +365,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
      * starts new photo intent for taking photo
      */
     public void startNewPhotoIntent() {
-        if(!checkExternalStoragePermission()) return;
+        if(!checkExternalStoragePermission(EXTERNAL_STORAGE_CAMERA_PERMISSION)) return;
         Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
         lastOutputMedia = getOutputMediaFile(Constants.PHOTO);
         cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, lastOutputMedia);
@@ -299,7 +376,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
      * Starts new photo intent for video
      */
     public void startNewVideoIntent() {
-        if(!checkExternalStoragePermission()) return;
+        if(!checkExternalStoragePermission(EXTERNAL_STORAGE_VIDEO_PERMISSION)) return;
         Intent cameraIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
         lastOutputMedia = getOutputMediaFile(Constants.VIDEO);
         cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT,lastOutputMedia);
@@ -310,7 +387,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
      * starts activity RecordAudio
      */
     public void startNewAudioIntent() {
-        if(!checkExternalStoragePermission() || !checkSoundRecordPermission()) return;
+        if(!checkExternalStoragePermission(EXTERNAL_STORAGE_SOUNDRECORD_PERMISSION) || !checkSoundRecordPermission()) return;
         int color = Color.CYAN;
         lastOutputMedia = getOutputMediaFile(Constants.SOUNDRECORD);
         AndroidAudioRecorder.with(this)
@@ -324,9 +401,9 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
      * Check for external storage permission. If permission is not granted request permission
      * @return true if permission granted
      */
-    private boolean checkExternalStoragePermission(){
+    private boolean checkExternalStoragePermission(int request){
         if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, EXTERNAL_STORAGE_PERMISSION);
+            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, request);
             return false;
         }
         return true;
@@ -372,9 +449,25 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode){
-            case EXTERNAL_STORAGE_PERMISSION:
+            case EXTERNAL_STORAGE_CAMERA_PERMISSION:
                 if(grantResults[0] != PackageManager.PERMISSION_GRANTED){
-                    parentActivity.showSnackbarMessage("Depolama izni olmadan medya kaydedilemez", Snackbar.LENGTH_LONG);
+                    parentActivity.showSnackbarMessage("Depolama izni olmadan fotoğraf kaydedilemez", Snackbar.LENGTH_LONG);
+                }else {
+                    startNewPhotoIntent();
+                }
+                break;
+            case EXTERNAL_STORAGE_VIDEO_PERMISSION:
+                if(grantResults[0] != PackageManager.PERMISSION_GRANTED){
+                    parentActivity.showSnackbarMessage("Depolama izni olmadan video kaydedilemez", Snackbar.LENGTH_LONG);
+                }else {
+                    startNewVideoIntent();
+                }
+                break;
+            case EXTERNAL_STORAGE_SOUNDRECORD_PERMISSION:
+                if(grantResults[0] != PackageManager.PERMISSION_GRANTED){
+                    parentActivity.showSnackbarMessage("Depolama izni olmadan ses kaydedilemez.", Snackbar.LENGTH_LONG);
+                }else {
+                    startNewAudioIntent();
                 }
                 break;
             case SOUNDRECORD_PERMISSION:
@@ -384,7 +477,32 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
                     startNewAudioIntent();
                 }
                 break;
+            case LOCATION_PERMISSION_REQUEST_ON_START:
+                if(grantResults[0] != PackageManager.PERMISSION_GRANTED){
+                    parentActivity.showSnackbarMessage("Konum izni olmadan konum kaydı yapılamaz", Snackbar.LENGTH_LONG);
+                }else {
+                    startNewTrip();
+                }
+                break;
+            case LOCATION_PERMISSION_REQUEST_ON_CONTIUNE:
+                if(grantResults[0] != PackageManager.PERMISSION_GRANTED){
+                    parentActivity.showSnackbarMessage("Konum izni olmadan konum kaydı yapılamaz", Snackbar.LENGTH_LONG);
+                }else {
+                    startPathRecording();
+                }
+                break;
+            case LOCATION_PERMISSION_REQUEST_ON_FAIL:
+                if(grantResults[0] != PackageManager.PERMISSION_GRANTED){
+                    parentActivity.showSnackbarMessage("Konum izni olmadan konum kaydı yapılamaz.", Snackbar.LENGTH_LONG);
+                }else {
+                    Intent intent = new Intent(getContext(), LocationSaveService.class);
+                    intent.putExtra(Constants.TRIPID,trip_id);
+                    intent.putExtra(Constants.PATH_ID,path_id);
+                    parentActivity.startService(intent);
+                }
+                break;
         }
+
     }
 
     public class ThumbnailGeneration implements Runnable{

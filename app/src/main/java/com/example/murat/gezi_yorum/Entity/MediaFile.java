@@ -166,7 +166,7 @@ public class MediaFile {
         return mimeType;
     }
 
-    JSONObject toJSONObject(){
+    public JSONObject toJSONObject(){
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("path",path);
