@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import com.example.murat.gezi_yorum.Entity.Constants;
 import com.example.murat.gezi_yorum.R;
 import com.example.murat.gezi_yorum.Utils.LocationDbOpenHelper;
 
@@ -25,7 +26,7 @@ public class TripInfo extends TripSummary {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Bundle bundle = getArguments();
-        trip_id = bundle.getInt("trip_id", -1);
+        trip_id = bundle.getLong(Constants.TRIPID, -1);
         position = bundle.getInt("position",0);
     }
 

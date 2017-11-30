@@ -136,11 +136,15 @@ public abstract class TripSummary extends Fragment {
                             builder.include(point);
                         }
                     }
-                    CameraUpdate update = CameraUpdateFactory.newLatLngBounds(builder.build(), routePadding);
-                    if (move) {
-                        map.moveCamera(update);
-                    } else {
-                        map.animateCamera(update);
+                    try {
+                        CameraUpdate update = CameraUpdateFactory.newLatLngBounds(builder.build(), routePadding);
+                        if (move) {
+                            map.moveCamera(update);
+                        } else {
+                            map.animateCamera(update);
+                        }
+                    }catch (Exception e){
+                        e.printStackTrace();
                     }
                 }
             }

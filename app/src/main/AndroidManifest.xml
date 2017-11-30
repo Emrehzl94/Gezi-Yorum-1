@@ -29,7 +29,7 @@
             android:theme="@style/AppTheme.NoActionBar" />
 
         <service android:name=".LocationSaveService" />
-
+        <service android:name=".ZipFileUploader" />
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
@@ -40,7 +40,7 @@
         <activity
             android:name=".RegisterActivity"
             android:label="@string/title_activity_register"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar"/>
     </application>
 
 </manifest>

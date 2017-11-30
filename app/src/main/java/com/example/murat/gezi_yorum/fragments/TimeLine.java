@@ -1,5 +1,6 @@
 package com.example.murat.gezi_yorum.fragments;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetBehavior;
@@ -10,7 +11,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.example.murat.gezi_yorum.Utils.ZipFileUploader;
+import com.example.murat.gezi_yorum.Entity.Constants;
+import com.example.murat.gezi_yorum.ZipFileUploader;
 import com.example.murat.gezi_yorum.Utils.LocationDbOpenHelper;
 import com.example.murat.gezi_yorum.Utils.TripPagerAdapter;
 import com.example.murat.gezi_yorum.R;
@@ -46,7 +48,9 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
             @Override
             public void onClick(View view) {
                 long trip_id = pagerAdapter.getFragment(currentPosition).getTripId();
-                new ZipFileUploader(trip_id,getContext()).execute();
+                Intent intent = new Intent(getContext(), ZipFileUploader.class);
+                intent.putExtra(Constants.TRIPID, trip_id);
+                getActivity().startService(intent);
             }
         });
         viewPager = view.findViewById(R.id.pager);

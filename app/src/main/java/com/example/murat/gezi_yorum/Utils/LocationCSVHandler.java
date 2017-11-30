@@ -20,13 +20,17 @@ import java.util.StringTokenizer;
 
 public class LocationCSVHandler {
     private File file;
+    private long trip_id;
+    public long path_id;
     public LocationCSVHandler(long trip_id, long path_id, Context context){
+        this.trip_id = trip_id;
+        this.path_id = path_id;
         this.file = getRouteFilePath(trip_id, path_id, context);
         if(!file.exists()){
             create();
         }
     }
-    static File getRouteFilePath(long trip_id, long path_id, Context context){
+    public static File getRouteFilePath(long trip_id, long path_id, Context context){
         return new File(context.getFilesDir() + "path_"+trip_id+"_"+path_id+".csv");
     }
     private void create(){

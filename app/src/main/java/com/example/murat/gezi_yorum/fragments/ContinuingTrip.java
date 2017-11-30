@@ -250,7 +250,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         intent.putExtra(Constants.TRIPID,trip_id);
         intent.putExtra(Constants.PATH_ID,path_id);
         getActivity().startService(intent);
-        addPathOnMap(map, false, path_id);
+        //addPathOnMap(map, false, path_id);
     }
     public void stopPathRecording(){
         Intent intent = new Intent(getContext(),LocationSaveService.class);

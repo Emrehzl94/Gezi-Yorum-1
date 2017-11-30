@@ -9,6 +9,9 @@ import android.support.annotation.Nullable;
 
 import com.example.murat.gezi_yorum.Entity.MediaFile;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -177,6 +180,27 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
         cursor.close();
         database.close();
         return trip_info;
+    }
+    public JSONObject getPathInfo(long path_id){
+        String query = "SELECT * FROM "+TABLE_PATHS+" WHERE "+COLUMN_ID+"='"+path_id+"'";
+        SQLiteDatabase database = getReadableDatabase();
+        Cursor cursor = database.rawQuery(query,null);
+        cursor.moveToFirst();
+
+        JSONObject jsonObject = new JSONObject();
+        long trip_id = cursor.getLong(cursor.getColumnIndex(COLUMN_TRIPID));
+        try {
+            jsonObject.put("start_date",cursor.getLong(cursor.getColumnIndex(COLUMN_STARTDATE)));
+            jsonObject.put("finish_date",cursor.getLong(cursor.getColumnIndex(COLUMN_STARTDATE)));
+            jsonObject.put("file", "path_"+trip_id+"_"+path_id+".csv");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        cursor.moveToNext();
+        cursor.close();
+        database.close();
+        return jsonObject;
     }
 
     public void insertMediaFile(MediaFile mediaFile){
