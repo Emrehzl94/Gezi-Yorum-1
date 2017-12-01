@@ -17,7 +17,6 @@ import android.widget.Toast;
 
 import com.example.murat.gezi_yorum.Entity.Constants;
 import com.example.murat.gezi_yorum.Utils.LocationCSVHandler;
-import com.example.murat.gezi_yorum.Entity.mLocation;
 
 /**
  * Listens and saves locations to database. Must run as service.
@@ -74,7 +73,7 @@ public class LocationSaveService extends Service implements LocationListener {
 
     @Override
     public void onLocationChanged(Location location) {
-        csvHandler.saveLocation(new mLocation(location));
+        csvHandler.saveLocation(location);
         Toast.makeText(this,"Konum kaydedildi.",Toast.LENGTH_SHORT).show();
     }
 

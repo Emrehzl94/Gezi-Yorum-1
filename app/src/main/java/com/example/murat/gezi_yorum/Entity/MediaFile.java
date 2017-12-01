@@ -30,17 +30,29 @@ public class MediaFile {
     public mLocation location;
     public long trip_id;
     public Bitmap thumbNail = null;
+    public String share_option;
+    public String about_note;
 
-    public MediaFile(String type, String path,double latitude, double longitude, double altitude , long trip_id, long time){
+    /**
+     *This constructor used while adding new media
+     */
+    public MediaFile(String type, String path,double latitude, double longitude, double altitude , long trip_id, long time, String share_option){
         this.type = type;
         this.path = path;
         this.location = new mLocation(latitude,longitude,altitude,time);
         this.trip_id = trip_id;
+        this.share_option = share_option;
+        this.about_note = "";
     }
-    public MediaFile(Long id,String type, String path,double latitude, double longitude, double altitude , long trip_id, long time,byte[] imageData){
-        this(type,path,latitude,longitude,altitude,trip_id,time);
+
+    /**
+     * This constructor used by DB
+     */
+    public MediaFile(Long id,String type, String path,double latitude, double longitude, double altitude , long trip_id, long time,byte[] imageData, String share_option, String about_note){
+        this(type, path, latitude, longitude, altitude, trip_id, time, share_option);
         thumbNail = BitmapFactory.decodeByteArray(imageData,0,imageData.length);
         this.id = id;
+        this.about_note = about_note;
     }
 
     /**

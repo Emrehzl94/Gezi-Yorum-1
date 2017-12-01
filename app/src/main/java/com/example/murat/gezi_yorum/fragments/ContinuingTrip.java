@@ -12,12 +12,12 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.os.Bundle;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -26,13 +26,12 @@ import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 
+import com.example.murat.gezi_yorum.Entity.Constants;
+import com.example.murat.gezi_yorum.Entity.MediaFile;
 import com.example.murat.gezi_yorum.LocationSaveService;
 import com.example.murat.gezi_yorum.MainActivity;
 import com.example.murat.gezi_yorum.R;
-import com.example.murat.gezi_yorum.Entity.Constants;
-import com.example.murat.gezi_yorum.Entity.MediaFile;
 import com.example.murat.gezi_yorum.Utils.LocationDbOpenHelper;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -64,7 +63,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
     private Uri lastOutputMedia;
 
     private BottomSheetBehavior behavior;
-    private Button pause_continue;
+    private FloatingActionButton pause_continue;
     private View.OnClickListener pause, continue_listener;
     private MainActivity parentActivity;
     private OnLocationChangedListener listener;
@@ -94,6 +93,8 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         parentActivity = (MainActivity) getActivity();
         helper = new LocationDbOpenHelper(getContext());
         preferences = parentActivity.getPreferences(Context.MODE_PRIVATE);
+
+        pause_continue = view.findViewById(R.id.pause_continue);
 
         trip_id = preferences.getLong(Constants.TRIPID,-1);
         path_id = preferences.getLong(Constants.PATH_ID, -1);
@@ -146,30 +147,23 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
             }
         });
 
-        pause_continue = view.findViewById(R.id.pause_continue);
-        Button stop = view.findViewById(R.id.stop);
+
+        FloatingActionButton stop = view.findViewById(R.id.stop);
         pause = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 stopPathRecording();
-                pause_continue.setOnClickListener(continue_listener);
-                pause_continue.setText("Contiune");
-                pause_continue.setBackgroundColor(Color.GREEN);
             }
         };
         continue_listener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 startPathRecording();
-                pause_continue.setOnClickListener(pause);
-                pause_continue.setText("Pause");
-                pause_continue.setBackgroundColor(Color.YELLOW);
             }
         };
         if (state.equals(Constants.PASSIVE)) {
             pause_continue.setOnClickListener(continue_listener);
-            pause_continue.setText("Contiune");
-            pause_continue.setBackgroundColor(Color.GREEN);
+            pause_continue.setImageResource(R.drawable.aar_ic_play);
         } else {
             if(LocationSaveService.instance == null && checkLocationPermission(LOCATION_PERMISSION_REQUEST_ON_FAIL)){
                 Intent intent = new Intent(getContext(), LocationSaveService.class);
@@ -178,8 +172,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
                 parentActivity.startService(intent);
             }
             pause_continue.setOnClickListener(pause);
-            pause_continue.setText("Pause");
-            pause_continue.setBackgroundColor(Color.YELLOW);
+            pause_continue.setImageResource(R.drawable.aar_ic_pause);
         }
         stop.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -250,6 +243,8 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         intent.putExtra(Constants.TRIPID,trip_id);
         intent.putExtra(Constants.PATH_ID,path_id);
         getActivity().startService(intent);
+        pause_continue.setOnClickListener(pause);
+        pause_continue.setImageResource(R.drawable.aar_ic_pause);
         //addPathOnMap(map, false, path_id);
     }
     public void stopPathRecording(){
@@ -260,6 +255,8 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         editor.putLong(Constants.PATH_ID,-1);
         editor.putString(Constants.RECORDSTATE,Constants.PASSIVE);
         editor.apply();
+        pause_continue.setOnClickListener(continue_listener);
+        pause_continue.setImageResource(R.drawable.aar_ic_play);
     }
 
     private boolean checkLocationPermission(int request){
@@ -429,7 +426,8 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
                 type = Constants.SOUNDRECORD;
             }
             @SuppressLint("MissingPermission") Location lastknown = ((LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE)).getLastKnownLocation(LocationManager.GPS_PROVIDER);
-            MediaFile mediaFile = new MediaFile(type,lastOutputMedia.getPath(),lastknown.getLatitude(),lastknown.getLongitude(), lastknown.getAltitude(),trip_id,System.currentTimeMillis());
+            String share_option = preferences.getString(Constants.SHARE_OPTION, Constants.EVERYBODY);
+            MediaFile mediaFile = new MediaFile(type,lastOutputMedia.getPath(),lastknown.getLatitude(),lastknown.getLongitude(), lastknown.getAltitude(),trip_id,System.currentTimeMillis(), share_option);
             new Handler().post(new ThumbnailGeneration(mediaFile));
             if(requestCode == REQUEST_IMAGE_CAPTURE){
                 startNewPhotoIntent();

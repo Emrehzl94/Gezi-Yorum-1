@@ -5,10 +5,10 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
-import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -45,8 +45,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-
-        changeFragment(new Home());
+        String isActive = preferences.getString(Constants.RECORDSTATE, Constants.PASSIVE);
+        if(isActive.equals(Constants.ACTIVE)){
+            changeFragment(new ContinuingTrip());
+        }else {
+            changeFragment(new Home());
+        }
     }
 
     @Override
@@ -106,11 +110,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 }
                 break;
             }case (R.id.nav_settings): {
-
+                break;
             }case  (R.id.nav_share) :{
-
+                break;
             }case (R.id.nav_send): {
-
+                break;
             }case (R.id.nav_log_out): {
                 setResult(Activity.RESULT_CANCELED);
                 finish();

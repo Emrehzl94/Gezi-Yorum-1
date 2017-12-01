@@ -1,6 +1,7 @@
 package com.example.murat.gezi_yorum.Utils;
 
 import android.content.Context;
+import android.location.Location;
 
 import com.example.murat.gezi_yorum.Entity.mLocation;
 import com.google.android.gms.maps.model.LatLng;
@@ -44,12 +45,14 @@ public class LocationCSVHandler {
         }
     }
     private String getHeader(){
-        return mLocation.LATITUDE + "," + mLocation.LONGTITUDE +","+mLocation.ALTITUDE+","+mLocation.TIME;
+        return mLocation.LATITUDE + "," + mLocation.LONGTITUDE +","+mLocation.ALTITUDE+","+mLocation.TIME
+        +","+mLocation.ACCURACY+","+mLocation.SPEED;
     }
-    public void saveLocation(mLocation location){
+    public void saveLocation(Location location){
         try {
             PrintWriter writer = new PrintWriter(new FileOutputStream(file,true));
-            writer.println(location.getLatitude()+","+location.getLongitude()+","+location.getAltitude()+","+location.getTime());
+            writer.println(location.getLatitude()+","+location.getLongitude()+","+location.getAltitude()+","+location.getTime()
+            +","+location.getAccuracy()+","+location.getSpeed());
             writer.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();

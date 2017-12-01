@@ -46,6 +46,8 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
     private static final String COLUMN_TRIPID = "trip_id";
     private static final String COLUMN_DATE = "date";
     private static final String COLUMN_THUMBNAIL = "thumbnail";
+    private static final String COLUMN_SHARE_OPTION = "share_option";
+    private static final String COLUMN_NOTE = "note";
 
 
     public LocationDbOpenHelper(Context context) {
@@ -72,7 +74,9 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
                 COLUMN_PATH + " varchar(255)," +
                 COLUMN_TRIPID + " integer,"+
                 COLUMN_DATE + " integer," +
-                COLUMN_THUMBNAIL+" blob NOT NULL ); ";
+                COLUMN_THUMBNAIL+" blob NOT NULL,"+
+                COLUMN_SHARE_OPTION+" text NOT NULL," +
+                COLUMN_NOTE+" text); ";
         db.execSQL(tripsTableCreateQuery);
         db.execSQL(pathTableCreateQuery);
         db.execSQL(mediaTableCreateQuery);
@@ -205,7 +209,6 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
 
     public void insertMediaFile(MediaFile mediaFile){
         ContentValues values = new ContentValues();
-        byte[] byteArray = mediaFile.getByteArray();
 
         values.put(COLUMN_TYPE,mediaFile.type);
         values.put(COLUMN_PATH,mediaFile.path);
@@ -214,7 +217,8 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
         values.put(COLUMN_ALTITUDE, mediaFile.location.getAltitude());
         values.put(COLUMN_TRIPID, mediaFile.trip_id);
         values.put(COLUMN_DATE,mediaFile.location.getTime());
-        values.put(COLUMN_THUMBNAIL,byteArray);
+        values.put(COLUMN_THUMBNAIL,mediaFile.getByteArray());
+        values.put(COLUMN_SHARE_OPTION,mediaFile.share_option);
         SQLiteDatabase database = getWritableDatabase();
         mediaFile.id = database.insert(TABLE_MEDIA, null, values);
     }
@@ -238,14 +242,14 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
         }
         Cursor cursor = db.rawQuery(query, null);
         cursor.moveToFirst();
-        ArrayList<MediaFile> points = new ArrayList<>();
+        ArrayList<MediaFile> media = new ArrayList<>();
         while (!cursor.isAfterLast()) {
-            points.add(createMediaFileFromCursor(cursor));
+            media.add(createMediaFileFromCursor(cursor));
             cursor.moveToNext();
         }
         cursor.close();
         db.close();
-        return points;
+        return media;
     }
     public MediaFile getMediaFile(Long media_id){
         SQLiteDatabase db = getReadableDatabase();
@@ -272,7 +276,9 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
                 cursor.getDouble(cursor.getColumnIndex(COLUMN_ALTITUDE)),
                 cursor.getLong(cursor.getColumnIndex(COLUMN_TRIPID)),
                 cursor.getLong(cursor.getColumnIndex(COLUMN_DATE)),
-                cursor.getBlob(cursor.getColumnIndex(COLUMN_THUMBNAIL))
+                cursor.getBlob(cursor.getColumnIndex(COLUMN_THUMBNAIL)),
+                cursor.getString(cursor.getColumnIndex(COLUMN_SHARE_OPTION)),
+                cursor.getString(cursor.getColumnIndex(COLUMN_NOTE))
         );
     }
 }
