@@ -26,11 +26,14 @@ import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.example.murat.gezi_yorum.Entity.Constants;
 import com.example.murat.gezi_yorum.Entity.MediaFile;
+import com.example.murat.gezi_yorum.Entity.Trip;
 import com.example.murat.gezi_yorum.LocationSaveService;
 import com.example.murat.gezi_yorum.MainActivity;
+import com.example.murat.gezi_yorum.MediaActivity;
 import com.example.murat.gezi_yorum.R;
 import com.example.murat.gezi_yorum.Utils.LocationDbOpenHelper;
 import com.google.android.gms.maps.GoogleMap;
@@ -51,9 +54,8 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
     private static final int EXTERNAL_STORAGE_VIDEO_PERMISSION = 2;
     private static final int EXTERNAL_STORAGE_SOUNDRECORD_PERMISSION = 3;
     private static final int SOUNDRECORD_PERMISSION = 4;
-    private static final int LOCATION_PERMISSION_REQUEST_ON_START = 5;
-    private static final int LOCATION_PERMISSION_REQUEST_ON_CONTIUNE = 6;
-    private static final int LOCATION_PERMISSION_REQUEST_ON_FAIL = 7;
+    private static final int LOCATION_PERMISSION_REQUEST = 5;
+    private static final int LOCATION_PERMISSION_REQUEST_ON_FAIL = 6;
     private int REQUEST_IMAGE_CAPTURE = 1;
     private int REQUEST_VIDEO_CAPTURE = 2;
     private int REQUEST_SOUND_RECORD= 3;
@@ -69,16 +71,13 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
 
     private SharedPreferences preferences;
 
+    private TextView header;
     private FloatingActionButton add_photo_fab;
     private FloatingActionButton add_video_fab;
     private FloatingActionButton add_sound_record_fab;
 
     private long path_id;
     private boolean isFabMenuOpen = false;
-    private String state;
-    public void setTrip_id(long trip_id) {
-        this.trip_id = trip_id;
-    }
 
     @Nullable
     @Override
@@ -96,14 +95,22 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
 
         trip_id = preferences.getLong(Constants.TRIPID,-1);
         path_id = preferences.getLong(Constants.PATH_ID, -1);
-        state = preferences.getString(Constants.RECORDSTATE,Constants.PASSIVE);
+        header = view.findViewById(R.id.header);
+
+        String state = preferences.getString(Constants.RECORDSTATE, Constants.PASSIVE);
         Bundle arguments = getArguments();
         if(arguments!=null) {
             String message = arguments.getString(Constants.MESSAGE);
             //This means coming from StartTripFragment
-            if (message != null && message.equals(Constants.STARTNEWTRIP))
+            if (message != null && message.equals(Constants.STARTNEWTRIP)) {
+                name = arguments.getString(Constants.TRIPNAME);
+
                 startNewTrip();
+            }
         }
+        Trip trip = helper.getTrip(trip_id);
+        header.setText(trip.name);
+
         FloatingActionButton add_fab = view.findViewById(R.id.add_media);
         add_photo_fab = view.findViewById(R.id.add_photo);
         add_video_fab = view.findViewById(R.id.add_video);
@@ -212,9 +219,8 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
     }
 
     public void startNewTrip(){
-        if(!checkLocationPermission(LOCATION_PERMISSION_REQUEST_ON_START)) return;
+        trip_id = helper.startNewTrip(name);
         parentActivity.showSnackbarMessage("Trip started", Snackbar.LENGTH_LONG);
-        trip_id = helper.startNewTrip();
         SharedPreferences.Editor editor = preferences.edit();
         editor.putLong(Constants.TRIPID,trip_id);
         editor.putString(Constants.TRIPSTATE, Constants.STARTED);
@@ -231,7 +237,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         editor.apply();
     }
     public void startPathRecording(){
-        if(!checkLocationPermission(LOCATION_PERMISSION_REQUEST_ON_CONTIUNE)) return;
+        if(!checkLocationPermission(LOCATION_PERMISSION_REQUEST)) return;
         path_id = helper.startNewPath(trip_id);
         SharedPreferences.Editor editor = preferences.edit();
         editor.putLong(Constants.PATH_ID,path_id);
@@ -277,7 +283,9 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
-                markers.get(marker.getSnippet()).startActivityForView(getActivity());
+                Intent intent = new Intent(getContext(), MediaActivity.class);
+                intent.putExtra("fileIds",marker.getSnippet());
+                parentActivity.startActivity(intent);
                 return true;
             }
         });
@@ -454,14 +462,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
                     startNewAudioIntent();
                 }
                 break;
-            case LOCATION_PERMISSION_REQUEST_ON_START:
-                if(grantResults[0] != PackageManager.PERMISSION_GRANTED){
-                    parentActivity.showSnackbarMessage("Konum izni olmadan konum kaydı yapılamaz", Snackbar.LENGTH_LONG);
-                }else {
-                    startNewTrip();
-                }
-                break;
-            case LOCATION_PERMISSION_REQUEST_ON_CONTIUNE:
+            case LOCATION_PERMISSION_REQUEST:
                 if(grantResults[0] != PackageManager.PERMISSION_GRANTED){
                     parentActivity.showSnackbarMessage("Konum izni olmadan konum kaydı yapılamaz", Snackbar.LENGTH_LONG);
                 }else {

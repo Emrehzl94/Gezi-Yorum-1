@@ -67,7 +67,7 @@ public class mLocation {
         return (earthRadius * c);
     }
 
-    LatLng convertLatLng(){
+    public LatLng convertLatLng(){
         return new LatLng(Latitude, Longitude);
     }
 }

@@ -31,4 +31,16 @@
     <string name="username">Username</string>
     <string name="password_again">Password (again)</string>
     <string name="passwords_not_same">Passwords are not same.</string>
+    <string name="note">Note</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="delete">Are you sure to delete?</string>
+    <string name="yes">Yes</string>
+    <string name="share_options">Share Options</string>
+    <string name="eveybody">Everybody</string>
+    <string name="only_my_friends">Only My Friends</string>
+    <string name="only_me">Only Me</string>
+    <string name="trips">Trips</string>
+    <string name="trip_name">Give a name to this trip</string>
+    <string name="logout">Log Out</string>
 </resources>

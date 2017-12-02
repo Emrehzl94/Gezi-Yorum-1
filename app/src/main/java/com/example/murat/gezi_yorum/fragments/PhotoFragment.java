@@ -24,7 +24,7 @@ public class PhotoFragment extends MediaFragment {
         imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                toggleBehaviour();
+                toggleControls();
             }
         });
     }

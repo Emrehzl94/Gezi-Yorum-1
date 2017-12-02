@@ -23,6 +23,7 @@ import com.example.murat.gezi_yorum.fragments.Home;
 import com.example.murat.gezi_yorum.fragments.Search;
 import com.example.murat.gezi_yorum.fragments.StartTripFragment;
 import com.example.murat.gezi_yorum.fragments.TimeLine;
+import com.example.murat.gezi_yorum.fragments.Trips;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private SharedPreferences preferences;
@@ -96,7 +97,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 fragment = new Home();
                 break;
                 // Handle the camera action
-            }case (R.id.nav_timeline): {
+            }case (R.id.nav_trips): {
+                fragment = new Trips();
+                break;
+            }
+            case (R.id.nav_timeline): {
                 fragment = new TimeLine();
                 break;
             }case (R.id.nav_search): {
@@ -110,10 +115,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 }
                 break;
             }case (R.id.nav_settings): {
-                break;
-            }case  (R.id.nav_share) :{
-                break;
-            }case (R.id.nav_send): {
                 break;
             }case (R.id.nav_log_out): {
                 setResult(Activity.RESULT_CANCELED);

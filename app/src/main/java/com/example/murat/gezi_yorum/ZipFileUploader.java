@@ -121,7 +121,6 @@ public class ZipFileUploader extends Service {
                 zipFile.createNewFile();
             }
             ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(zipFile));
-            //TODO: pathMetaData will add to zip in right format.
 
             ArrayList<Long> pathIDs = helper.getPathsIDs(trip_id);
             JSONArray pathMetaData = new JSONArray();

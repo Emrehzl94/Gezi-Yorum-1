@@ -8,15 +8,12 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.support.annotation.Nullable;
 
 import com.example.murat.gezi_yorum.Entity.MediaFile;
+import com.example.murat.gezi_yorum.Entity.Trip;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
 
 
 /**
@@ -34,6 +31,7 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
     private static final String TABLE_TRIPS = "Trips";
     private static final String COLUMN_STARTDATE = "startDate";
     private static final String COLUMN_FINISHDATE = "finishDate";
+    private static final String COLUMN_NAME = "trip_name";
 
     private static final String TABLE_PATHS = "Paths";
 
@@ -47,7 +45,7 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
     private static final String COLUMN_DATE = "date";
     private static final String COLUMN_THUMBNAIL = "thumbnail";
     private static final String COLUMN_SHARE_OPTION = "share_option";
-    private static final String COLUMN_NOTE = "note";
+    private static final String COLUMN_NOTE = "name";
 
 
     public LocationDbOpenHelper(Context context) {
@@ -59,7 +57,8 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
         String tripsTableCreateQuery = "CREATE TABLE " + TABLE_TRIPS +
                 "("+COLUMN_ID+" integer PRIMARY KEY AUTOINCREMENT," +
                  COLUMN_STARTDATE +" INTEGER not null," +
-                 COLUMN_FINISHDATE+" INTEGER not null)";
+                 COLUMN_FINISHDATE+" INTEGER not null," +
+                 COLUMN_NAME+" text)";
         String pathTableCreateQuery = "CREATE TABLE " + TABLE_PATHS +
                 "("+COLUMN_ID+" integer PRIMARY KEY AUTOINCREMENT," +
                 COLUMN_STARTDATE +" INTEGER not null," +
@@ -94,14 +93,22 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
      * Inserts new trip to database
      * @return trip_id
      */
-    public long startNewTrip(){
+    //TODO: Add new ArrayList<Long> user_ids to this trip
+    public long startNewTrip(String name){
         ContentValues values = new ContentValues();
         values.put(COLUMN_STARTDATE,System.currentTimeMillis());
         values.put(COLUMN_FINISHDATE,Long.MAX_VALUE);
+        values.put(COLUMN_NAME, name);
         SQLiteDatabase database = getWritableDatabase();
         return database.insert(TABLE_TRIPS,null ,values);
     }
 
+    public void updateTripNote(Long trip_id, String note){
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_NOTE,note);
+        SQLiteDatabase database = getWritableDatabase();
+        database.update(TABLE_TRIPS, values, COLUMN_ID + "=" +trip_id, null);
+    }
     /**
      * Ends trip
      * @param path_id path id
@@ -169,21 +176,20 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
         database.close();
         return trip_ids;
     }
-    public HashMap<String, String> getTripInfo(long trip_id){
-        String query = "SELECT * FROM "+TABLE_TRIPS+" WHERE "+COLUMN_ID+"='"+trip_id+"'";
+    public Trip getTrip(long trip_id){
+        String query = "SELECT * FROM "+TABLE_TRIPS+" WHERE "+COLUMN_ID+"="+trip_id;
         SQLiteDatabase database = getReadableDatabase();
         Cursor cursor = database.rawQuery(query,null);
         cursor.moveToFirst();
-        HashMap<String, String> trip_info = new HashMap<>();
-        DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss dd-MM-YYYY");
-        Long starttime = cursor.getLong(cursor.getColumnIndex(COLUMN_STARTDATE));
-        trip_info.put("startdate",dateFormat.format(new Date(starttime)));
-        Long finishtime = cursor.getLong(cursor.getColumnIndex(COLUMN_FINISHDATE));
-        trip_info.put("finishdate",dateFormat.format(new Date(finishtime)));
-        cursor.moveToNext();
+        Trip trip = new Trip(
+                cursor.getLong(cursor.getColumnIndex(COLUMN_ID)),
+                cursor.getLong(cursor.getColumnIndex(COLUMN_STARTDATE)),
+                cursor.getLong(cursor.getColumnIndex(COLUMN_FINISHDATE)),
+                cursor.getString(cursor.getColumnIndex(COLUMN_NAME))
+        );
         cursor.close();
         database.close();
-        return trip_info;
+        return trip;
     }
     public JSONObject getPathInfo(long path_id){
         String query = "SELECT * FROM "+TABLE_PATHS+" WHERE "+COLUMN_ID+"='"+path_id+"'";
@@ -270,12 +276,20 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
         db.execSQL(query);
     }
 
-    public void updateNote(MediaFile mediaFile, String note){
+    public void updateMediaNote(MediaFile mediaFile, String note){
         ContentValues values = new ContentValues();
         values.put(COLUMN_NOTE,note);
         SQLiteDatabase database = getWritableDatabase();
         database.update(TABLE_MEDIA, values, COLUMN_ID + "=" + mediaFile.id, null);
         mediaFile.about_note = note;
+    }
+
+    public void updateShareOption(MediaFile mediaFile, String option){
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_SHARE_OPTION,option);
+        SQLiteDatabase database = getWritableDatabase();
+        database.update(TABLE_MEDIA, values, COLUMN_ID + "=" + mediaFile.id, null);
+        mediaFile.about_note = option;
     }
 
     private MediaFile createMediaFileFromCursor(Cursor cursor){

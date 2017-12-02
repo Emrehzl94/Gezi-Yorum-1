@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.murat.gezi_yorum.Entity.Constants;
+import com.example.murat.gezi_yorum.MediaActivity;
 import com.example.murat.gezi_yorum.R;
 import com.example.murat.gezi_yorum.Utils.LocationDbOpenHelper;
 import com.example.murat.gezi_yorum.Utils.TripPagerAdapter;
@@ -59,10 +60,16 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
         if(trip_ids.size() == 0){
             shareTrip.setEnabled(false);
         }
+        Bundle args = getArguments();
+        if(args != null){
+            currentPosition = args.getInt("position");
+        }else {
+            currentPosition = trip_ids.size() - 1 ;
+        }
+
         pagerAdapter = new TripPagerAdapter(getChildFragmentManager(), trip_ids);
         viewPager.setAdapter(pagerAdapter);
         viewPager.setCurrentItem(pagerAdapter.getCount());
-        currentPosition = pagerAdapter.getCount()-1;
         if(pagerAdapter.getCount()==0){
             shareTrip.setVisibility(View.INVISIBLE);
         }
@@ -86,8 +93,7 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
 
             }
         });
-        viewPager.setCurrentItem(pagerAdapter.getCount());
-        currentPosition = pagerAdapter.getCount()-1;
+        viewPager.setCurrentItem(currentPosition);
 
         View bottomsheet = view.findViewById(R.id.bottomsheet);
         behavior = BottomSheetBehavior.from(bottomsheet);
@@ -110,8 +116,9 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
         map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
-
-                pagerAdapter.getFragment(currentPosition).markers.get(marker.getSnippet()).startActivityForView(getActivity());
+                Intent intent = new Intent(getContext(), MediaActivity.class);
+                intent.putExtra("fileIds",marker.getSnippet());
+                getActivity().startActivity(intent);
                 return true;
             }
         });
@@ -127,8 +134,9 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
                 }
             }
         });
+
         if(pagerAdapter.getCount()>0) {
-            pagerAdapter.getFragment(pagerAdapter.getCount()-1).requestToDrawPathOnMap(map,true);
+            pagerAdapter.getFragment(currentPosition).requestToDrawPathOnMap(map,true);
         }
     }
 

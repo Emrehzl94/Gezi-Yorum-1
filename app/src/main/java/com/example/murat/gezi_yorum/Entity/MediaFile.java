@@ -13,7 +13,6 @@ import com.example.murat.gezi_yorum.fragments.PhotoFragment;
 import com.example.murat.gezi_yorum.fragments.VideoFragment;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.json.JSONException;
@@ -83,15 +82,14 @@ public class MediaFile {
      * @param map GoogleMap
      */
 
-    public Marker addToMap(GoogleMap map){
-        return map.addMarker(new MarkerOptions().position(location.convertLatLng())
+    public void addToMap(GoogleMap map){
+        map.addMarker(new MarkerOptions().position(location.convertLatLng())
                 .icon(BitmapDescriptorFactory.defaultMarker(getColorForMap()))
-                .title(String.valueOf(id))
                 .snippet(String.valueOf(id))
         );
     }
 
-    public float getColorForMap(){
+    private float getColorForMap(){
         float color = 0;
         switch (type){
             case Constants.PHOTO:
@@ -157,12 +155,12 @@ public class MediaFile {
      */
     public void startActivityForView(Activity activity){
         Intent intent = new Intent(activity, MediaActivity.class);
-        intent.putExtra("fileIds",new long[]{id});
+        intent.putExtra("fileIds",String.valueOf(id));
         activity.startActivity(intent);
     }
 
     /**
-     * Returns compatiple viewer for media type
+     * Returns compatible viewer for media type
      * @return Fragment
      */
     public Fragment getViewer(){

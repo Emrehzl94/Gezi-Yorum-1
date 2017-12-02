@@ -4,12 +4,28 @@
     android:layout_height="match_parent"
     android:layout_width="match_parent">
 
+    <TextView
+        android:id="@+id/header"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:textAppearance="@android:style/TextAppearance.Holo.Medium" />
+
+    <View
+        android:id="@+id/hline"
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:background="@color/colorPrimaryDark"
+        android:layout_margin="@dimen/fab_margin"
+        android:layout_below="@id/header"/>
+
     <GridView
         android:id="@+id/preview"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:numColumns="3"
         android:stretchMode="columnWidth"
+        android:layout_below="@id/hline"
         android:gravity="center"
         />
 

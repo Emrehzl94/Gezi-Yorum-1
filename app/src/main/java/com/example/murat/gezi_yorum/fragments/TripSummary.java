@@ -1,6 +1,5 @@
 package com.example.murat.gezi_yorum.fragments;
 
-import android.content.Intent;
 import android.graphics.Color;
 import android.os.Handler;
 import android.os.StrictMode;
@@ -9,25 +8,24 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
 
-import com.example.murat.gezi_yorum.GalleryActivity;
-import com.example.murat.gezi_yorum.R;
-import com.example.murat.gezi_yorum.Entity.Constants;
-import com.example.murat.gezi_yorum.Utils.LocationCSVHandler;
 import com.example.murat.gezi_yorum.Entity.MediaFile;
+import com.example.murat.gezi_yorum.R;
+import com.example.murat.gezi_yorum.Utils.LocationCSVHandler;
 import com.example.murat.gezi_yorum.Utils.LocationDbOpenHelper;
 import com.example.murat.gezi_yorum.Utils.MediaGridViewAdapter;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * Abstract class merges TripInfo and ContiuningTrip
@@ -38,9 +36,9 @@ public abstract class TripSummary extends Fragment {
     protected ArrayList<MediaFile> mediaFiles;
     protected LocationDbOpenHelper helper;
     protected long trip_id;
+    protected String name;
 
     protected GoogleMap map;
-    protected HashMap<String,MediaFile> markers;
     protected Polyline addedPolyLine;
     protected ArrayList<LatLng> points;
 
@@ -89,22 +87,46 @@ public abstract class TripSummary extends Fragment {
      * Adding markers to map
      */
     public void addMarkersToMap(GoogleMap map){
-        markers = new HashMap<>();
         if(mediaFiles ==null || mediaFiles.size() == 0) return;
-        MediaFile previous = mediaFiles.get(0);
-        markers.put(previous.addToMap(map).getSnippet(),previous);
-        for (MediaFile file : mediaFiles){
-            if(!(previous.location.distInMeters(file.location) < 5)) {
-                markers.put(file.addToMap(map).getSnippet(), file);
+        MediaFile previous = null; // previous media file
+        ArrayList<Long> mediaGroup = new ArrayList<>();
+        for(MediaFile file : mediaFiles){
+            // İf distance between previous file is lower than 5 meters add this file to media group
+            if(previous == null || (previous.location.distInMeters(file.location)<5)){
+                mediaGroup.add(file.id);
+            }else {
+                // else if media group is empty add this file to map
+                if(mediaGroup.size() == 0){
+                    previous.addToMap(map);
+                    mediaGroup.clear();
+                }else {
+                    //if media group has at least one file, including current file two files add these files
+                    //to map as media group
+                    String snippet =file.id + " ";
+                    for (Long id : mediaGroup){
+                        snippet += id +" ";
+                    }
+                    map.addMarker(new MarkerOptions().position(previous.location.convertLatLng())
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
+                            .snippet(String.valueOf(snippet)));
+                    mediaGroup.clear();
+                }
             }
             previous = file;
         }
-    }
-    private void startMediaActivity(String actionType){
-        Intent intent = new Intent(getContext(),GalleryActivity.class);
-        intent.putExtra(Constants.ACTION,actionType);
-        intent.putExtra(Constants.TRIPID,trip_id);
-        startActivity(intent);
+        // if media group has only last file add last file to map
+        if(mediaGroup.size() == 1){
+            previous.addToMap(map);
+        }else if(mediaGroup.size() > 1) {
+            // else if media group has more than one file add these files to map as media group
+            String snippet = "";
+            for (Long id : mediaGroup){
+                snippet += id +" ";
+            }
+            map.addMarker(new MarkerOptions().position(previous.location.convertLatLng())
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
+                    .snippet(String.valueOf(snippet)));
+        }
     }
 
     /**

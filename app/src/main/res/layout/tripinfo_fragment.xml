@@ -9,31 +9,20 @@
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:src="@android:drawable/ic_media_previous"
-        android:text="Prev"/>
+        android:layout_alignParentStart="true"
+        />
 
-    <TextView
-        android:id="@+id/header"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:text="Header"
-        android:textAppearance="@android:style/TextAppearance.Holo.Medium" />
     <ImageButton
         android:id="@+id/nextbutton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
         android:src="@android:drawable/ic_media_next"
-        android:text="Next" />
-    <View
-        android:id="@+id/hline"
-        android:layout_width="match_parent"
-        android:layout_height="2dp"
-        android:background="@color/colorPrimaryDark"
-        android:layout_below="@id/nextbutton"/>
+        android:layout_alignParentEnd="true" />
+
     <include layout="@layout/media_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/hline"/>
+        />
 
 </RelativeLayout>

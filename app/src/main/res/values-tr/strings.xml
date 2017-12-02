@@ -24,4 +24,16 @@
     <string name="register">Kaydol</string>
     <string name="username">Kullanıcı Adı</string>
     <string name="passwords_not_same">Şifreler uyuşmuyor.</string>
+    <string name="note">Not</string>
+    <string name="cancel">Vazgeç</string>
+    <string name="save">Kaydet</string>
+    <string name="delete">Silmek istediğinize emin misiniz?</string>
+    <string name="yes">Evet</string>
+    <string name="share_options">Paylaşım Seçenekleri</string>
+    <string name="only_me">Sadece Ben</string>
+    <string name="only_my_friends">Sadece Arkadaşlarım</string>
+    <string name="eveybody">Herkes</string>
+    <string name="trips">Geziler</string>
+    <string name="trip_name">Bu geziye bir isim verin</string>
+    <string name="logout">Oturumu Kapat</string>
 </resources>

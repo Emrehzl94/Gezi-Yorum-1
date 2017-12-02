@@ -39,12 +39,12 @@ public class VideoFragment extends MediaFragment implements EasyVideoCallback{
 
     @Override
     public void onStarted(EasyVideoPlayer player) {
-
+        toggleControls();
     }
 
     @Override
     public void onPaused(EasyVideoPlayer player) {
-        toggleBehaviour();
+        toggleControls();
     }
 
     @Override

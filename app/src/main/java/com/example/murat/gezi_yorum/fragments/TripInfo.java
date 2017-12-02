@@ -8,10 +8,9 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.example.murat.gezi_yorum.Entity.Constants;
+import com.example.murat.gezi_yorum.Entity.Trip;
 import com.example.murat.gezi_yorum.R;
 import com.example.murat.gezi_yorum.Utils.LocationDbOpenHelper;
-
-import java.util.HashMap;
 
 /**
  * Shows trip info in Timeline fragment under viewpager.
@@ -54,8 +53,8 @@ public class TripInfo extends TripSummary {
         }
         TextView header = view.findViewById(R.id.header);
         helper = new LocationDbOpenHelper(getContext());
-        HashMap<String,String> trip_info = helper.getTripInfo(trip_id);
-        String headertext = trip_info.get("startdate") + "\n" + trip_info.get("finishdate");
+        Trip trip_info = helper.getTrip(trip_id);
+        String headertext = trip_info.name;
         header.setText(headertext);
         setUpView(view);
         return view;
