@@ -5,9 +5,12 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.ThumbnailUtils;
-import android.net.Uri;
 import android.provider.MediaStore;
+import android.support.v4.app.Fragment;
 
+import com.example.murat.gezi_yorum.MediaActivity;
+import com.example.murat.gezi_yorum.fragments.PhotoFragment;
+import com.example.murat.gezi_yorum.fragments.VideoFragment;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.Marker;
@@ -84,7 +87,7 @@ public class MediaFile {
         return map.addMarker(new MarkerOptions().position(location.convertLatLng())
                 .icon(BitmapDescriptorFactory.defaultMarker(getColorForMap()))
                 .title(String.valueOf(id))
-                .snippet(path)
+                .snippet(String.valueOf(id))
         );
     }
 
@@ -103,6 +106,7 @@ public class MediaFile {
         }
         return color;
     }
+
 
     public static String getSubdir(String type){
         String subdir = "";
@@ -152,30 +156,29 @@ public class MediaFile {
      * @param activity currentActivity
      */
     public void startActivityForView(Activity activity){
-        Intent intent = new Intent();
-        intent.setAction(Intent.ACTION_VIEW);
-        intent.setDataAndType(Uri.parse("file://"+path), getMimeForIntent());
+        Intent intent = new Intent(activity, MediaActivity.class);
+        intent.putExtra("fileIds",new long[]{id});
         activity.startActivity(intent);
     }
 
     /**
-     * returns Mime type
-     * @return String
+     * Returns compatiple viewer for media type
+     * @return Fragment
      */
-    private String getMimeForIntent(){
-        String mimeType = "";
+    public Fragment getViewer(){
+        Fragment fragment = null;
         switch (type){
             case Constants.PHOTO:
-                mimeType = "image/*";
+                fragment = new PhotoFragment();
                 break;
             case Constants.VIDEO:
-                mimeType = "video/*";
+                fragment = new VideoFragment();
                 break;
             case Constants.SOUNDRECORD:
-                mimeType = "audio/*";
+                fragment = new VideoFragment();
                 break;
         }
-        return mimeType;
+        return fragment;
     }
 
     public JSONObject toJSONObject(){

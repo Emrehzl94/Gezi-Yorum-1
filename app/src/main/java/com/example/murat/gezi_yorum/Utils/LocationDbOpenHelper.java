@@ -264,7 +264,19 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
         db.close();
         return mediaFile;
     }
+    public void deleteMediaFile(Long media_id){
+        SQLiteDatabase db = getReadableDatabase();
+        String query = "DELETE FROM "+TABLE_MEDIA+" WHERE "+COLUMN_ID+"='"+media_id+"'";
+        db.execSQL(query);
+    }
 
+    public void updateNote(MediaFile mediaFile, String note){
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_NOTE,note);
+        SQLiteDatabase database = getWritableDatabase();
+        database.update(TABLE_MEDIA, values, COLUMN_ID + "=" + mediaFile.id, null);
+        mediaFile.about_note = note;
+    }
 
     private MediaFile createMediaFileFromCursor(Cursor cursor){
         return new MediaFile(

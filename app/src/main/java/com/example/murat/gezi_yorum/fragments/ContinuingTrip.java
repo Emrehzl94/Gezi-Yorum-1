@@ -33,12 +33,10 @@ import com.example.murat.gezi_yorum.LocationSaveService;
 import com.example.murat.gezi_yorum.MainActivity;
 import com.example.murat.gezi_yorum.R;
 import com.example.murat.gezi_yorum.Utils.LocationDbOpenHelper;
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.LocationSource;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 
@@ -267,7 +265,6 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         return true;
     }
 
-    private Marker lastClickedMarker;
     @Override
     public void onMapReady(GoogleMap googleMap) {
         if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -280,21 +277,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
-                if(marker.getZIndex() != 1){
-                    if(lastClickedMarker!=null){
-                        lastClickedMarker.setIcon(BitmapDescriptorFactory.defaultMarker(markers.get(marker.getSnippet()).getColorForMap()));
-                        lastClickedMarker.setZIndex(0);
-                    }
-                    marker.setIcon(BitmapDescriptorFactory.fromBitmap(markers.get(marker.getSnippet()).thumbNail));
-                    marker.setZIndex(1);
-                    lastClickedMarker = marker;
-                }else {
-                    helper.getMediaFile(Long.parseLong(marker.getTitle())).startActivityForView(getActivity());
-                    marker.setIcon(BitmapDescriptorFactory.defaultMarker(markers.get(marker.getSnippet()).getColorForMap()));
-                    marker.setZIndex(0);
-                    lastClickedMarker = null;
-                }
-                map.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()));
+                markers.get(marker.getSnippet()).startActivityForView(getActivity());
                 return true;
             }
         });
@@ -307,10 +290,6 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
                 }else {
                     behavior.setHideable(true);
                     behavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-                }
-                if(lastClickedMarker!=null){
-                    lastClickedMarker.setIcon(BitmapDescriptorFactory.defaultMarker(helper.getMediaFile(Long.parseLong(lastClickedMarker.getTitle())).getColorForMap()));
-                    lastClickedMarker.setZIndex(0);
                 }
             }
         });

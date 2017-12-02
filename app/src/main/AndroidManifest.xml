@@ -35,7 +35,8 @@
             android:value="@string/google_maps_key" />
 
         <activity android:name=".GalleryActivity" />
-        <activity android:name=".PhotoActivity" />
+        <activity android:name=".MediaActivity"
+            android:theme="@style/AppTheme.NoActionBar"/>
         <activity android:name=".VideoActivity" />
         <activity
             android:name=".RegisterActivity"

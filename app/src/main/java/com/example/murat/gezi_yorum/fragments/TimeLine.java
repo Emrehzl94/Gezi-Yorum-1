@@ -12,15 +12,13 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.murat.gezi_yorum.Entity.Constants;
-import com.example.murat.gezi_yorum.ZipFileUploader;
+import com.example.murat.gezi_yorum.R;
 import com.example.murat.gezi_yorum.Utils.LocationDbOpenHelper;
 import com.example.murat.gezi_yorum.Utils.TripPagerAdapter;
-import com.example.murat.gezi_yorum.R;
-import com.google.android.gms.maps.CameraUpdateFactory;
+import com.example.murat.gezi_yorum.ZipFileUploader;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 
@@ -112,20 +110,8 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
         map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
-                if(marker.getZIndex() != 1){
-                    if(lastClickedMarker!=null){
-                        lastClickedMarker.setIcon(BitmapDescriptorFactory.defaultMarker(helper.getMediaFile(Long.parseLong(lastClickedMarker.getTitle())).getColorForMap()));
-                    }
-                    marker.setIcon(BitmapDescriptorFactory.fromBitmap(helper.getMediaFile(Long.parseLong(marker.getTitle())).thumbNail));
-                    marker.setZIndex(1);
-                    lastClickedMarker = marker;
-                }else {
-                    helper.getMediaFile(Long.parseLong(marker.getTitle())).startActivityForView(getActivity());
-                    marker.setZIndex(0);
-                    marker.setIcon(BitmapDescriptorFactory.defaultMarker(helper.getMediaFile(Long.parseLong(marker.getTitle())).getColorForMap()));
-                    lastClickedMarker = null;
-                }
-                map.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()));
+
+                pagerAdapter.getFragment(currentPosition).markers.get(marker.getSnippet()).startActivityForView(getActivity());
                 return true;
             }
         });
@@ -138,10 +124,6 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
                 }else {
                     behavior.setHideable(true);
                     behavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-                }
-                if(lastClickedMarker!=null){
-                    lastClickedMarker.setIcon(BitmapDescriptorFactory.defaultMarker(helper.getMediaFile(Long.parseLong(lastClickedMarker.getTitle())).getColorForMap()));
-                    lastClickedMarker.setZIndex(0);
                 }
             }
         });
