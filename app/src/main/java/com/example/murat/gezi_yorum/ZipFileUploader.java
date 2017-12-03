@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import com.example.murat.gezi_yorum.Entity.Constants;
 import com.example.murat.gezi_yorum.Entity.MediaFile;
+import com.example.murat.gezi_yorum.Entity.Trip;
 import com.example.murat.gezi_yorum.Utils.LocationCSVHandler;
 import com.example.murat.gezi_yorum.Utils.LocationDbOpenHelper;
 import com.example.murat.gezi_yorum.Utils.MultipartUtility;
@@ -120,6 +121,11 @@ public class ZipFileUploader extends Service {
                 zipFile.createNewFile();
             }
             ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(zipFile));
+
+            Trip trip = helper.getTrip(trip_id);
+            ZipEntry tripMetaDataEntry = new ZipEntry("trip_metadata.JSON");
+            zipOutputStream.putNextEntry(tripMetaDataEntry);
+            zipOutputStream.write(trip.toJSONObject().toString().getBytes());
 
             ArrayList<Long> pathIDs = helper.getPathsIDs(trip_id);
             JSONArray pathMetaData = new JSONArray();

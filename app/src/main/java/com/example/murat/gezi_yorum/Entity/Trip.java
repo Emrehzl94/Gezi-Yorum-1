@@ -1,5 +1,8 @@
 package com.example.murat.gezi_yorum.Entity;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.text.DateFormat;
 
 /**
@@ -25,5 +28,17 @@ public class Trip {
 
     public String getFinishdate() {
         return DateFormat.getDateInstance().format(finishdate);
+    }
+
+    public JSONObject toJSONObject(){
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("startdate",startdate);
+            jsonObject.put("finishdate", finishdate);
+            jsonObject.put("name", name);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return jsonObject;
     }
 }
