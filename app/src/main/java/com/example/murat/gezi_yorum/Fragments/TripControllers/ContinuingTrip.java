@@ -11,11 +11,9 @@ import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetBehavior;
@@ -28,6 +26,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.afollestad.materialcamera.MaterialCamera;
 import com.example.murat.gezi_yorum.Entity.Constants;
 import com.example.murat.gezi_yorum.Entity.MediaFile;
 import com.example.murat.gezi_yorum.Entity.Trip;
@@ -54,13 +53,17 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
     private static final int EXTERNAL_STORAGE_VIDEO_PERMISSION = 2;
     private static final int EXTERNAL_STORAGE_SOUNDRECORD_PERMISSION = 3;
     private static final int SOUNDRECORD_PERMISSION = 4;
-    private static final int LOCATION_PERMISSION_REQUEST = 5;
-    private static final int LOCATION_PERMISSION_REQUEST_ON_FAIL = 6;
+    private static final int MIC_CAMERA_PERMISSION = 5;
+    private static final int PHOTO_CAMERA_PERMISSION = 6;
+    private static final int MIC_VIDEO_PERMISSION = 7;
+    private static final int VIDEO_CAMERA_PERMISSION = 8;
+    private static final int LOCATION_PERMISSION_REQUEST = 9;
+    private static final int LOCATION_PERMISSION_REQUEST_ON_FAIL = 10;
     private int REQUEST_IMAGE_CAPTURE = 1;
     private int REQUEST_VIDEO_CAPTURE = 2;
     private int REQUEST_SOUND_RECORD= 3;
 
-    private Uri lastOutputMedia;
+    private String outputFile;
 
     private BottomSheetBehavior behavior;
     private FloatingActionButton pause_continue;
@@ -353,33 +356,45 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
      * starts new photo intent for taking photo
      */
     public void startNewPhotoIntent() {
-        if(!checkExternalStoragePermission(EXTERNAL_STORAGE_CAMERA_PERMISSION)) return;
-        Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-        lastOutputMedia = getOutputMediaFile(Constants.PHOTO);
-        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, lastOutputMedia);
-        startActivityForResult(cameraIntent, REQUEST_IMAGE_CAPTURE);
+        if(!checkExternalStoragePermission(EXTERNAL_STORAGE_CAMERA_PERMISSION)
+                || !checkSoundRecordPermission(MIC_CAMERA_PERMISSION)
+                || !checkCameraPermission(PHOTO_CAMERA_PERMISSION)) return;
+        String outputDir = getOutputMediaFileDir(Constants.PHOTO);
+        new MaterialCamera(this)
+                .labelRetry(R.string.cancel)
+                .labelConfirm(R.string.save)
+                .stillShot()
+                .saveDir(outputDir)
+                .start(REQUEST_IMAGE_CAPTURE);
     }
 
     /**
      * Starts new photo intent for video
      */
     public void startNewVideoIntent() {
-        if(!checkExternalStoragePermission(EXTERNAL_STORAGE_VIDEO_PERMISSION)) return;
-        Intent cameraIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
-        lastOutputMedia = getOutputMediaFile(Constants.VIDEO);
-        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT,lastOutputMedia);
-        startActivityForResult(cameraIntent, REQUEST_VIDEO_CAPTURE);
+        if(!checkExternalStoragePermission(EXTERNAL_STORAGE_VIDEO_PERMISSION)
+                || !checkSoundRecordPermission(MIC_VIDEO_PERMISSION)
+                || !checkCameraPermission(VIDEO_CAMERA_PERMISSION)) return;
+        String outputDir = getOutputMediaFileDir(Constants.VIDEO);
+        new MaterialCamera(this)
+                .labelRetry(R.string.cancel)
+                .labelConfirm(R.string.save)
+                .saveDir(outputDir)
+                .showPortraitWarning(false)
+                .start(REQUEST_VIDEO_CAPTURE);
     }
 
     /**
      * starts activity RecordAudio
      */
     public void startNewAudioIntent() {
-        if(!checkExternalStoragePermission(EXTERNAL_STORAGE_SOUNDRECORD_PERMISSION) || !checkSoundRecordPermission()) return;
+        if(!checkExternalStoragePermission(EXTERNAL_STORAGE_SOUNDRECORD_PERMISSION) || !checkSoundRecordPermission(SOUNDRECORD_PERMISSION)) return;
         int color = Color.CYAN;
-        lastOutputMedia = getOutputMediaFile(Constants.SOUNDRECORD);
+        String outputDir = getOutputMediaFileDir(Constants.SOUNDRECORD);
+        outputFile = outputDir + File.separator + System.currentTimeMillis()
+                +"."+MediaFile.getExtension(Constants.SOUNDRECORD);
         AndroidAudioRecorder.with(this)
-                .setFilePath(lastOutputMedia.getPath())
+                .setFilePath(outputFile)
                 .setColor(color)
                 .setRequestCode(REQUEST_SOUND_RECORD)
                 .recordFromFragment();
@@ -397,9 +412,17 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         return true;
     }
 
-    private boolean checkSoundRecordPermission(){
+    private boolean checkSoundRecordPermission(int request){
         if(ContextCompat.checkSelfPermission(getContext(), Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED){
-            requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, SOUNDRECORD_PERMISSION);
+            requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, request);
+            return false;
+        }
+        return true;
+    }
+
+    private boolean checkCameraPermission(int request){
+        if(ContextCompat.checkSelfPermission(getContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
+            requestPermissions(new String[]{Manifest.permission.CAMERA}, request);
             return false;
         }
         return true;
@@ -408,28 +431,30 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(resultCode == Activity.RESULT_OK){
+            String outputFile = "";
             String type = "";
             if(requestCode == REQUEST_IMAGE_CAPTURE){
+                outputFile = data.getData().getPath();
                 type = Constants.PHOTO;
             }else if(requestCode == REQUEST_VIDEO_CAPTURE){
+                outputFile = data.getData().getPath();
                 type = Constants.VIDEO;
             }else if(requestCode == REQUEST_SOUND_RECORD){
                 type = Constants.SOUNDRECORD;
             }
             String share_option = preferences.getString(Constants.SHARE_OPTION, Constants.EVERYBODY);
-            new Thread(new ThumbnailGeneration(lastOutputMedia.getPath(), type, share_option)).start();
+            new Thread(new ThumbnailGeneration(outputFile, type, share_option)).start();
             if(requestCode == REQUEST_IMAGE_CAPTURE){
                 startNewPhotoIntent();
             }
         }
     }
-    private Uri getOutputMediaFile(String type){
+    private String getOutputMediaFileDir(String type){
         File storageDir = new File(Environment.getExternalStoragePublicDirectory(getString(R.string.app_name)),MediaFile.getSubdir(type));
         if(!storageDir.exists()){
             storageDir.mkdirs();
         }
-        long time = System.currentTimeMillis();
-        return Uri.parse("file://"+storageDir.getPath() + File.separator + time+"."+MediaFile.getExtension(type));
+        return storageDir.getPath();
     }
 
     @Override
@@ -462,6 +487,34 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
                     parentActivity.showSnackbarMessage("Ses kayıt izni olmadan ses kaydı yapılamaz.", Snackbar.LENGTH_LONG);
                 }else {
                     startNewAudioIntent();
+                }
+                break;
+            case MIC_CAMERA_PERMISSION:
+                if(grantResults[0] != PackageManager.PERMISSION_GRANTED){
+                    parentActivity.showSnackbarMessage("Ses kayıt izni olmadan ses kaydı yapılamaz.", Snackbar.LENGTH_LONG);
+                }else {
+                    startNewPhotoIntent();
+                }
+                break;
+            case MIC_VIDEO_PERMISSION:
+                if(grantResults[0] != PackageManager.PERMISSION_GRANTED){
+                    parentActivity.showSnackbarMessage("Ses kayıt izni olmadan ses kaydı yapılamaz.", Snackbar.LENGTH_LONG);
+                }else {
+                    startNewVideoIntent();
+                }
+                break;
+            case PHOTO_CAMERA_PERMISSION:
+                if(grantResults[0] != PackageManager.PERMISSION_GRANTED){
+                    parentActivity.showSnackbarMessage("Kamera izni olmadan fotoğraf çekilemez.", Snackbar.LENGTH_LONG);
+                }else {
+                    startNewVideoIntent();
+                }
+                break;
+            case VIDEO_CAMERA_PERMISSION:
+                if(grantResults[0] != PackageManager.PERMISSION_GRANTED){
+                    parentActivity.showSnackbarMessage("Kamera izni olmadan video kaydedilemez.", Snackbar.LENGTH_LONG);
+                }else {
+                    startNewVideoIntent();
                 }
                 break;
             case LOCATION_PERMISSION_REQUEST:
@@ -521,9 +574,8 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
                     }
                 }
             }
-            mediaFile.generateThumbNail(getActivity());
-            mediaFile.addToMap(map);
             mediaFiles.add(0,mediaFile);
+            mediaFile.generateThumbNail(getActivity());
             helper.insertMediaFile(mediaFile);
             activityHandler.post(new Runnable() {
                 @Override
