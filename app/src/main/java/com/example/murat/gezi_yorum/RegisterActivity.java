@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.example.murat.gezi_yorum.Utils.URLRequestHandler;
 
@@ -39,8 +40,9 @@ public class RegisterActivity extends AppCompatActivity {
             URLRequestHandler handler = new URLRequestHandler(data,url);
             if(!handler.getResponseMessage()){
                 //kayıt başarısız
+                return;
             }
-            String response = handler.getResponse();
+            Toast.makeText(getApplicationContext(),  getString(R.string.register_ok),Toast.LENGTH_SHORT).show();
 
             finish();
 

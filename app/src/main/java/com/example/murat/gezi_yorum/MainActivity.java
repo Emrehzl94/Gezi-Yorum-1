@@ -18,12 +18,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.example.murat.gezi_yorum.Entity.Constants;
-import com.example.murat.gezi_yorum.fragments.ContinuingTrip;
-import com.example.murat.gezi_yorum.fragments.Home;
-import com.example.murat.gezi_yorum.fragments.Search;
-import com.example.murat.gezi_yorum.fragments.StartTripFragment;
-import com.example.murat.gezi_yorum.fragments.TimeLine;
-import com.example.murat.gezi_yorum.fragments.Trips;
+import com.example.murat.gezi_yorum.Fragments.Home;
+import com.example.murat.gezi_yorum.Fragments.Search;
+import com.example.murat.gezi_yorum.Fragments.TripControllers.ContinuingTrip;
+import com.example.murat.gezi_yorum.Fragments.TripControllers.StartTripFragment;
+import com.example.murat.gezi_yorum.Fragments.TripControllers.TimeLine;
+import com.example.murat.gezi_yorum.Fragments.TripControllers.Trips;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private SharedPreferences preferences;

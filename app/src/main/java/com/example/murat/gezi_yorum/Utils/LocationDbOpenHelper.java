@@ -26,26 +26,26 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "locations.db";
 
 
-    private static final String COLUMN_ID = "id";
+    public static final String COLUMN_ID = "id";
 
-    private static final String TABLE_TRIPS = "Trips";
-    private static final String COLUMN_STARTDATE = "startDate";
-    private static final String COLUMN_FINISHDATE = "finishDate";
-    private static final String COLUMN_NAME = "trip_name";
+    public static final String TABLE_TRIPS = "Trips";
+    public static final String COLUMN_STARTDATE = "startDate";
+    public static final String COLUMN_FINISHDATE = "finishDate";
+    public static final String COLUMN_NAME = "trip_name";
 
-    private static final String TABLE_PATHS = "Paths";
+    public static final String TABLE_PATHS = "Paths";
 
-    private static final String TABLE_MEDIA = "Media";
-    private static final String COLUMN_TYPE = "type";
-    private static final String COLUMN_LONGTITUDE= "longtitude";
-    private static final String COLUMN_LATITUDE = "latitude";
-    private static final String COLUMN_ALTITUDE = "altitude";
-    private static final String COLUMN_PATH = "path";
-    private static final String COLUMN_TRIPID = "trip_id";
-    private static final String COLUMN_DATE = "date";
-    private static final String COLUMN_THUMBNAIL = "thumbnail";
-    private static final String COLUMN_SHARE_OPTION = "share_option";
-    private static final String COLUMN_NOTE = "name";
+    public static final String TABLE_MEDIA = "Media";
+    public static final String COLUMN_TYPE = "type";
+    public static final String COLUMN_LONGTITUDE= "longtitude";
+    public static final String COLUMN_LATITUDE = "latitude";
+    public static final String COLUMN_ALTITUDE = "altitude";
+    public static final String COLUMN_PATH = "path";
+    public static final String COLUMN_TRIPID = "trip_id";
+    public static final String COLUMN_DATE = "date";
+    public static final String COLUMN_THUMBNAIL = "thumbnail";
+    public static final String COLUMN_SHARE_OPTION = "share_option";
+    public static final String COLUMN_NOTE = "name";
 
 
     public LocationDbOpenHelper(Context context) {
@@ -242,10 +242,10 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
         if(type != null){
             query+=" AND "+ COLUMN_TYPE + "='" +type+"'";
         }
-        query += " ORDER BY "+ COLUMN_DATE + " DESC, "+COLUMN_LATITUDE +","+COLUMN_LONGTITUDE;
         if (additionalQuery != null){
             query += additionalQuery;
         }
+        query += " ORDER BY "+ COLUMN_DATE + " DESC, "+COLUMN_LATITUDE +","+COLUMN_LONGTITUDE;
         Cursor cursor = db.rawQuery(query, null);
         cursor.moveToFirst();
         ArrayList<MediaFile> media = new ArrayList<>();

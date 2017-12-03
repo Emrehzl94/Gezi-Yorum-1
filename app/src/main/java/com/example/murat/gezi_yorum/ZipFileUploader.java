@@ -97,7 +97,6 @@ public class ZipFileUploader extends Service {
         not.setContentTitle("Dosya yükleniyor...");
         manager.notify(notificationId,not.build());
         String URL = "http://163.172.176.169:8080/Geziyorum/uploadFile";
-         //String URL = "http://trendbul.yavuzmacit.com/fileupload.php";
         try {
             MultipartUtility multipart = new MultipartUtility(URL,"UTF-8", false);
             multipart.addFormField("name",zipFile.getName());
@@ -139,7 +138,8 @@ public class ZipFileUploader extends Service {
             zipOutputStream.putNextEntry(pathMetaDataEntry);
             zipOutputStream.write(pathMetaData.toString().getBytes());
 
-            ArrayList<MediaFile> mediaFiles = helper.getMediaFiles(trip_id,null,null);
+            ArrayList<MediaFile> mediaFiles = helper.getMediaFiles(trip_id,null,
+                    " AND " + LocationDbOpenHelper.COLUMN_SHARE_OPTION +"!=\""+Constants.ONLY_ME+"\"");
             JSONArray mediaMetaData = new JSONArray();
             int fileCount = 0;
             for (MediaFile file: mediaFiles){

@@ -1,4 +1,4 @@
-package com.example.murat.gezi_yorum.fragments;
+package com.example.murat.gezi_yorum.Fragments.MediaFragments;
 
 import android.net.Uri;
 import android.os.Bundle;
@@ -69,7 +69,7 @@ public class VideoFragment extends MediaFragment implements EasyVideoCallback{
 
     @Override
     public void onCompletion(EasyVideoPlayer player) {
-
+        toggleControls();
     }
 
     @Override

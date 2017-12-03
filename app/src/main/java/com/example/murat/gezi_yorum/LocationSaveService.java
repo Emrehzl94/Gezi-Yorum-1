@@ -73,8 +73,8 @@ public class LocationSaveService extends Service implements LocationListener {
 
     @Override
     public void onLocationChanged(Location location) {
-        csvHandler.saveLocation(location);
-        Toast.makeText(this,"Konum kaydedildi.",Toast.LENGTH_SHORT).show();
+        if(location.getAccuracy()<4)
+            csvHandler.saveLocation(location);
     }
 
     @Override

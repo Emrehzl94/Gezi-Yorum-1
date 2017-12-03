@@ -6,7 +6,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
 import com.example.murat.gezi_yorum.Entity.Constants;
-import com.example.murat.gezi_yorum.fragments.TripInfo;
+import com.example.murat.gezi_yorum.Fragments.TripControllers.TripInfo;
 
 import java.util.ArrayList;
 import java.util.HashMap;

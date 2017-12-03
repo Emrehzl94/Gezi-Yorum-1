@@ -1,4 +1,4 @@
-package com.example.murat.gezi_yorum.fragments;
+package com.example.murat.gezi_yorum.Fragments.MediaFragments;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;

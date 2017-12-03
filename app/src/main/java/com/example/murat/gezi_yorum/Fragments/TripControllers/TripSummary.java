@@ -1,4 +1,4 @@
-package com.example.murat.gezi_yorum.fragments;
+package com.example.murat.gezi_yorum.Fragments.TripControllers;
 
 import android.graphics.Color;
 import android.os.Handler;
@@ -92,24 +92,27 @@ public abstract class TripSummary extends Fragment {
         ArrayList<Long> mediaGroup = new ArrayList<>();
         for(MediaFile file : mediaFiles){
             // İf distance between previous file is lower than 5 meters add this file to media group
-            if(previous == null || (previous.location.distInMeters(file.location)<5)){
+            if(previous == null || (previous.location.distInMeters(file.location)<1)){
                 mediaGroup.add(file.id);
             }else {
                 // else if media group is empty add this file to map
-                if(mediaGroup.size() == 0){
+                if(mediaGroup.size() == 1){
                     previous.addToMap(map);
                     mediaGroup.clear();
+                    mediaGroup.add(file.id);
                 }else {
                     //if media group has at least one file, including current file two files add these files
                     //to map as media group
-                    String snippet =file.id + " ";
+                    String snippet ="";
                     for (Long id : mediaGroup){
                         snippet += id +" ";
                     }
                     map.addMarker(new MarkerOptions().position(previous.location.convertLatLng())
                             .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
+                            .title(String.valueOf(mediaGroup.size()))
                             .snippet(String.valueOf(snippet)));
                     mediaGroup.clear();
+                    mediaGroup.add(file.id);
                 }
             }
             previous = file;

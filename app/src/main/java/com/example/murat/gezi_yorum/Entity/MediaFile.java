@@ -8,9 +8,9 @@ import android.media.ThumbnailUtils;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 
+import com.example.murat.gezi_yorum.Fragments.MediaFragments.PhotoFragment;
+import com.example.murat.gezi_yorum.Fragments.MediaFragments.VideoFragment;
 import com.example.murat.gezi_yorum.MediaActivity;
-import com.example.murat.gezi_yorum.fragments.PhotoFragment;
-import com.example.murat.gezi_yorum.fragments.VideoFragment;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -19,6 +19,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.util.ArrayList;
 
 /**
@@ -182,11 +183,13 @@ public class MediaFile {
     public JSONObject toJSONObject(){
         JSONObject jsonObject = new JSONObject();
         try {
-            jsonObject.put("path",path);
-            jsonObject.put("type",type);
-            jsonObject.put("longitude",location.getLongitude());
-            jsonObject.put("latitude",location.getLatitude());
-            jsonObject.put("altitude",location.getAltitude());
+            jsonObject.put("path", new File(path).getName());
+            jsonObject.put("type", type);
+            jsonObject.put("longitude", location.getLongitude());
+            jsonObject.put("latitude", location.getLatitude());
+            jsonObject.put("altitude", location.getAltitude());
+            jsonObject.put("share_option", share_option);
+            jsonObject.put("note", about_note);
         } catch (JSONException e) {
             e.printStackTrace();
         }

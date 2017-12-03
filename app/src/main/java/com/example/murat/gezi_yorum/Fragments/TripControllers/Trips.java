@@ -1,4 +1,4 @@
-package com.example.murat.gezi_yorum.fragments;
+package com.example.murat.gezi_yorum.Fragments.TripControllers;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;

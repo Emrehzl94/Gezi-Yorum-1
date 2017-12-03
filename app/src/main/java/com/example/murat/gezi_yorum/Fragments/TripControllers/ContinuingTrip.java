@@ -1,4 +1,4 @@
-package com.example.murat.gezi_yorum.fragments;
+package com.example.murat.gezi_yorum.Fragments.TripControllers;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -79,6 +79,8 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
     private long path_id;
     private boolean isFabMenuOpen = false;
 
+    Handler activityHandler;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
@@ -90,6 +92,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         parentActivity = (MainActivity) getActivity();
         helper = new LocationDbOpenHelper(getContext());
         preferences = parentActivity.getPreferences(Context.MODE_PRIVATE);
+        activityHandler = new Handler();
 
         pause_continue = view.findViewById(R.id.pause_continue);
 
@@ -310,6 +313,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
      */
     @Override
     public void onLocationChanged(Location location) {
+        if(location.getAccuracy()<4) return;
         if(listener != null){
             listener.onLocationChanged(location);
             if(addedPolyLine != null && points != null){
@@ -412,10 +416,8 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
             }else if(requestCode == REQUEST_SOUND_RECORD){
                 type = Constants.SOUNDRECORD;
             }
-            @SuppressLint("MissingPermission") Location lastknown = ((LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE)).getLastKnownLocation(LocationManager.GPS_PROVIDER);
             String share_option = preferences.getString(Constants.SHARE_OPTION, Constants.EVERYBODY);
-            MediaFile mediaFile = new MediaFile(type,lastOutputMedia.getPath(),lastknown.getLatitude(),lastknown.getLongitude(), lastknown.getAltitude(),trip_id,System.currentTimeMillis(), share_option);
-            new Handler().post(new ThumbnailGeneration(mediaFile));
+            new Thread(new ThumbnailGeneration(lastOutputMedia.getPath(), type, share_option)).start();
             if(requestCode == REQUEST_IMAGE_CAPTURE){
                 startNewPhotoIntent();
             }
@@ -484,17 +486,51 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
     }
 
     public class ThumbnailGeneration implements Runnable{
-        private MediaFile mediaFile;
+        private String filePath;
+        private String fileType;
+        private String share_option;
+        private Long time;
+        private LocationManager manager;
 
-        ThumbnailGeneration(MediaFile mediaFile){
-            this.mediaFile = mediaFile;
+        ThumbnailGeneration(String filePath, String fileType, String share_option){
+            this.filePath = filePath;
+            this.fileType = fileType;
+            this.share_option = share_option;
+            this.time = System.currentTimeMillis();
+            manager = ((LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE));
         }
+
+        /**
+         * Know that we have location permission
+         */
+        @SuppressLint("MissingPermission")
         @Override
         public void run() {
+            Location lastknown = null;
+            MediaFile mediaFile = null;
+            while (lastknown == null){
+                lastknown = manager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                if(lastknown != null) {
+                    mediaFile = new MediaFile(fileType, filePath, lastknown.getLatitude(), lastknown.getLongitude(), lastknown.getAltitude(), trip_id, time, share_option);
+                }
+                else {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
             mediaFile.generateThumbNail(getActivity());
+            mediaFile.addToMap(map);
             mediaFiles.add(0,mediaFile);
             helper.insertMediaFile(mediaFile);
-            setUpPreview();
+            activityHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    setUpPreview();
+                }
+            });
         }
     }
 }

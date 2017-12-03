@@ -1,4 +1,4 @@
-package com.example.murat.gezi_yorum.fragments;
+package com.example.murat.gezi_yorum.Fragments.MediaFragments;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -19,6 +19,8 @@ import com.example.murat.gezi_yorum.Entity.Constants;
 import com.example.murat.gezi_yorum.Entity.MediaFile;
 import com.example.murat.gezi_yorum.R;
 import com.example.murat.gezi_yorum.Utils.LocationDbOpenHelper;
+
+import java.io.File;
 
 /**
  * Media View Adapter
@@ -136,6 +138,8 @@ abstract class MediaFragment extends Fragment {
                 builder.setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         helper.deleteMediaFile(mediaFile.id);
+                        File file = new File(mediaFile.path);
+                        file.delete();
                     }
                 });
                 builder.create();
@@ -156,7 +160,7 @@ abstract class MediaFragment extends Fragment {
 
                     }
                 });
-                builder.setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
+                builder.setPositiveButton(getString(R.string.save), new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         int selectedId = share_options_radio.getCheckedRadioButtonId();
                         String option = "";

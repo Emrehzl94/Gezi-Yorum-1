@@ -36,4 +36,5 @@
     <string name="trips">Geziler</string>
     <string name="trip_name">Bu geziye bir isim verin</string>
     <string name="logout">Oturumu Kapat</string>
+    <string name="register_ok">Hesap başarıyla oluşturuldu.</string>
 </resources>
