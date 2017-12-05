@@ -44,4 +44,5 @@
     <string name="profile">Profil</string>
     <string name="notification">Bildirim</string>
     <string name="wo_login">Oturum Açmadan Devam Et</string>
+    <string name="change_name">Gezi İsmini Değiştirin</string>
 </resources>

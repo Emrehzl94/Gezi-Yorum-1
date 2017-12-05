@@ -1,13 +1,19 @@
 package com.example.murat.gezi_yorum.Fragments.TripControllers;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Handler;
 import android.os.StrictMode;
 import android.support.v4.app.Fragment;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.GridView;
+import android.widget.ImageButton;
+import android.widget.TextView;
 
 import com.example.murat.gezi_yorum.Entity.MediaFile;
+import com.example.murat.gezi_yorum.Entity.Trip;
 import com.example.murat.gezi_yorum.R;
 import com.example.murat.gezi_yorum.Utils.LocationCSVHandler;
 import com.example.murat.gezi_yorum.Utils.LocationDbOpenHelper;
@@ -37,6 +43,8 @@ public abstract class TripSummary extends Fragment {
     protected long trip_id;
     protected String name;
 
+    protected TextView header;
+    protected ImageButton edit_name;
     protected GoogleMap map;
     protected Polyline addedPolyLine;
     protected ArrayList<LatLng> points;
@@ -53,6 +61,40 @@ public abstract class TripSummary extends Fragment {
         } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             e.printStackTrace();
         }
+
+        header = view.findViewById(R.id.header);
+        Trip trip = helper.getTrip(trip_id);
+        this.name = trip.name;
+        header.setText(name);
+        edit_name = view.findViewById(R.id.edit_name);
+        edit_name.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                final EditText editName = new EditText(getContext());
+                editName.setId(0);
+                editName.setText(name);
+                builder.setView(editName);
+                builder.setTitle(getString(R.string.change_name));
+                builder.setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+
+                    }
+                });
+                builder.setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        String new_name = editName.getText().toString();
+                        helper.updateTripName(trip_id, new_name);
+                        header.setText(new_name);
+                        name = new_name;
+                    }
+                });
+                builder.create();
+                builder.show();
+            }
+        });
+
         preview = view.findViewById(R.id.preview);
         new Handler().post(new Runnable() {
             @Override

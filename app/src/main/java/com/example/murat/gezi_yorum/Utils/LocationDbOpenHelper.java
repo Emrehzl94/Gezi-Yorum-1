@@ -103,9 +103,9 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
         return database.insert(TABLE_TRIPS,null ,values);
     }
 
-    public void updateTripNote(Long trip_id, String note){
+    public void updateTripName(Long trip_id, String name){
         ContentValues values = new ContentValues();
-        values.put(COLUMN_NOTE,note);
+        values.put(COLUMN_NAME,name);
         SQLiteDatabase database = getWritableDatabase();
         database.update(TABLE_TRIPS, values, COLUMN_ID + "=" +trip_id, null);
     }

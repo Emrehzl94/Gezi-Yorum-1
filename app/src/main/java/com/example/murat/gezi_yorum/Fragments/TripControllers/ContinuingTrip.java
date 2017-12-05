@@ -29,7 +29,6 @@ import android.widget.TextView;
 import com.afollestad.materialcamera.MaterialCamera;
 import com.example.murat.gezi_yorum.Entity.Constants;
 import com.example.murat.gezi_yorum.Entity.MediaFile;
-import com.example.murat.gezi_yorum.Entity.Trip;
 import com.example.murat.gezi_yorum.LocationSaveService;
 import com.example.murat.gezi_yorum.MainActivity;
 import com.example.murat.gezi_yorum.MediaActivity;
@@ -101,7 +100,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
 
         trip_id = preferences.getLong(Constants.TRIPID,-1);
         path_id = preferences.getLong(Constants.PATH_ID, -1);
-        header = view.findViewById(R.id.header);
+
 
         String state = preferences.getString(Constants.RECORDSTATE, Constants.PASSIVE);
         Bundle arguments = getArguments();
@@ -114,8 +113,6 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
                 startNewTrip();
             }
         }
-        Trip trip = helper.getTrip(trip_id);
-        header.setText(trip.name);
 
         FloatingActionButton add_fab = view.findViewById(R.id.add_media);
         add_photo_fab = view.findViewById(R.id.add_photo);
