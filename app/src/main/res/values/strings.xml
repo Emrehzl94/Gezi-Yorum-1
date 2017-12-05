@@ -46,4 +46,7 @@
     <string name="register_ok">Account created successfully.</string>
     <string name="start">Start</string>
     <string name="finish">Finish</string>
+    <string name="profile">Profile</string>
+    <string name="notification">Notification</string>
+    <string name="wo_login">Contiune without login</string>
 </resources>

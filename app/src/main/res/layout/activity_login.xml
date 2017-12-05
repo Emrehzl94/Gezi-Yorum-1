@@ -78,6 +78,14 @@
                 android:layout_marginTop="16dp"
                 android:text="@string/register"
                 android:textStyle="bold" />
+            <Button
+                android:id="@+id/without_login"
+                style="?android:textAppearanceSmall"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/wo_login"
+                android:textStyle="bold" />
 
         </LinearLayout>
     </ScrollView>

@@ -3,19 +3,18 @@ package com.example.murat.gezi_yorum;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.webkit.CookieManager;
+import android.webkit.ValueCallback;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import com.example.murat.gezi_yorum.Entity.Constants;
 import com.example.murat.gezi_yorum.Utils.URLRequestHandler;
@@ -33,20 +32,28 @@ public class LoginActivity extends AppCompatActivity {
     private EditText passwordEdit;
     private View progressView;
     private View loginFormView;
-    private SharedPreferences preferences;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        preferences = getPreferences(Context.MODE_PRIVATE);
+        CookieManager manager = CookieManager.getInstance();
         // Set up the login form.
-        String token = preferences.getString(Constants.TOKEN,"none");
-        if(!token.equals("none")){
-            Toast.makeText(getApplicationContext(), token, Toast.LENGTH_LONG).show();
+        String token = manager.getCookie(Constants.ROOT);
+        if(token != null){
             Intent intent = new Intent(this,MainActivity.class);
             startActivityForResult(intent, MAIN_ACTIVITY_RESULT);
         }
+
+        Button without_login = findViewById(R.id.without_login);
+        without_login.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(LoginActivity.this,MainActivity.class);
+                startActivity(intent);
+            }
+        });
+
         emailEdit = findViewById(R.id.email);
 
         passwordEdit = findViewById(R.id.password);
@@ -113,9 +120,12 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(resultCode == Activity.RESULT_CANCELED){
-            SharedPreferences.Editor editor = preferences.edit();
-            editor.putString(Constants.TOKEN,"none");
-            editor.apply();
+            CookieManager.getInstance().removeAllCookies(new ValueCallback<Boolean>() {
+                @Override
+                public void onReceiveValue(Boolean aBoolean) {
+
+                }
+            });
         }
     }
 
@@ -167,10 +177,12 @@ public class LoginActivity extends AppCompatActivity {
                 //wrong user name or password
                 return false;
             }
+
             String response = handler.getResponse();
-            SharedPreferences.Editor editor = preferences.edit();
-            editor.putString(Constants.TOKEN,response);
-            editor.apply();
+
+            CookieManager manager = CookieManager.getInstance();
+            manager.setCookie(Constants.ROOT,   Constants.TOKEN+"="+response);
+            manager.setCookie(Constants.ROOT,   Constants.APPLICATION+"=true");
             return true;
         }
 

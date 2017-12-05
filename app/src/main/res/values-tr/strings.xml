@@ -41,4 +41,7 @@
     <string name="title_activity_register">Kaydol</string>
     <string name="start">Başlangıç</string>
     <string name="finish">Bitiş</string>
+    <string name="profile">Profil</string>
+    <string name="notification">Bildirim</string>
+    <string name="wo_login">Oturum Açmadan Devam Et</string>
 </resources>

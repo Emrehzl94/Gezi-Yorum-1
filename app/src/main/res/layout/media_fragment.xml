@@ -8,11 +8,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@android:drawable/ic_menu_delete"
-            app:backgroundTint="#990033ff"
+            app:backgroundTint="@color/colorLowAlpha"
             android:layout_gravity="end"
-            android:layout_marginRight="@dimen/fab_margin"
             android:layout_marginTop="16dp"
-            android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"
             android:layout_marginEnd="@dimen/fab_margin" />
         <android.support.design.widget.FloatingActionButton
@@ -20,8 +18,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@android:drawable/ic_menu_agenda"
-            app:backgroundTint="#990033ff"
-            android:layout_marginRight="@dimen/fab_margin"
+            app:backgroundTint="@color/colorLowAlpha"
             android:layout_marginTop="86dp"
             android:layout_gravity="end"
             android:layout_marginEnd="@dimen/fab_margin" />
@@ -30,11 +27,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@android:drawable/ic_menu_share"
-            app:backgroundTint="#990033ff"
+            app:backgroundTint="@color/colorLowAlpha"
             android:layout_gravity="end"
-            android:layout_marginRight="@dimen/fab_margin"
             android:layout_marginTop="156dp"
-            android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"
             android:layout_marginEnd="@dimen/fab_margin" />
 
@@ -44,7 +39,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/fab_margin"
             android:layout_gravity="top|center"
-            android:background="#44000000"
+            android:background="@color/colorBlackLowAlpha"
             android:textAlignment="center"
             android:textAppearance="@android:style/TextAppearance.DeviceDefault.Large.Inverse" />
 </android.support.design.widget.CoordinatorLayout>

@@ -1,6 +1,5 @@
 package com.example.murat.gezi_yorum.Fragments.TripControllers;
 
-import android.graphics.Color;
 import android.os.Handler;
 import android.os.StrictMode;
 import android.support.v4.app.Fragment;
@@ -51,11 +50,7 @@ public abstract class TripSummary extends Fragment {
         try {
             Method m = StrictMode.class.getMethod("disableDeathOnFileUriExposure");
             m.invoke(null);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {
+        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             e.printStackTrace();
         }
         preview = view.findViewById(R.id.preview);
@@ -144,6 +139,7 @@ public abstract class TripSummary extends Fragment {
             @Override
             public void run() {
                 if(map != null) {
+                    //waiting for media files
                     while (!preview_setted){
                         try {
                             Thread.sleep(50);
@@ -156,7 +152,7 @@ public abstract class TripSummary extends Fragment {
 
                     int routePadding = 200;
                     for (long path_id : helper.getPathsIDs(trip_id)) {
-                        addPathOnMap(map, move, path_id);
+                        addPathOnMap(map, path_id);
                         for (LatLng point : points) {
                             builder.include(point);
                         }
@@ -179,14 +175,13 @@ public abstract class TripSummary extends Fragment {
     /**
      * Draws trip path on map, adds new polyline
      * @param map Google Map
-     * @param move Move if true, else animate
      */
 
-    protected void addPathOnMap(GoogleMap map , boolean move, long path_id){
+    protected void addPathOnMap(GoogleMap map, long path_id){
         points = new LocationCSVHandler(trip_id, path_id,getContext()).getLocations();
 
         PolylineOptions options = new PolylineOptions();
-        options.color(Color.RED);
+        options.color(getContext().getResources().getColor(R.color.colorPrimary));
         options.width(15);
         options.visible(true);
         options.addAll(points);

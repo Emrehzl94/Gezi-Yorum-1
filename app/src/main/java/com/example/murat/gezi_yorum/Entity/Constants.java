@@ -5,8 +5,13 @@ package com.example.murat.gezi_yorum.Entity;
  */
 
 public class Constants {
-    public static final String TOKEN = "token";
-
+    public static final String TOKEN = "access_token";
+    public static final String APPLICATION = "application";
+    public static final String ROOT = "http://163.172.176.169:8080";
+    public static final String APP = "http://163.172.176.169:8080/Geziyorum/";
+    public static final String PAGE = "page";
+    public static final String HOME = "home";
+    public static final String PROFILE = "profile";
 
     public static final String STARTNEWTRIP = "start_new_trip"; //Start trip message sended to Contiuning trip
     public static final String MESSAGE = "message"; // message tag
