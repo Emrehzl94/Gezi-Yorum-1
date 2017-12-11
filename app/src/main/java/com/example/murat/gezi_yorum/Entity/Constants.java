@@ -29,6 +29,7 @@ public class Constants {
     public static final String MESSAGE = "message"; // message tag
     public static final String PATH_ID = "path_id";
     public static final String TRIPNAME = "trip_name";
+    public static final String MEMBERS = "members";
 
     public static final String TRIPSTATE = "trip_state"; // is trip started or ended
     public static final String STARTED = "started";
@@ -47,5 +48,10 @@ public class Constants {
     public static final String EVERYBODY = "everybody";
     public static final String MY_FRIENDS = "only_friends";
     public static final String ONLY_ME = "only_me";
+
+    public static final String ADDRESS = "address";
+    public static final String CITY = "city";
+    public static final String STATE = "state";
+    public static final String COUNTRY = "country";
 
 }

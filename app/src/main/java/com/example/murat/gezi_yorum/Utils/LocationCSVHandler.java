@@ -22,17 +22,20 @@ import java.util.StringTokenizer;
 public class LocationCSVHandler {
     private File file;
     private long trip_id;
-    public long path_id;
+    private long path_id;
     public LocationCSVHandler(long trip_id, long path_id, Context context){
         this.trip_id = trip_id;
         this.path_id = path_id;
-        this.file = getRouteFilePath(trip_id, path_id, context);
+        this.file = getRouteFilePath(context);
         if(!file.exists()){
             create();
         }
     }
-    public static File getRouteFilePath(long trip_id, long path_id, Context context){
+    private File getRouteFilePath(Context context){
         return new File(context.getFilesDir() + "path_"+trip_id+"_"+path_id+".csv");
+    }
+    public File getFile() {
+        return file;
     }
     private void create(){
         try {
@@ -75,5 +78,27 @@ public class LocationCSVHandler {
             e.printStackTrace();
         }
         return locations;
+    }
+
+    /**
+     * Returns only first location of this trip
+     * @return first location
+     */
+    public LatLng peek(){
+        LatLng location = null;
+        try {
+            Scanner fileScanner = new Scanner(file);
+            if(!fileScanner.nextLine().equals(getHeader())){
+                return null;
+            }
+            if (fileScanner.hasNextLine()){
+                String line = fileScanner.nextLine();
+                StringTokenizer tokenizer = new StringTokenizer(line,",");
+                location = new LatLng(Double.parseDouble(tokenizer.nextToken()), Double.parseDouble(tokenizer.nextToken()));
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return location;
     }
 }

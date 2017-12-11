@@ -40,8 +40,7 @@ public abstract class TripSummary extends Fragment {
     protected GridView preview;
     protected ArrayList<MediaFile> mediaFiles;
     protected LocationDbOpenHelper helper;
-    protected long trip_id;
-    protected String name;
+    protected Trip trip;
 
     protected TextView header;
     protected ImageButton edit_name;
@@ -63,9 +62,7 @@ public abstract class TripSummary extends Fragment {
         }
 
         header = view.findViewById(R.id.header);
-        Trip trip = helper.getTrip(trip_id);
-        this.name = trip.name;
-        header.setText(name);
+        header.setText(trip.name);
         edit_name = view.findViewById(R.id.edit_name);
         edit_name.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -73,7 +70,7 @@ public abstract class TripSummary extends Fragment {
                 AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
                 final EditText editName = new EditText(getContext());
                 editName.setId(0);
-                editName.setText(name);
+                editName.setText(trip.name);
                 builder.setView(editName);
                 builder.setTitle(getString(R.string.change_name));
                 builder.setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
@@ -85,9 +82,9 @@ public abstract class TripSummary extends Fragment {
                 builder.setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         String new_name = editName.getText().toString();
-                        helper.updateTripName(trip_id, new_name);
+                        helper.updateTripName(trip.id, new_name);
                         header.setText(new_name);
-                        name = new_name;
+                        trip.name = new_name;
                     }
                 });
                 builder.create();
@@ -99,7 +96,7 @@ public abstract class TripSummary extends Fragment {
         new Handler().post(new Runnable() {
             @Override
             public void run() {
-                mediaFiles = helper.getMediaFiles(trip_id,null,null);
+                mediaFiles = helper.getMediaFiles(trip.id,null,null);
                 preview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
@@ -140,10 +137,12 @@ public abstract class TripSummary extends Fragment {
                 }else {
                     //if media group has at least one file, including current file two files add these files
                     //to map as media group
-                    String snippet ="";
+                    StringBuilder snippetBuilder = new StringBuilder();
                     for (Long id : mediaGroup){
-                        snippet += id +" ";
+                        snippetBuilder.append(id);
+                        snippetBuilder.append(" ");
                     }
+                    String snippet = snippetBuilder.toString();
                     map.addMarker(new MarkerOptions().position(previous.location.convertLatLng())
                             .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
                             .title(String.valueOf(mediaGroup.size()))
@@ -159,10 +158,12 @@ public abstract class TripSummary extends Fragment {
             previous.addToMap(map);
         }else if(mediaGroup.size() > 1) {
             // else if media group has more than one file add these files to map as media group
-            String snippet = "";
+            StringBuilder snippetBuilder = new StringBuilder();
             for (Long id : mediaGroup){
-                snippet += id +" ";
+                snippetBuilder.append(id);
+                snippetBuilder.append(" ");
             }
+            String snippet = snippetBuilder.toString();
             map.addMarker(new MarkerOptions().position(previous.location.convertLatLng())
                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
                     .snippet(String.valueOf(snippet)));
@@ -193,7 +194,7 @@ public abstract class TripSummary extends Fragment {
                     LatLngBounds.Builder builder = new LatLngBounds.Builder();
 
                     int routePadding = 200;
-                    for (long path_id : helper.getPathsIDs(trip_id)) {
+                    for (long path_id : helper.getPathsIDs(trip.id)) {
                         addPathOnMap(map, path_id);
                         for (LatLng point : points) {
                             builder.include(point);
@@ -220,7 +221,7 @@ public abstract class TripSummary extends Fragment {
      */
 
     protected void addPathOnMap(GoogleMap map, long path_id){
-        points = new LocationCSVHandler(trip_id, path_id,getContext()).getLocations();
+        points = new LocationCSVHandler(trip.id, path_id,getContext()).getLocations();
 
         PolylineOptions options = new PolylineOptions();
         options.color(getContext().getResources().getColor(R.color.colorPrimary));

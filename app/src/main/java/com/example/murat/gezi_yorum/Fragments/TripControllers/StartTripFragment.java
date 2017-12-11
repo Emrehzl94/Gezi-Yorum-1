@@ -3,6 +3,7 @@ package com.example.murat.gezi_yorum.Fragments.TripControllers;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -15,7 +16,7 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Spinner;
-import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.murat.gezi_yorum.Entity.Constants;
 import com.example.murat.gezi_yorum.Entity.Trip;
@@ -42,6 +43,8 @@ public class StartTripFragment extends Fragment{
     private ArrayList<String> friendsList;
     private ArrayList<String> selectedFriends;
     private ListView selecteds;
+    private String uname;
+
     private Spinner choose_path;
     private ArrayList<Trip> importedTrips;
 
@@ -70,18 +73,32 @@ public class StartTripFragment extends Fragment{
 
         SharedPreferences preferences = getActivity().getSharedPreferences(Constants.PREFNAME ,Context.MODE_PRIVATE);
         String token = preferences.getString(Constants.TOKEN, "");
-        String uname = preferences.getString(Constants.USERNAME,"");
+        uname = preferences.getString(Constants.USERNAME,"");
 
-        new getUserFriendList(token, uname).execute();
+        ConnectivityManager cm = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+        if(cm.getActiveNetworkInfo() == null){
+            Toast.makeText(getContext(),
+                    getString(R.string.friend_list_unsuccessful) + getString(R.string.internet_warning),
+                    Toast.LENGTH_LONG).show();
+        }else {
+            new getUserFriendList(token, uname).execute();
+        }
 
         FloatingActionButton fab = view.findViewById(R.id.start);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                StringBuilder members = new StringBuilder();
+                members.append(uname);
+                for (String friend : selectedFriends){
+                    members.append(", ");
+                    members.append(friend);
+                }
                 ContinuingTrip continuingTrip = new ContinuingTrip();
                 Bundle extras = new Bundle();
                 extras.putString(Constants.MESSAGE,Constants.STARTNEWTRIP);
                 extras.putString(Constants.TRIPNAME, trip_name_edit.getText().toString());
+                extras.putString(Constants.MEMBERS, members.toString());
                 continuingTrip.setArguments(extras);
                 MainActivity parentActivity = (MainActivity) getActivity();
                 parentActivity.changeFragment(continuingTrip);
@@ -101,13 +118,18 @@ public class StartTripFragment extends Fragment{
             this.token = token;
         }
 
+        /**
+         * false -> wrong username or token
+         * @param params ...
+         * @return ...
+         */
         @Override
         protected Boolean doInBackground(Void... params) {
             friendsList = new ArrayList<>();
 
             URLRequestHandler handler = new URLRequestHandler(
                     "{\"token\" : \""+token+"\",\"username\" : \""+uname+"\"}",
-                    "http://163.172.176.169:8080/Geziyorum/getFriendsList");
+                    Constants.APP+"getFriendsList");
             handler.getResponseMessage();
             try {
                 JSONArray friendsJson = new JSONArray(handler.getResponse());
@@ -118,11 +140,7 @@ public class StartTripFragment extends Fragment{
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            if(!handler.getResponseMessage()){
-                //wrong user name or token
-                return false;
-            }
-            return true;
+            return handler.getResponseMessage();
         }
 
         @Override

@@ -50,4 +50,6 @@
     <string name="notification">Notification</string>
     <string name="wo_login">Contiune without login</string>
     <string name="change_name">Change Trip Name</string>
+    <string name="internet_warning">There is no Internet connection at the moment. Please try again later.</string>
+    <string name="friend_list_unsuccessful">Friend list cannot retrieving.</string>
 </resources>

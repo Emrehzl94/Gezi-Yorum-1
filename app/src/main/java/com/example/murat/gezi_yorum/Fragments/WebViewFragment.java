@@ -76,7 +76,6 @@ public class WebViewFragment extends Fragment {
         }catch (Exception e){
             e.printStackTrace();
         }
-        //webView.loadUrl("http://trendbul.yavuzmacit.com/cookie.php");
 
     }
 

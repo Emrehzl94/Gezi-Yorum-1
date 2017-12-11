@@ -24,7 +24,6 @@ import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import com.afollestad.materialcamera.MaterialCamera;
 import com.example.murat.gezi_yorum.Entity.Constants;
@@ -92,14 +91,10 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
 
         parentActivity = (MainActivity) getActivity();
         helper = new LocationDbOpenHelper(getContext());
-        preferences = parentActivity.getPreferences(Context.MODE_PRIVATE);
+        preferences = parentActivity.getSharedPreferences(Constants.PREFNAME, Context.MODE_PRIVATE);
         activityHandler = new Handler();
 
         pause_continue = view.findViewById(R.id.pause_continue);
-
-        trip_id = preferences.getLong(Constants.TRIPID,-1);
-        path_id = preferences.getLong(Constants.PATH_ID, -1);
-
 
         String state = preferences.getString(Constants.RECORDSTATE, Constants.PASSIVE);
         Bundle arguments = getArguments();
@@ -107,10 +102,16 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
             String message = arguments.getString(Constants.MESSAGE);
             //This means coming from StartTripFragment
             if (message != null && message.equals(Constants.STARTNEWTRIP)) {
-                name = arguments.getString(Constants.TRIPNAME);
 
-                startNewTrip();
+                startNewTrip(arguments.getString(Constants.TRIPNAME),
+                        arguments.getString(Constants.MEMBERS));
             }
+        }
+        if(trip == null){
+            Long trip_id = preferences.getLong(Constants.TRIPID,-1);
+            path_id = preferences.getLong(Constants.PATH_ID, -1);
+
+            trip = helper.getTrip(trip_id);
         }
 
         FloatingActionButton add_fab = view.findViewById(R.id.add_media);
@@ -174,7 +175,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         } else {
             if(LocationSaveService.instance == null && checkLocationPermission(LOCATION_PERMISSION_REQUEST_ON_FAIL)){
                 Intent intent = new Intent(getContext(), LocationSaveService.class);
-                intent.putExtra(Constants.TRIPID,trip_id);
+                intent.putExtra(Constants.TRIPID,trip.id);
                 intent.putExtra(Constants.PATH_ID,path_id);
                 parentActivity.startService(intent);
             }
@@ -220,33 +221,32 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         }
     }
 
-    public void startNewTrip(){
-        trip_id = helper.startNewTrip(name);
+    public void startNewTrip(String name, String members){
+        trip = helper.startNewTrip(name, members);
         parentActivity.showSnackbarMessage("Trip started", Snackbar.LENGTH_LONG);
         SharedPreferences.Editor editor = preferences.edit();
-        editor.putLong(Constants.TRIPID,trip_id);
+        editor.putLong(Constants.TRIPID,trip.id);
         editor.putString(Constants.TRIPSTATE, Constants.STARTED);
         editor.apply();
-        startPathRecording();
     }
     public void endTrip(){
         parentActivity.showSnackbarMessage("Trip stopped", Snackbar.LENGTH_LONG);
         SharedPreferences.Editor editor = preferences.edit();
         stopPathRecording();
-        helper.endTrip(trip_id);
+        helper.endTrip(trip.id);
         editor.putLong(Constants.TRIPID,-1);
         editor.putString(Constants.TRIPSTATE,Constants.ENDED);
         editor.apply();
     }
     public void startPathRecording(){
         if(!checkLocationPermission(LOCATION_PERMISSION_REQUEST)) return;
-        path_id = helper.startNewPath(trip_id);
+        path_id = helper.startNewPath(trip.id);
         SharedPreferences.Editor editor = preferences.edit();
         editor.putLong(Constants.PATH_ID,path_id);
         editor.putString(Constants.RECORDSTATE,Constants.ACTIVE);
         editor.apply();
         Intent intent = new Intent(getContext(),LocationSaveService.class);
-        intent.putExtra(Constants.TRIPID,trip_id);
+        intent.putExtra(Constants.TRIPID,trip.id);
         intent.putExtra(Constants.PATH_ID,path_id);
         getActivity().startService(intent);
         pause_continue.setOnClickListener(pause);
@@ -427,7 +427,6 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(resultCode == Activity.RESULT_OK){
-            String outputFile = "";
             String type = "";
             if(requestCode == REQUEST_IMAGE_CAPTURE){
                 outputFile = data.getData().getPath();
@@ -525,7 +524,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
                     parentActivity.showSnackbarMessage("Konum izni olmadan konum kaydı yapılamaz.", Snackbar.LENGTH_LONG);
                 }else {
                     Intent intent = new Intent(getContext(), LocationSaveService.class);
-                    intent.putExtra(Constants.TRIPID,trip_id);
+                    intent.putExtra(Constants.TRIPID, trip.id);
                     intent.putExtra(Constants.PATH_ID,path_id);
                     parentActivity.startService(intent);
                 }
@@ -551,6 +550,8 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
 
         /**
          * Know that we have location permission
+         * This function saves media file to database. If location not available on gps this thread
+         * will wait until we have a location.
          */
         @SuppressLint("MissingPermission")
         @Override
@@ -560,7 +561,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
             while (lastknown == null){
                 lastknown = manager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
                 if(lastknown != null) {
-                    mediaFile = new MediaFile(fileType, filePath, lastknown.getLatitude(), lastknown.getLongitude(), lastknown.getAltitude(), trip_id, time, share_option);
+                    mediaFile = new MediaFile(fileType, filePath, lastknown.getLatitude(), lastknown.getLongitude(), lastknown.getAltitude(), trip.id, time, share_option);
                 }
                 else {
                     try {

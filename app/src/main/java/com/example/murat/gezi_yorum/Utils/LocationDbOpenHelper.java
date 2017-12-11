@@ -33,6 +33,7 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
     public static final String COLUMN_FINISHDATE = "finishDate";
     public static final String COLUMN_NAME = "trip_name";
     public static final String COLUMN_ISIMPORTED = "is_imported";
+    public static final String COLUMN_MEMBERS = "members";
 
     public static final String TABLE_PATHS = "Paths";
 
@@ -60,7 +61,8 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
                  COLUMN_STARTDATE +" INTEGER not null," +
                  COLUMN_FINISHDATE+" INTEGER not null," +
                  COLUMN_NAME+" text," +
-                 COLUMN_ISIMPORTED+" INTEGER not null)";
+                 COLUMN_ISIMPORTED+" INTEGER not null, " +
+                 COLUMN_MEMBERS + " text default '' )";
         String pathTableCreateQuery = "CREATE TABLE " + TABLE_PATHS +
                 "("+COLUMN_ID+" integer PRIMARY KEY AUTOINCREMENT," +
                 COLUMN_STARTDATE +" INTEGER not null," +
@@ -96,14 +98,17 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
      * @return trip_id
      */
     //TODO: Add new ArrayList<Long> user_ids to this trip
-    public long startNewTrip(String name){
+    public Trip startNewTrip(String name, String members){
         ContentValues values = new ContentValues();
         values.put(COLUMN_STARTDATE,System.currentTimeMillis());
         values.put(COLUMN_FINISHDATE,Long.MAX_VALUE);
         values.put(COLUMN_NAME, name);
         values.put(COLUMN_ISIMPORTED, 0);
+        values.put(COLUMN_MEMBERS, members);
         SQLiteDatabase database = getWritableDatabase();
-        return database.insert(TABLE_TRIPS,null ,values);
+        long id = database.insert(TABLE_TRIPS,null ,values);
+        database.close();
+        return getTrip(id);
     }
     /**
      * Inserts new trip to database created by user

@@ -32,8 +32,6 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
     private ViewPager viewPager;
 
     private TripPagerAdapter pagerAdapter;
-    private LocationDbOpenHelper helper;
-    private FloatingActionButton shareTrip;
     private int currentPosition;
 
     @Override
@@ -42,7 +40,7 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
 
         getActivity().setTitle(getString(R.string.timeline));
 
-        shareTrip = view.findViewById(R.id.share_trip);
+        FloatingActionButton shareTrip = view.findViewById(R.id.share_trip);
         shareTrip.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -55,7 +53,7 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
         viewPager = view.findViewById(R.id.pager);
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(TimeLine.this);
-        helper = new LocationDbOpenHelper(getContext());
+        LocationDbOpenHelper helper = new LocationDbOpenHelper(getContext());
         ArrayList<Long> trip_ids = helper.getTripsIDsForTimeLine();
         if(trip_ids.size() == 0){
             shareTrip.setEnabled(false);
