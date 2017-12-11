@@ -5,8 +5,20 @@ package com.example.murat.gezi_yorum.Entity;
  */
 
 public class Constants {
+    public static final String PREFNAME = "preferences";
+
     public static final String TOKEN = "access_token";
     public static final String APPLICATION = "application";
+    public static final String PROFILEPHOTO = "profile_photo";
+    public static final String USERNAME = "username";
+    public static final String NAME_SURNAME = "name_surname";
+
+    public static final String TRIP_META = "trip_metadata.JSON";
+    public static final String PATH_META = "path_metadata.JSON";
+    public static final String MEDIA_META = "media_metadata.JSON";
+
+    //public static final String ROOT = "http://192.168.1.33:8080";
+    //public static final String APP = "http://192.168.1.33:8080/Geziyorum/";
     public static final String ROOT = "http://163.172.176.169:8080";
     public static final String APP = "http://163.172.176.169:8080/Geziyorum/";
     public static final String PAGE = "page";

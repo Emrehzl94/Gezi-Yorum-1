@@ -11,7 +11,7 @@ import android.widget.ListView;
 
 import com.example.murat.gezi_yorum.MainActivity;
 import com.example.murat.gezi_yorum.R;
-import com.example.murat.gezi_yorum.Utils.TripsListViewAdapter;
+import com.example.murat.gezi_yorum.Utils.TripsAdapter;
 
 
 /**
@@ -19,13 +19,13 @@ import com.example.murat.gezi_yorum.Utils.TripsListViewAdapter;
  */
 
 public class Trips extends Fragment {
-    TripsListViewAdapter listViewAdapter;
+    TripsAdapter listViewAdapter;
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         getActivity().setTitle(getString(R.string.trips));
         ListView listView = view.findViewById(R.id.trip_list);
-        listViewAdapter = new TripsListViewAdapter(getContext());
+        listViewAdapter = new TripsAdapter(getContext(), false);
         listView.setAdapter(listViewAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override

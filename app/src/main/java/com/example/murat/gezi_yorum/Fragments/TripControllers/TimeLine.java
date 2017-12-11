@@ -56,7 +56,7 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(TimeLine.this);
         helper = new LocationDbOpenHelper(getContext());
-        ArrayList<Long> trip_ids = helper.getTripsIDs();
+        ArrayList<Long> trip_ids = helper.getTripsIDsForTimeLine();
         if(trip_ids.size() == 0){
             shareTrip.setEnabled(false);
         }

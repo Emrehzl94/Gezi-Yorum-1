@@ -7,6 +7,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.DownloadListener;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -35,6 +36,13 @@ public class WebViewFragment extends Fragment {
         String url = Constants.APP + extras.getString(Constants.PAGE);
 
         webView = view.findViewById(R.id.webView);
+
+        webView.setDownloadListener(new DownloadListener() {
+            @Override
+            public void onDownloadStart(String url, String s1, String s2, String s3, long l) {
+                String downloadLink = url;
+            }
+        });
         webView.setWebViewClient(new WebViewClient(){
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
@@ -63,7 +71,11 @@ public class WebViewFragment extends Fragment {
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
 
-        webView.loadUrl(url);
+        try {
+            webView.loadUrl(url);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
         //webView.loadUrl("http://trendbul.yavuzmacit.com/cookie.php");
 
     }

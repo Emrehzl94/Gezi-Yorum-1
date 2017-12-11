@@ -36,7 +36,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /**
- * Creates ZipFiles and read data from them
+ * Creates ZipFiles and upload them
  */
 
 public class ZipFileUploader extends Service {
@@ -123,7 +123,7 @@ public class ZipFileUploader extends Service {
             ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(zipFile));
 
             Trip trip = helper.getTrip(trip_id);
-            ZipEntry tripMetaDataEntry = new ZipEntry("trip_metadata.JSON");
+            ZipEntry tripMetaDataEntry = new ZipEntry(Constants.TRIP_META);
             zipOutputStream.putNextEntry(tripMetaDataEntry);
             zipOutputStream.write(trip.toJSONObject().toString().getBytes());
 
@@ -140,7 +140,7 @@ public class ZipFileUploader extends Service {
                 pathMetaData.put(helper.getPathInfo(pathId));
             }
 
-            ZipEntry pathMetaDataEntry = new ZipEntry("path_metadata.JSON");
+            ZipEntry pathMetaDataEntry = new ZipEntry(Constants.PATH_META);
             zipOutputStream.putNextEntry(pathMetaDataEntry);
             zipOutputStream.write(pathMetaData.toString().getBytes());
 
@@ -157,7 +157,7 @@ public class ZipFileUploader extends Service {
                 writeByteArrayOriginal(entryFile,zipOutputStream);
                 mediaMetaData.put(file.toJSONObject());
             }
-            ZipEntry mediaMetaDataEntry = new ZipEntry("media_metadata.JSON");
+            ZipEntry mediaMetaDataEntry = new ZipEntry(Constants.MEDIA_META);
             zipOutputStream.putNextEntry(mediaMetaDataEntry);
             zipOutputStream.write(mediaMetaData.toString().getBytes());
             zipOutputStream.close();
@@ -170,14 +170,13 @@ public class ZipFileUploader extends Service {
         InputStream ios = null;
         try {
             byte[] buffer = new byte[1048576];
-            ous = new ByteArrayOutputStream();
             ios = new FileInputStream(file);
             int read;
             int written = 0;
             Integer length = Integer.parseInt(Long.valueOf(file.length()).toString());
             while ((read = ios.read(buffer)) != -1) {
                 zipOutputStream.write(buffer, 0, read);
-                not.setProgress(100, 100*written/length, false);
+                not.setProgress(100, 100 * written/length, false);
                 manager.notify(notificationId, not.build());
                 written += read;
             }
@@ -185,7 +184,6 @@ public class ZipFileUploader extends Service {
             e.printStackTrace();
         } finally {
             try {
-                if (ous != null) ous.close();
                 if (ios != null) ios.close();
             } catch (IOException e) {
                 e.printStackTrace();

@@ -3,6 +3,7 @@ package com.example.murat.gezi_yorum;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -17,6 +18,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 
 import com.example.murat.gezi_yorum.Entity.Constants;
 import com.example.murat.gezi_yorum.Fragments.Notifications;
@@ -46,7 +48,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         });
 
-        preferences = getPreferences(Context.MODE_PRIVATE);
+        preferences = getSharedPreferences(Constants.PREFNAME ,Context.MODE_PRIVATE);
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -56,6 +58,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        View header = navigationView.getHeaderView(0);
+        ImageView profilePhoto = header.findViewById(R.id.profilePhoto);
+        String path = preferences.getString(Constants.PROFILEPHOTO,"");
+        profilePhoto.setImageBitmap(BitmapFactory.decodeFile(preferences.getString(Constants.PROFILEPHOTO,"")));
+
         String isActive = preferences.getString(Constants.RECORDSTATE, Constants.PASSIVE);
         if(isActive.equals(Constants.ACTIVE)){
             changeFragment(new ContinuingTrip());

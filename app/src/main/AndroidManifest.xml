@@ -32,6 +32,7 @@
 
         <service android:name=".LocationSaveService" />
         <service android:name=".ZipFileUploader" />
+        <service android:name=".ZipFileDownloader" />
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />

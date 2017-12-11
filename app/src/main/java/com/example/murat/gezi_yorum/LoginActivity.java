@@ -3,9 +3,12 @@ package com.example.murat.gezi_yorum;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.View;
@@ -18,6 +21,12 @@ import android.widget.EditText;
 
 import com.example.murat.gezi_yorum.Entity.Constants;
 import com.example.murat.gezi_yorum.Utils.URLRequestHandler;
+
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 
 
 /**
@@ -36,6 +45,10 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        Intent intent2 = new Intent(this, ZipFileDownloader.class);
+        intent2.putExtra("url", Environment.getExternalStoragePublicDirectory(getApplicationContext().getString(R.string.app_name)) + "/trip_1.zip");
+        startService(intent2);
 
         CookieManager manager = CookieManager.getInstance();
         // Set up the login form.
@@ -160,17 +173,17 @@ public class LoginActivity extends AppCompatActivity {
      */
      class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
 
-        private final String mEmail;
+        private final String uname;
         private final String mPassword;
 
         UserLoginTask(String email, String password) {
-            mEmail = email;
+            uname = email;
             mPassword = password;
         }
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            String data = "{\"username\":\"" + mEmail + "\",\"password\":\"" + mPassword + "\"}";
+            String data = "{\"username\":\"" + uname + "\",\"password\":\"" + mPassword + "\"}";
             String url = "http://163.172.176.169:8080/Geziyorum/login";
             URLRequestHandler handler = new URLRequestHandler(data,url);
             if(!handler.getResponseMessage()){
@@ -183,6 +196,28 @@ public class LoginActivity extends AppCompatActivity {
             CookieManager manager = CookieManager.getInstance();
             manager.setCookie(Constants.ROOT,   Constants.TOKEN+"="+response);
             manager.setCookie(Constants.ROOT,   Constants.APPLICATION+"=true");
+
+            SharedPreferences.Editor editor = getSharedPreferences(Constants.PREFNAME, Context.MODE_PRIVATE).edit();
+
+            editor.putString(Constants.USERNAME, uname);
+            editor.putString(Constants.TOKEN, response);
+
+            handler = new URLRequestHandler(uname, Constants.APP+"downloadProfilePhotoPath");
+            handler.getResponseMessage();
+            String link = handler.getResponse();
+
+            try {
+                String profilePicturePath = getFilesDir() + "/profile.jpg";
+                URL website = new URL(Constants.ROOT+link);
+                ReadableByteChannel rbc = Channels.newChannel(website.openStream());
+                FileOutputStream fos = new FileOutputStream(profilePicturePath);
+                fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+
+                editor.putString(Constants.PROFILEPHOTO, profilePicturePath);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            editor.apply();
             return true;
         }
 

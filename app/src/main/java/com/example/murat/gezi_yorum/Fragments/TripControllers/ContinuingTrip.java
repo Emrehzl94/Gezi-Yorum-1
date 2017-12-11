@@ -73,7 +73,6 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
 
     private SharedPreferences preferences;
 
-    private TextView header;
     private FloatingActionButton add_photo_fab;
     private FloatingActionButton add_video_fab;
     private FloatingActionButton add_sound_record_fab;
@@ -313,7 +312,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
      */
     @Override
     public void onLocationChanged(Location location) {
-        if(location.getAccuracy()<4) return;
+        if(location.getAccuracy()>4) return;
         if(listener != null){
             listener.onLocationChanged(location);
             if(addedPolyLine != null && points != null){
