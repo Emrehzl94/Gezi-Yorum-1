@@ -175,7 +175,6 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         } else {
             if(LocationSaveService.instance == null && checkLocationPermission(LOCATION_PERMISSION_REQUEST_ON_FAIL)){
                 Intent intent = new Intent(getContext(), LocationSaveService.class);
-                intent.putExtra(Constants.TRIPID,trip.id);
                 intent.putExtra(Constants.PATH_ID,path_id);
                 parentActivity.startService(intent);
             }
@@ -203,6 +202,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         super.onResume();
         if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+            //noinspection ConstantConditions
             locationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, 0, 0, this);
         }
         if(map!=null){
@@ -240,18 +240,17 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
     }
     public void startPathRecording(){
         if(!checkLocationPermission(LOCATION_PERMISSION_REQUEST)) return;
-        path_id = helper.startNewPath(trip.id);
+        long path_id = helper.startNewPath(trip.id, getContext());
         SharedPreferences.Editor editor = preferences.edit();
         editor.putLong(Constants.PATH_ID,path_id);
         editor.putString(Constants.RECORDSTATE,Constants.ACTIVE);
         editor.apply();
         Intent intent = new Intent(getContext(),LocationSaveService.class);
-        intent.putExtra(Constants.TRIPID,trip.id);
         intent.putExtra(Constants.PATH_ID,path_id);
         getActivity().startService(intent);
         pause_continue.setOnClickListener(pause);
         pause_continue.setImageResource(R.drawable.aar_ic_pause);
-        //addPathOnMap(map, false, path_id);
+        addPathOnMap(map, path_id);
     }
     public void stopPathRecording(){
         Intent intent = new Intent(getContext(),LocationSaveService.class);
@@ -312,7 +311,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
      */
     @Override
     public void onLocationChanged(Location location) {
-        if(location.getAccuracy()>4) return;
+        //if(location.getAccuracy()>4) return;
         if(listener != null){
             listener.onLocationChanged(location);
             if(addedPolyLine != null && points != null){
@@ -424,6 +423,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         return true;
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(resultCode == Activity.RESULT_OK){
@@ -447,6 +447,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
     private String getOutputMediaFileDir(String type){
         File storageDir = new File(Environment.getExternalStoragePublicDirectory(getString(R.string.app_name)),MediaFile.getSubdir(type));
         if(!storageDir.exists()){
+            //noinspection ResultOfMethodCallIgnored
             storageDir.mkdirs();
         }
         return storageDir.getPath();
@@ -502,7 +503,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
                 if(grantResults[0] != PackageManager.PERMISSION_GRANTED){
                     parentActivity.showSnackbarMessage("Kamera izni olmadan fotoğraf çekilemez.", Snackbar.LENGTH_LONG);
                 }else {
-                    startNewVideoIntent();
+                    startNewPhotoIntent();
                 }
                 break;
             case VIDEO_CAMERA_PERMISSION:
@@ -524,7 +525,6 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
                     parentActivity.showSnackbarMessage("Konum izni olmadan konum kaydı yapılamaz.", Snackbar.LENGTH_LONG);
                 }else {
                     Intent intent = new Intent(getContext(), LocationSaveService.class);
-                    intent.putExtra(Constants.TRIPID, trip.id);
                     intent.putExtra(Constants.PATH_ID,path_id);
                     parentActivity.startService(intent);
                 }

@@ -19,7 +19,7 @@ import android.widget.Toast;
 import com.example.murat.gezi_yorum.Entity.Constants;
 import com.example.murat.gezi_yorum.Entity.MediaFile;
 import com.example.murat.gezi_yorum.Entity.Trip;
-import com.example.murat.gezi_yorum.Utils.LocationCSVHandler;
+import com.example.murat.gezi_yorum.Entity.Path;
 import com.example.murat.gezi_yorum.Utils.LocationDbOpenHelper;
 import com.example.murat.gezi_yorum.Utils.MultipartUtility;
 import com.google.android.gms.maps.model.LatLng;
@@ -28,7 +28,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -67,12 +66,14 @@ public class ZipFileUploader extends Service {
         Bundle extras = intent.getExtras();
 
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        //noinspection ConstantConditions
         if(cm.getActiveNetworkInfo() == null){
             Toast.makeText(this, getString(R.string.internet_warning),
                     Toast.LENGTH_LONG).show();
             stopSelf();
             return START_NOT_STICKY;
         }
+        //noinspection ConstantConditions
         trip_id = extras.getLong(Constants.TRIPID);
 
         manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -117,11 +118,13 @@ public class ZipFileUploader extends Service {
         builder.setSmallIcon(R.mipmap.ic_launcher);
         builder.setContentTitle(message);
         manager.notify(0, builder.build());
+        stopSelf();
 
     }
     private void create(){
         try {
             if(!zipFile.exists()){
+                //noinspection ResultOfMethodCallIgnored
                 zipFile.createNewFile();
             }
             ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(zipFile));
@@ -139,8 +142,9 @@ public class ZipFileUploader extends Service {
             ArrayList<Long> pathIDs = helper.getPathsIDs(trip.id);
             JSONArray pathMetaData = new JSONArray();
             for (Long pathId : pathIDs) {
-                LocationCSVHandler path = new LocationCSVHandler(trip.id, pathId, getApplicationContext());
+                Path path = helper.getPath(pathId);
                 File pathFile = path.getFile();
+
                 ZipEntry pathEntry = new ZipEntry("Paths/"+pathFile.getName());
                 zipOutputStream.putNextEntry(pathEntry);
                 RandomAccessFile randomAccessFile = new RandomAccessFile(pathFile, "r");
@@ -148,22 +152,7 @@ public class ZipFileUploader extends Service {
                 randomAccessFile.readFully(bytes);
                 zipOutputStream.write(bytes);
 
-                JSONObject pathInfo = helper.getPathInfo(pathId);
-                LatLng location = path.peek();
-                if(location != null){
-                    List<Address> addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1);
-                    try {
-                        JSONObject address = new JSONObject();
-                        address.put(Constants.CITY, addresses.get(0).getLocality());
-                        address.put(Constants.STATE, addresses.get(0).getAdminArea());
-                        address.put(Constants.COUNTRY, addresses.get(0).getCountryName());
-                        pathInfo.put(Constants.ADDRESS, address);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                pathMetaData.put(pathInfo);
+                pathMetaData.put(path.toJSONObject(geocoder));
             }
             ZipEntry pathMetaDataEntry = new ZipEntry(Constants.PATH_META);
             zipOutputStream.putNextEntry(pathMetaDataEntry);

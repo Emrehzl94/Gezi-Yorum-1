@@ -7,11 +7,10 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.support.annotation.Nullable;
 
+import com.example.murat.gezi_yorum.Entity.Constants;
 import com.example.murat.gezi_yorum.Entity.MediaFile;
+import com.example.murat.gezi_yorum.Entity.Path;
 import com.example.murat.gezi_yorum.Entity.Trip;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 
@@ -20,6 +19,7 @@ import java.util.ArrayList;
  * Performs database operations.
  */
 
+@SuppressWarnings("ALL")
 public class LocationDbOpenHelper extends SQLiteOpenHelper {
 
     private static final int DATABASE_VERSION = 1;
@@ -67,7 +67,9 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
                 "("+COLUMN_ID+" integer PRIMARY KEY AUTOINCREMENT," +
                 COLUMN_STARTDATE +" INTEGER not null," +
                 COLUMN_FINISHDATE+" INTEGER not null," +
-                COLUMN_TRIPID + " INTEGER not null)";
+                COLUMN_TRIPID + " INTEGER not null," +
+                COLUMN_PATH +" TEXT DEFAULT ''," +
+                COLUMN_TYPE + " TEXT DEFAULT '"+ Constants.WALK+"')";
         String mediaTableCreateQuery = "CREATE TABLE " + TABLE_MEDIA +
                 " (" + COLUMN_ID + " integer PRIMARY KEY AUTOINCREMENT," +
                 COLUMN_TYPE +" varchar(255)," +
@@ -147,24 +149,37 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
      * @param trip_id trip id
      * @return path_id
      */
-    public long startNewPath(long trip_id){
+    public long startNewPath(long trip_id, Context context){
         ContentValues values = new ContentValues();
-        values.put(COLUMN_STARTDATE,System.currentTimeMillis());
+        long time = System.currentTimeMillis();
+        values.put(COLUMN_STARTDATE, time);
         values.put(COLUMN_FINISHDATE,Long.MAX_VALUE);
         values.put(COLUMN_TRIPID,trip_id);
+        values.put(COLUMN_PATH, Path.getRouteFilePath(context, time));
         SQLiteDatabase database = getWritableDatabase();
         return database.insert(TABLE_PATHS,null ,values);
     }
 
     /**
      * Ends path
-     * @param trip_id trip id
+     * @param path_id path id
      */
-    public void endPath(long trip_id){
+    public void endPath(long path_id){
         ContentValues values = new ContentValues();
         values.put(COLUMN_FINISHDATE,System.currentTimeMillis());
         SQLiteDatabase database = getWritableDatabase();
-        database.update(TABLE_PATHS, values, COLUMN_ID + "=" + trip_id, null);
+        database.update(TABLE_PATHS, values, COLUMN_ID + "=" + path_id, null);
+    }
+
+    /**
+     * Updates type of path
+     * @param path path
+     */
+    public void updateTypeOfPath(Path path ,String type){
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_TYPE,type);
+        SQLiteDatabase database = getWritableDatabase();
+        database.update(TABLE_PATHS, values, COLUMN_ID + "=" + path.getPath_id(), null);
     }
 
     /**
@@ -203,7 +218,8 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
                     cursor.getLong(cursor.getColumnIndex(COLUMN_ID)),
                     cursor.getLong(cursor.getColumnIndex(COLUMN_STARTDATE)),
                     cursor.getLong(cursor.getColumnIndex(COLUMN_FINISHDATE)),
-                    cursor.getString(cursor.getColumnIndex(COLUMN_NAME))
+                    cursor.getString(cursor.getColumnIndex(COLUMN_NAME)),
+                    cursor.getString(cursor.getColumnIndex(COLUMN_MEMBERS))
             ));
             cursor.moveToNext();
         }
@@ -226,7 +242,8 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
                     cursor.getLong(cursor.getColumnIndex(COLUMN_ID)),
                     cursor.getLong(cursor.getColumnIndex(COLUMN_STARTDATE)),
                     cursor.getLong(cursor.getColumnIndex(COLUMN_FINISHDATE)),
-                    cursor.getString(cursor.getColumnIndex(COLUMN_NAME))
+                    cursor.getString(cursor.getColumnIndex(COLUMN_NAME)),
+                    cursor.getString(cursor.getColumnIndex(COLUMN_MEMBERS))
             ));
             cursor.moveToNext();
         }
@@ -271,7 +288,8 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
                 cursor.getLong(cursor.getColumnIndex(COLUMN_ID)),
                 cursor.getLong(cursor.getColumnIndex(COLUMN_STARTDATE)),
                 cursor.getLong(cursor.getColumnIndex(COLUMN_FINISHDATE)),
-                cursor.getString(cursor.getColumnIndex(COLUMN_NAME))
+                cursor.getString(cursor.getColumnIndex(COLUMN_NAME)),
+                cursor.getString(cursor.getColumnIndex(COLUMN_MEMBERS))
         );
         cursor.close();
         database.close();
@@ -283,26 +301,24 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
      * @param path_id path_id
      * @return jsonObject of path
      */
-    public JSONObject getPathInfo(long path_id){
+    public Path getPath(long path_id){
         String query = "SELECT * FROM "+TABLE_PATHS+" WHERE "+COLUMN_ID+"='"+path_id+"'";
         SQLiteDatabase database = getReadableDatabase();
         Cursor cursor = database.rawQuery(query,null);
         cursor.moveToFirst();
 
-        JSONObject jsonObject = new JSONObject();
-        long trip_id = cursor.getLong(cursor.getColumnIndex(COLUMN_TRIPID));
-        try {
-            jsonObject.put("start_date",cursor.getLong(cursor.getColumnIndex(COLUMN_STARTDATE)));
-            jsonObject.put("finish_date",cursor.getLong(cursor.getColumnIndex(COLUMN_FINISHDATE)));
-            jsonObject.put("file", "path_"+trip_id+"_"+path_id+".csv");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        Path path = new Path(
+                cursor.getLong(cursor.getColumnIndex(COLUMN_ID)),
+                cursor.getLong(cursor.getColumnIndex(COLUMN_STARTDATE)),
+                cursor.getLong(cursor.getColumnIndex(COLUMN_STARTDATE)),
+                cursor.getString(cursor.getColumnIndex(COLUMN_PATH)),
+                cursor.getString(cursor.getColumnIndex(COLUMN_TYPE))
+        );
 
         cursor.moveToNext();
         cursor.close();
         database.close();
-        return jsonObject;
+        return path;
     }
 
     /**

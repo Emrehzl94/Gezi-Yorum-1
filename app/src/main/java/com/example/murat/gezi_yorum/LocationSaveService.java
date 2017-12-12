@@ -16,7 +16,8 @@ import android.support.v4.app.ActivityCompat;
 import android.widget.Toast;
 
 import com.example.murat.gezi_yorum.Entity.Constants;
-import com.example.murat.gezi_yorum.Utils.LocationCSVHandler;
+import com.example.murat.gezi_yorum.Entity.Path;
+import com.example.murat.gezi_yorum.Utils.LocationDbOpenHelper;
 
 /**
  * Listens and saves locations to database. Must run as service.
@@ -27,8 +28,9 @@ public class LocationSaveService extends Service implements LocationListener {
     private static final int MIN_DISTANCE = 3;
     public static LocationSaveService instance;
 
-    private LocationCSVHandler csvHandler;
+    private Path path;
     LocationManager locationManager;
+    private LocationDbOpenHelper helper;
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent,flags,startId);
@@ -46,9 +48,9 @@ public class LocationSaveService extends Service implements LocationListener {
 
         instance = this;
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        long trip_id = intent.getExtras().getLong(Constants.TRIPID);
-        long path_id = intent.getExtras().getLong(Constants.PATH_ID);
-        csvHandler = new LocationCSVHandler(trip_id, path_id, getApplicationContext());
+        @SuppressWarnings("ConstantConditions") long path_id = intent.getExtras().getLong(Constants.PATH_ID);
+        helper = new LocationDbOpenHelper(this);
+        path = helper.getPath(path_id);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Toast.makeText(this, "Service cannot started. Location permission is not granted.", Toast.LENGTH_LONG).show();
             this.stopSelf();
@@ -62,6 +64,8 @@ public class LocationSaveService extends Service implements LocationListener {
     @Override
     public void onDestroy() {
         locationManager.removeUpdates(this);
+        String type = path.calculateType();
+        helper.updateTypeOfPath(path, type);
         Toast.makeText(this,"Service stopped",Toast.LENGTH_LONG).show();
         instance = null;
         super.onDestroy();
@@ -73,8 +77,9 @@ public class LocationSaveService extends Service implements LocationListener {
 
     @Override
     public void onLocationChanged(Location location) {
-        if(location.getAccuracy()<4)
-            csvHandler.saveLocation(location);
+        //if(location.getAccuracy()<4)
+        Toast.makeText(this, "Konum kaydedildi.", Toast.LENGTH_LONG).show();
+            path.saveLocation(location);
     }
 
     @Override

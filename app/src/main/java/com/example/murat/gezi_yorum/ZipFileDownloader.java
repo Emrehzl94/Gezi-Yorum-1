@@ -7,34 +7,17 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.example.murat.gezi_yorum.Entity.Constants;
-import com.example.murat.gezi_yorum.Entity.MediaFile;
-import com.example.murat.gezi_yorum.Entity.Trip;
-import com.example.murat.gezi_yorum.Utils.LocationCSVHandler;
 import com.example.murat.gezi_yorum.Utils.LocationDbOpenHelper;
-import com.example.murat.gezi_yorum.Utils.MultipartUtility;
 
-import org.json.JSONArray;
-
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.RandomAccessFile;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import java.util.zip.ZipOutputStream;
 
 /**
  * Downloads and imports ZipFiles to database
@@ -61,12 +44,14 @@ public class ZipFileDownloader extends Service {
         Bundle extras = intent.getExtras();
 
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        //noinspection ConstantConditions
         if(cm.getActiveNetworkInfo() == null){
             Toast.makeText(this, "Etkin internet bağlantısı bulunmamaktadır. Lütfen daha sonra tekrar deneyin.",
                     Toast.LENGTH_LONG).show();
             stopSelf();
             return START_NOT_STICKY;
         }
+        //noinspection ConstantConditions
         url = extras.getString("url");
 
         manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);

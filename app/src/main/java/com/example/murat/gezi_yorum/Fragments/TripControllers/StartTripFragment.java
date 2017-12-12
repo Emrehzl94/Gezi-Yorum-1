@@ -1,5 +1,6 @@
 package com.example.murat.gezi_yorum.Fragments.TripControllers;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -76,6 +77,7 @@ public class StartTripFragment extends Fragment{
         uname = preferences.getString(Constants.USERNAME,"");
 
         ConnectivityManager cm = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+        //noinspection ConstantConditions
         if(cm.getActiveNetworkInfo() == null){
             Toast.makeText(getContext(),
                     getString(R.string.friend_list_unsuccessful) + getString(R.string.internet_warning),
@@ -91,7 +93,7 @@ public class StartTripFragment extends Fragment{
                 StringBuilder members = new StringBuilder();
                 members.append(uname);
                 for (String friend : selectedFriends){
-                    members.append(", ");
+                    members.append(",");
                     members.append(friend);
                 }
                 ContinuingTrip continuingTrip = new ContinuingTrip();
@@ -108,6 +110,7 @@ public class StartTripFragment extends Fragment{
         return view;
     }
 
+    @SuppressLint("StaticFieldLeak")
     class getUserFriendList extends AsyncTask<Void, Void, Boolean> {
 
         private final String uname;

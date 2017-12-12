@@ -13,9 +13,9 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.example.murat.gezi_yorum.Entity.MediaFile;
+import com.example.murat.gezi_yorum.Entity.Path;
 import com.example.murat.gezi_yorum.Entity.Trip;
 import com.example.murat.gezi_yorum.R;
-import com.example.murat.gezi_yorum.Utils.LocationCSVHandler;
 import com.example.murat.gezi_yorum.Utils.LocationDbOpenHelper;
 import com.example.murat.gezi_yorum.Utils.MediaGridViewAdapter;
 import com.google.android.gms.maps.CameraUpdate;
@@ -26,11 +26,11 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
-import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Abstract class merges TripInfo and ContiuningTrip
@@ -46,8 +46,9 @@ public abstract class TripSummary extends Fragment {
     protected ImageButton edit_name;
     protected GoogleMap map;
     protected Polyline addedPolyLine;
-    protected ArrayList<LatLng> points;
+    protected List<LatLng> points;
 
+    protected Path active_path;
     protected boolean preview_setted = false;
     /**
      * Seting up preview for media
@@ -120,6 +121,7 @@ public abstract class TripSummary extends Fragment {
     /**
      * Adding markers to map
      */
+    @SuppressWarnings("ConstantConditions")
     public void addMarkersToMap(GoogleMap map){
         if(mediaFiles ==null || mediaFiles.size() == 0) return;
         MediaFile previous = null; // previous media file
@@ -210,6 +212,8 @@ public abstract class TripSummary extends Fragment {
                     }catch (Exception e){
                         e.printStackTrace();
                     }
+                    addMarkersToMap(map);
+                    points = addedPolyLine.getPoints();
                 }
             }
         });
@@ -221,14 +225,8 @@ public abstract class TripSummary extends Fragment {
      */
 
     protected void addPathOnMap(GoogleMap map, long path_id){
-        points = new LocationCSVHandler(trip.id, path_id,getContext()).getLocations();
-
-        PolylineOptions options = new PolylineOptions();
-        options.color(getContext().getResources().getColor(R.color.colorPrimary));
-        options.width(15);
-        options.visible(true);
-        options.addAll(points);
-        addedPolyLine = map.addPolyline(options);
-        addMarkersToMap(map);
+        active_path = helper.getPath(path_id);
+        points = active_path.getLocationsAsLatLng();
+        addedPolyLine = active_path.drawOnMap(map, points);
     }
 }

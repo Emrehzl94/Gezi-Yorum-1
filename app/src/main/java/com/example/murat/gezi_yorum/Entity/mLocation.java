@@ -9,32 +9,50 @@ import com.google.android.gms.maps.model.LatLng;
  */
 
 public class mLocation {
-    public static final String LONGTITUDE = "longitude";
-    public static final String LATITUDE = "latitude";
-    public static final String ALTITUDE = "altitude";
-    public static final String TIME = "time";
-    public static final String ACCURACY = "accuracy";
-    public static final String SPEED = "speed";
+    static final String LONGTITUDE = "longitude";
+    static final String LATITUDE = "latitude";
+    static final String ALTITUDE = "altitude";
+    static final String TIME = "time";
+    static final String ACCURACY = "accuracy";
+    static final String SPEED = "speed";
 
     private double Longitude;
     private double Latitude;
     private double Altitude;
     private long Time;
-    private float Accuracy;
     private float Speed;
-    public mLocation(Location location){
+
+    /**
+     *
+     * @param location android location object from location services
+     */
+    mLocation(Location location){
         this.Latitude = location.getLatitude();
         this.Longitude = location.getLongitude();
         this.Altitude = location.getAltitude();
         this.Time = location.getTime();
-        this.Accuracy = location.getAccuracy();
         this.Speed = location.getSpeed();
     }
+
+    /**
+     * This constructor used by MediaFile
+     */
     mLocation(double Latitude, double Longitude, double Altitude, long Time){
         this.Latitude = Latitude;
         this.Longitude = Longitude;
         this.Altitude = Altitude;
         this.Time = Time;
+    }
+
+    /**
+     * This constructor used by Path
+     */
+    mLocation(double Latitude, double Longitude, double Altitude, long Time, float speed){
+        this.Latitude = Latitude;
+        this.Longitude = Longitude;
+        this.Altitude = Altitude;
+        this.Time = Time;
+        this.Speed = speed;
     }
 
     public double getLongitude() {
@@ -51,6 +69,10 @@ public class mLocation {
 
     public double getAltitude() {
         return Altitude;
+    }
+
+    float getSpeed() {
+        return Speed;
     }
 
     public double distInMeters(mLocation location) {
