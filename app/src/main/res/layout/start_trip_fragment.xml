@@ -15,7 +15,25 @@
             android:id="@+id/trip_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="text" />
+            android:inputType="text"
+            />
+        <TextView
+            android:id="@+id/trip_explain_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/trip_explain"
+            android:visibility="gone"/>
+        <EditText
+            android:id="@+id/trip_explain"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:visibility="gone"/>
+        <CheckBox
+            android:id="@+id/use_choosen_trip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/choose_path"/>
         <Spinner
             android:id="@+id/choose_path"
             android:layout_width="match_parent"
@@ -24,11 +42,16 @@
             android:id="@+id/add_friends"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical">
-        <Spinner
-            android:id="@+id/friends_list"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:orientation="vertical"
+            android:visibility="gone">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/invite_friends"/>
+            <Spinner
+                android:id="@+id/friends_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
             <ListView
                 android:id="@+id/selected_friends"
                 android:layout_width="match_parent"

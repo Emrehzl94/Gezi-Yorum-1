@@ -38,6 +38,13 @@ public class Path {
     private String type;
     private ArrayList<mLocation> locations;
 
+    public static final String PATH_ID = "path_id";
+    //Path types
+    public static final String WALK = "walk";
+    public static final String RUN = "run";
+    public static final String RIDE = "ride";
+    public static final String CAR = "car";
+
     public Path(long path_id, long startdate, long finishdate, String path_file, String type){
         this.path_id = path_id;
         this.startdate = startdate;
@@ -157,13 +164,13 @@ public class Path {
         float averageSpeed = calculateAverageSpeed();
         String type;
         if(averageSpeed<1.5){
-            type = Constants.WALK;
+            type = Path.WALK;
         }else if(averageSpeed < 3.5){
-            type = Constants.RUN;
+            type = Path.RUN;
         }else if(averageSpeed < 6.5){
-            type = Constants.RIDE;
+            type = Path.RIDE;
         }else {
-            type = Constants.CAR;
+            type = Path.CAR;
         }
         return type;
     }
@@ -175,9 +182,10 @@ public class Path {
         }
         return  totalSpeed/(float) locations.size();
     }
-    public Polyline drawOnMap(GoogleMap map, List<LatLng> points){
+    public Polyline drawOnMap(GoogleMap map, List<LatLng> points, Boolean isImported){
+        int color = isImported ? Color.BLUE : Color.RED;
         PolylineOptions options = new PolylineOptions();
-        options.color(Color.RED);
+        options.color(color);
         options.width(15);
         options.visible(true);
         options.addAll(points);

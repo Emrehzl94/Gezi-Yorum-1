@@ -166,13 +166,13 @@ abstract class MediaFragment extends Fragment {
                         String option = "";
                         switch (selectedId){
                             case R.id.everybody:
-                                option = Constants.EVERYBODY;
+                                option = MediaFile.EVERYBODY;
                                 break;
                             case R.id.my_friends:
-                                option = Constants.MY_FRIENDS;
+                                option = MediaFile.MY_FRIENDS;
                                 break;
                             case R.id.only_me:
-                                option = Constants.ONLY_ME;
+                                option = MediaFile.ONLY_ME;
                         }
                         helper.updateShareOption(mediaFile, option);
                         mediaFile.share_option = option;
@@ -183,13 +183,13 @@ abstract class MediaFragment extends Fragment {
                 share_options_radio = dialog.findViewById(R.id.share_options_radio);
                 int selected = 0;
                 switch (mediaFile.share_option){
-                    case Constants.EVERYBODY:
+                    case MediaFile.EVERYBODY:
                         selected = R.id.everybody;
                         break;
-                    case Constants.MY_FRIENDS:
+                    case MediaFile.MY_FRIENDS:
                         selected = R.id.my_friends;
                         break;
-                    case Constants.ONLY_ME:
+                    case MediaFile.ONLY_ME:
                         selected = R.id.only_me;
                 }
                 share_options_radio.check(selected);

@@ -7,7 +7,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.support.annotation.Nullable;
 
-import com.example.murat.gezi_yorum.Entity.Constants;
 import com.example.murat.gezi_yorum.Entity.MediaFile;
 import com.example.murat.gezi_yorum.Entity.Path;
 import com.example.murat.gezi_yorum.Entity.Trip;
@@ -22,7 +21,7 @@ import java.util.ArrayList;
 @SuppressWarnings("ALL")
 public class LocationDbOpenHelper extends SQLiteOpenHelper {
 
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
     private static final String DATABASE_NAME = "locations.db";
 
 
@@ -34,6 +33,9 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
     public static final String COLUMN_NAME = "trip_name";
     public static final String COLUMN_ISIMPORTED = "is_imported";
     public static final String COLUMN_MEMBERS = "members";
+    public static final String COLUMN_IDONSERVER = "idonserver";
+    public static final String COLUMN_CREATOR = "iscreator";
+    public static final String COLUMN_SHARED = "isshared";
 
     public static final String TABLE_PATHS = "Paths";
 
@@ -62,14 +64,17 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
                  COLUMN_FINISHDATE+" INTEGER not null," +
                  COLUMN_NAME+" text," +
                  COLUMN_ISIMPORTED+" INTEGER not null, " +
-                 COLUMN_MEMBERS + " text default '' )";
+                 COLUMN_MEMBERS + " text default '' ," +
+                 COLUMN_IDONSERVER +" INTEGER not null," +
+                 COLUMN_CREATOR + " INTEGER not null," +
+                 COLUMN_SHARED+" text default 'false')";
         String pathTableCreateQuery = "CREATE TABLE " + TABLE_PATHS +
                 "("+COLUMN_ID+" integer PRIMARY KEY AUTOINCREMENT," +
                 COLUMN_STARTDATE +" INTEGER not null," +
                 COLUMN_FINISHDATE+" INTEGER not null," +
                 COLUMN_TRIPID + " INTEGER not null," +
                 COLUMN_PATH +" TEXT DEFAULT ''," +
-                COLUMN_TYPE + " TEXT DEFAULT '"+ Constants.WALK+"')";
+                COLUMN_TYPE + " TEXT DEFAULT '"+ Path.WALK+"')";
         String mediaTableCreateQuery = "CREATE TABLE " + TABLE_MEDIA +
                 " (" + COLUMN_ID + " integer PRIMARY KEY AUTOINCREMENT," +
                 COLUMN_TYPE +" varchar(255)," +
@@ -99,14 +104,15 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
      * Inserts new trip to database created by user
      * @return trip_id
      */
-    //TODO: Add new ArrayList<Long> user_ids to this trip
-    public Trip startNewTrip(String name, String members){
+    public Trip startNewTrip(String name, String members, Long idOnServer, Boolean isCreator){
         ContentValues values = new ContentValues();
         values.put(COLUMN_STARTDATE,System.currentTimeMillis());
         values.put(COLUMN_FINISHDATE,Long.MAX_VALUE);
         values.put(COLUMN_NAME, name);
         values.put(COLUMN_ISIMPORTED, 0);
         values.put(COLUMN_MEMBERS, members);
+        values.put(COLUMN_IDONSERVER, idOnServer);
+        values.put(COLUMN_CREATOR, isCreator.toString());
         SQLiteDatabase database = getWritableDatabase();
         long id = database.insert(TABLE_TRIPS,null ,values);
         database.close();
@@ -123,6 +129,8 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
         values.put(COLUMN_FINISHDATE,finishdate);
         values.put(COLUMN_NAME, name);
         values.put(COLUMN_ISIMPORTED, 1);
+        values.put(COLUMN_IDONSERVER, -1);
+        values.put(COLUMN_CREATOR, new Boolean(false).toString());
         SQLiteDatabase database = getWritableDatabase();
         return database.insert(TABLE_TRIPS,null ,values);
     }
@@ -160,6 +168,21 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
         return database.insert(TABLE_PATHS,null ,values);
     }
 
+    /**
+     * Imports path
+     * @param trip_id trip id
+     * @return path_id
+     */
+    public long importPath(long trip_id, long startdate, long finishdate, String path, String type){
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_STARTDATE, startdate);
+        values.put(COLUMN_FINISHDATE,finishdate);
+        values.put(COLUMN_TRIPID,trip_id);
+        values.put(COLUMN_PATH, path);
+        values.put(COLUMN_TYPE, type);
+        SQLiteDatabase database = getWritableDatabase();
+        return database.insert(TABLE_PATHS,null ,values);
+    }
     /**
      * Ends path
      * @param path_id path id
@@ -219,7 +242,11 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
                     cursor.getLong(cursor.getColumnIndex(COLUMN_STARTDATE)),
                     cursor.getLong(cursor.getColumnIndex(COLUMN_FINISHDATE)),
                     cursor.getString(cursor.getColumnIndex(COLUMN_NAME)),
-                    cursor.getString(cursor.getColumnIndex(COLUMN_MEMBERS))
+                    cursor.getInt(cursor.getColumnIndex(COLUMN_ISIMPORTED)),
+                    cursor.getString(cursor.getColumnIndex(COLUMN_MEMBERS)),
+                    cursor.getLong(cursor.getColumnIndex(COLUMN_IDONSERVER)),
+                    cursor.getString(cursor.getColumnIndex(COLUMN_CREATOR)),
+                    cursor.getString(cursor.getColumnIndex(COLUMN_SHARED))
             ));
             cursor.moveToNext();
         }
@@ -232,7 +259,7 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
      * @return trip_ids created from user
      */
     public ArrayList<Trip> getImportedTrips(){
-        String query = "SELECT "+COLUMN_ID+" FROM "+TABLE_TRIPS +" WHERE "+COLUMN_ISIMPORTED+"=1";
+        String query = "SELECT * FROM "+TABLE_TRIPS +" WHERE "+COLUMN_ISIMPORTED+"=1";
         SQLiteDatabase database = getReadableDatabase();
         Cursor cursor = database.rawQuery(query,null);
         cursor.moveToFirst();
@@ -243,7 +270,11 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
                     cursor.getLong(cursor.getColumnIndex(COLUMN_STARTDATE)),
                     cursor.getLong(cursor.getColumnIndex(COLUMN_FINISHDATE)),
                     cursor.getString(cursor.getColumnIndex(COLUMN_NAME)),
-                    cursor.getString(cursor.getColumnIndex(COLUMN_MEMBERS))
+                    cursor.getInt(cursor.getColumnIndex(COLUMN_ISIMPORTED)),
+                    cursor.getString(cursor.getColumnIndex(COLUMN_MEMBERS)),
+                    cursor.getLong(cursor.getColumnIndex(COLUMN_IDONSERVER)),
+                    cursor.getString(cursor.getColumnIndex(COLUMN_CREATOR)),
+                    cursor.getString(cursor.getColumnIndex(COLUMN_SHARED))
             ));
             cursor.moveToNext();
         }
@@ -289,7 +320,11 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
                 cursor.getLong(cursor.getColumnIndex(COLUMN_STARTDATE)),
                 cursor.getLong(cursor.getColumnIndex(COLUMN_FINISHDATE)),
                 cursor.getString(cursor.getColumnIndex(COLUMN_NAME)),
-                cursor.getString(cursor.getColumnIndex(COLUMN_MEMBERS))
+                cursor.getInt(cursor.getColumnIndex(COLUMN_ISIMPORTED)),
+                cursor.getString(cursor.getColumnIndex(COLUMN_MEMBERS)),
+                cursor.getLong(cursor.getColumnIndex(COLUMN_IDONSERVER)),
+                cursor.getString(cursor.getColumnIndex(COLUMN_CREATOR)),
+                cursor.getString(cursor.getColumnIndex(COLUMN_SHARED))
         );
         cursor.close();
         database.close();

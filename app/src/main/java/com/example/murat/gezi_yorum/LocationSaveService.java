@@ -2,6 +2,8 @@ package com.example.murat.gezi_yorum;
 
 import android.Manifest;
 import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
@@ -10,6 +12,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.ActivityCompat;
@@ -38,17 +41,19 @@ public class LocationSaveService extends Service implements LocationListener {
         PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0,
                 activityIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-
-        Notification not = new Notification.Builder(this).
+        Notification.Builder not = new Notification.Builder(this).
                 setContentTitle(getText(R.string.app_name)).
                 setContentText("Konum takibi açık").
                 setSmallIcon(R.mipmap.ic_launcher).
-                setContentIntent(pendingIntent).build();
-        startForeground(1, not);
+                setContentIntent(pendingIntent);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            not.setChannelId(Constants.CH1);
+        }
+        startForeground(1, not.build());
 
         instance = this;
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        @SuppressWarnings("ConstantConditions") long path_id = intent.getExtras().getLong(Constants.PATH_ID);
+        @SuppressWarnings("ConstantConditions") long path_id = intent.getExtras().getLong(Path.PATH_ID);
         helper = new LocationDbOpenHelper(this);
         path = helper.getPath(path_id);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {

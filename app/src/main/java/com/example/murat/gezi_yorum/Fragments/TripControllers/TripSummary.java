@@ -48,6 +48,7 @@ public abstract class TripSummary extends Fragment {
     protected Polyline addedPolyLine;
     protected List<LatLng> points;
 
+    protected Handler handler;
     protected Path active_path;
     protected boolean preview_setted = false;
     /**
@@ -94,24 +95,28 @@ public abstract class TripSummary extends Fragment {
         });
 
         preview = view.findViewById(R.id.preview);
-        new Handler().post(new Runnable() {
+        handler = new Handler();
+        new Thread(new Runnable() {
             @Override
             public void run() {
                 mediaFiles = helper.getMediaFiles(trip.id,null,null);
-                preview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                handler.post(new Runnable() {
                     @Override
-                    public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                        MediaFile file = mediaFiles.size()>position ?  mediaFiles.get(position) : null;
-                        if(file != null)
-                            file.startActivityForView(getActivity());
+                    public void run() {
+                        preview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                            @Override
+                            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+                                MediaFile file = mediaFiles.size()>position ?  mediaFiles.get(position) : null;
+                                if(file != null)
+                                    file.startActivityForView(getActivity());
+                            }
+                        });
+                        setUpPreview();
+                        preview_setted = true;
                     }
                 });
-                setUpPreview();
-                preview_setted = true;
             }
-        });
-
-
+        }).start();
     }
 
     protected void setUpPreview(){
@@ -122,8 +127,9 @@ public abstract class TripSummary extends Fragment {
      * Adding markers to map
      */
     @SuppressWarnings("ConstantConditions")
-    public void addMarkersToMap(GoogleMap map){
+    public void addMarkersToMap(GoogleMap map, List<MediaFile> mediaFiles, Boolean isImported){
         if(mediaFiles ==null || mediaFiles.size() == 0) return;
+        float color = isImported ? BitmapDescriptorFactory.HUE_BLUE : BitmapDescriptorFactory.HUE_YELLOW;
         MediaFile previous = null; // previous media file
         ArrayList<Long> mediaGroup = new ArrayList<>();
         for(MediaFile file : mediaFiles){
@@ -133,7 +139,7 @@ public abstract class TripSummary extends Fragment {
             }else {
                 // else if media group is empty add this file to map
                 if(mediaGroup.size() == 1){
-                    previous.addToMap(map);
+                    previous.addToMap(map, isImported);
                     mediaGroup.clear();
                     mediaGroup.add(file.id);
                 }else {
@@ -146,7 +152,7 @@ public abstract class TripSummary extends Fragment {
                     }
                     String snippet = snippetBuilder.toString();
                     map.addMarker(new MarkerOptions().position(previous.location.convertLatLng())
-                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
+                            .icon(BitmapDescriptorFactory.defaultMarker(color))
                             .title(String.valueOf(mediaGroup.size()))
                             .snippet(String.valueOf(snippet)));
                     mediaGroup.clear();
@@ -157,7 +163,7 @@ public abstract class TripSummary extends Fragment {
         }
         // if media group has only last file add last file to map
         if(mediaGroup.size() == 1){
-            previous.addToMap(map);
+            previous.addToMap(map, isImported);
         }else if(mediaGroup.size() > 1) {
             // else if media group has more than one file add these files to map as media group
             StringBuilder snippetBuilder = new StringBuilder();
@@ -167,7 +173,7 @@ public abstract class TripSummary extends Fragment {
             }
             String snippet = snippetBuilder.toString();
             map.addMarker(new MarkerOptions().position(previous.location.convertLatLng())
-                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
+                    .icon(BitmapDescriptorFactory.defaultMarker(color))
                     .snippet(String.valueOf(snippet)));
         }
     }
@@ -177,56 +183,74 @@ public abstract class TripSummary extends Fragment {
      * @param googleMap GoogleMap
      * @param move move map or animate
      */
-    public void requestToDrawPathOnMap(GoogleMap googleMap, final boolean move){
+    public void requestToDrawPathOnMap(GoogleMap googleMap, boolean move){
         if(googleMap == null) return;
         this.map = googleMap;
-        new Handler().post(new Runnable() {
-            @Override
-            public void run() {
-                if(map != null) {
-                    //waiting for media files
-                    while (!preview_setted){
-                        try {
-                            Thread.sleep(50);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    map.clear();
-                    LatLngBounds.Builder builder = new LatLngBounds.Builder();
-
-                    int routePadding = 200;
-                    for (long path_id : helper.getPathsIDs(trip.id)) {
-                        addPathOnMap(map, path_id);
-                        for (LatLng point : points) {
-                            builder.include(point);
-                        }
-                    }
-                    try {
-                        CameraUpdate update = CameraUpdateFactory.newLatLngBounds(builder.build(), routePadding);
-                        if (move) {
-                            map.moveCamera(update);
-                        } else {
-                            map.animateCamera(update);
-                        }
-                    }catch (Exception e){
-                        e.printStackTrace();
-                    }
-                    addMarkersToMap(map);
-                    points = addedPolyLine.getPoints();
-                }
-            }
-        });
+        map.clear();
+        new Thread(new TripDrawer(trip, move)).start();
     }
 
     /**
-     * Draws trip path on map, adds new polyline
-     * @param map Google Map
+     * Controls trip drawing on map can draw any trip
      */
+    protected class TripDrawer implements Runnable {
+        private Trip trip;
+        private Boolean move;
+        public TripDrawer(Trip trip, Boolean move){
+            this.trip = trip;
+            this.move = move;
+        }
 
-    protected void addPathOnMap(GoogleMap map, long path_id){
-        active_path = helper.getPath(path_id);
-        points = active_path.getLocationsAsLatLng();
-        addedPolyLine = active_path.drawOnMap(map, points);
+        @Override
+        public void run() {
+            ArrayList<Long> pathIds = helper.getPathsIDs(trip.id);
+            if(map != null && !pathIds.isEmpty()) {
+                //waiting for media files
+                while (!preview_setted){
+                    try {
+                        Thread.sleep(50);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                handler.post(new Runnable() {
+                    private ArrayList<Long> pathIds;
+                    Runnable setPathIds(ArrayList<Long> pathIds){this.pathIds = pathIds; return this;}
+                    @Override
+                    public void run() {
+                        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+
+                        for (long path_id : pathIds) {
+                            if(!trip.isImported){
+                                active_path = helper.getPath(path_id);
+                                points = active_path.getLocationsAsLatLng();
+                                addedPolyLine = active_path.drawOnMap(map, points, trip.isImported);
+                                for (LatLng point : points) {
+                                    builder.include(point);
+                                }
+                                addMarkersToMap(map, mediaFiles, trip.isImported);
+                                points = addedPolyLine.getPoints();
+                                try {
+                                    int routePadding = 200;
+                                    CameraUpdate update = CameraUpdateFactory.newLatLngBounds(builder.build(), routePadding);
+                                    if (move) {
+                                        map.moveCamera(update);
+                                    } else {
+                                        map.animateCamera(update);
+                                    }
+                                }catch (Exception e){
+                                    e.printStackTrace();
+                                }
+                            }else {
+                                Path path = helper.getPath(path_id);
+                                path.drawOnMap(map, path.getLocationsAsLatLng(), trip.isImported);
+                                ArrayList<MediaFile> media = helper.getMediaFiles(trip.id, null, null);
+                                addMarkersToMap(map, media, trip.isImported);
+                            }
+                        }
+                    }
+                }.setPathIds(pathIds));
+            }
+        }
     }
 }

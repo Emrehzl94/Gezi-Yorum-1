@@ -3,10 +3,13 @@ package com.example.murat.gezi_yorum;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
@@ -20,6 +23,7 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.example.murat.gezi_yorum.Entity.Constants;
+import com.example.murat.gezi_yorum.Entity.User;
 import com.example.murat.gezi_yorum.Utils.URLRequestHandler;
 
 import java.io.FileOutputStream;
@@ -46,9 +50,19 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        Intent intent2 = new Intent(this, ZipFileDownloader.class);
-        intent2.putExtra("url", Environment.getExternalStoragePublicDirectory(getApplicationContext().getString(R.string.app_name)) + "/trip_1.zip");
-        startService(intent2);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = getString(R.string.app_name);// The user-visible name of the channel.
+            NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+            NotificationChannel mChannel = new NotificationChannel(Constants.CH1, name, NotificationManager.IMPORTANCE_DEFAULT);
+            mChannel.enableLights(true);
+            manager.createNotificationChannel(mChannel);
+
+            mChannel = new NotificationChannel(Constants.CH2, name, NotificationManager.IMPORTANCE_DEFAULT);
+            mChannel.enableVibration(false);
+            manager.createNotificationChannel(mChannel);
+
+        }
 
         CookieManager manager = CookieManager.getInstance();
         // Set up the login form.
@@ -184,40 +198,34 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         protected Boolean doInBackground(Void... params) {
             String data = "{\"username\":\"" + uname + "\",\"password\":\"" + mPassword + "\"}";
-            String url = "http://163.172.176.169:8080/Geziyorum/login";
+            String url = Constants.APP+"login";
             URLRequestHandler handler = new URLRequestHandler(data,url);
             if(!handler.getResponseMessage()){
                 //wrong user name or password
                 return false;
             }
 
-            String response = handler.getResponse();
+            String token = handler.getResponse();
 
             CookieManager manager = CookieManager.getInstance();
-            manager.setCookie(Constants.ROOT,   Constants.TOKEN+"="+response);
+            manager.setCookie(Constants.ROOT,   User.TOKEN+"="+token);
             manager.setCookie(Constants.ROOT,   Constants.APPLICATION+"=true");
 
-            SharedPreferences.Editor editor = getSharedPreferences(Constants.PREFNAME, Context.MODE_PRIVATE).edit();
-
-            editor.putString(Constants.USERNAME, uname);
-            editor.putString(Constants.TOKEN, response);
+            SharedPreferences preferences = getSharedPreferences(Constants.PREFNAME, Context.MODE_PRIVATE);
 
             handler = new URLRequestHandler(uname, Constants.APP+"downloadProfilePhotoPath");
             handler.getResponseMessage();
             String link = handler.getResponse();
-
+            String profilePicturePath = getFilesDir() + "/profile.jpg";
             try {
-                String profilePicturePath = getFilesDir() + "/profile.jpg";
                 URL website = new URL(Constants.ROOT+link);
                 ReadableByteChannel rbc = Channels.newChannel(website.openStream());
                 FileOutputStream fos = new FileOutputStream(profilePicturePath);
                 fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-
-                editor.putString(Constants.PROFILEPHOTO, profilePicturePath);
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            editor.apply();
+            User.setArguments(token, uname, profilePicturePath, preferences);
             return true;
         }
 

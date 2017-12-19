@@ -1,7 +1,10 @@
 package com.example.murat.gezi_yorum.Fragments;
 
+import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -16,6 +19,7 @@ import android.widget.ProgressBar;
 
 import com.example.murat.gezi_yorum.Entity.Constants;
 import com.example.murat.gezi_yorum.R;
+import com.example.murat.gezi_yorum.ZipFileDownloader;
 
 /**
  * Social Media WebViewFragment Page Environment
@@ -25,6 +29,7 @@ public class WebViewFragment extends Fragment {
 
     private WebView webView;
     private ProgressBar progressBar;
+    @SuppressLint("SetJavaScriptEnabled")
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -37,17 +42,16 @@ public class WebViewFragment extends Fragment {
 
         webView = view.findViewById(R.id.webView);
 
-        webView.setDownloadListener(new DownloadListener() {
-            @Override
-            public void onDownloadStart(String url, String s1, String s2, String s3, long l) {
-                String downloadLink = url;
-            }
-        });
         webView.setWebViewClient(new WebViewClient(){
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 String url = request.getUrl().toString();
-                if(url.contains(Constants.ROOT)) {
+                if(url.startsWith(Constants.APP+"trip-download")) {
+                    Intent intent = new Intent(getContext(), ZipFileDownloader.class);
+                    intent.putExtra("url", url);
+                    getActivity().startService(intent);
+                    return true;
+                }else if(url.startsWith(Constants.ROOT)){
                     webView.loadUrl(url);
                 }else {
                     return super.shouldOverrideUrlLoading(view, request);
@@ -70,7 +74,6 @@ public class WebViewFragment extends Fragment {
         });
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
-
         try {
             webView.loadUrl(url);
         }catch (Exception e){

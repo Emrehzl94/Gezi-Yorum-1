@@ -6,6 +6,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
 import com.example.murat.gezi_yorum.Entity.Constants;
+import com.example.murat.gezi_yorum.Entity.Trip;
 import com.example.murat.gezi_yorum.Fragments.TripControllers.TripInfo;
 
 import java.util.ArrayList;
@@ -36,7 +37,7 @@ public class TripPagerAdapter extends FragmentPagerAdapter{
     public Fragment getItem(int position) {
         TripInfo fragment = new TripInfo();
         Bundle info = new Bundle();
-        info.putLong(Constants.TRIPID, trip_ids.get(position));
+        info.putLong(Trip.TRIPID, trip_ids.get(position));
         info.putInt("position",position);
         fragment.setArguments(info);
         fragments.put(position,fragment);

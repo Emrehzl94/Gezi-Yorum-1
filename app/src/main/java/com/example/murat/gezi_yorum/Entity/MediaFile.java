@@ -1,6 +1,7 @@
 package com.example.murat.gezi_yorum.Entity;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -36,6 +37,16 @@ public class MediaFile {
     public String share_option;
     public String about_note;
 
+    // Media types
+    public static final String PHOTO = "photo";
+    public static final String VIDEO = "video";
+    public static final String SOUNDRECORD = "record";
+
+    //Share options
+    public static final String SHARE_OPTION = "share_option"; // Media share option chosen from user
+    public static final String EVERYBODY = "everybody";
+    public static final String MY_FRIENDS = "only_friends";
+    public static final String ONLY_ME = "only_me";
     /**
      *This constructor used while adding new media
      */
@@ -58,21 +69,35 @@ public class MediaFile {
         this.about_note = about_note;
     }
 
+    public MediaFile(JSONObject object, String path, Long trip_id){
+        try {
+            this.type = object.getString("type");
+            this.path = path;
+            this.location = new mLocation(object.getDouble("latitude"), object.getDouble("longitude"),
+                    object.getDouble("altitude"), System.currentTimeMillis());
+            this.trip_id = trip_id;
+            this.share_option = EVERYBODY;
+            this.about_note = object.getString("note");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * Generates thumbnail for this file
-     * @param activity current activity
+     * @param context current activity
      */
-    public void generateThumbNail(Activity activity){
+    public void generateThumbNail(Context context){
         if(thumbNail == null) {
             switch (type) {
-                case Constants.PHOTO:
+                case PHOTO:
                     thumbNail = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(path), 100, 100);
                     break;
-                case Constants.VIDEO:
+                case VIDEO:
                     thumbNail = ThumbnailUtils.createVideoThumbnail(path, MediaStore.Video.Thumbnails.MICRO_KIND);
                     break;
-                case Constants.SOUNDRECORD:
-                    thumbNail = BitmapFactory.decodeResource(activity.getResources(), android.R.drawable.ic_btn_speak_now);
+                case SOUNDRECORD:
+                    thumbNail = BitmapFactory.decodeResource(context.getResources(), android.R.drawable.ic_btn_speak_now);
                     break;
             }
         }
@@ -83,9 +108,10 @@ public class MediaFile {
      * @param map GoogleMap
      */
 
-    public void addToMap(GoogleMap map){
+    public void addToMap(GoogleMap map, Boolean isImported){
+        float color = isImported ? BitmapDescriptorFactory.HUE_BLUE : getColorForMap();
         map.addMarker(new MarkerOptions().position(location.convertLatLng())
-                .icon(BitmapDescriptorFactory.defaultMarker(getColorForMap()))
+                .icon(BitmapDescriptorFactory.defaultMarker(color))
                 .snippet(String.valueOf(id))
         );
     }
@@ -93,13 +119,13 @@ public class MediaFile {
     private float getColorForMap(){
         float color = 0;
         switch (type){
-            case Constants.PHOTO:
+            case PHOTO:
                 color = BitmapDescriptorFactory.HUE_RED;
                 break;
-            case Constants.VIDEO:
+            case VIDEO:
                 color = BitmapDescriptorFactory.HUE_BLUE;
                 break;
-            case Constants.SOUNDRECORD:
+            case SOUNDRECORD:
                 color = BitmapDescriptorFactory.HUE_GREEN;
                 break;
         }
@@ -110,13 +136,13 @@ public class MediaFile {
     public static String getSubdir(String type){
         String subdir = "";
         switch (type) {
-            case Constants.PHOTO:
+            case PHOTO:
                 subdir = "Photos";
                 break;
-            case Constants.VIDEO:
+            case VIDEO:
                 subdir = "Videos";
                 break;
-            case Constants.SOUNDRECORD:
+            case SOUNDRECORD:
                 subdir = "Audio";
                 break;
         }
@@ -125,13 +151,13 @@ public class MediaFile {
     public static String getExtension(String type){
         String extension = "";
         switch (type) {
-            case Constants.PHOTO:
+            case PHOTO:
                 extension = "jpg";
                 break;
-            case Constants.VIDEO:
+            case VIDEO:
                 extension = "mp4";
                 break;
-            case Constants.SOUNDRECORD:
+            case SOUNDRECORD:
                 extension = "mp3";
                 break;
         }
@@ -167,13 +193,13 @@ public class MediaFile {
     public Fragment getViewer(){
         Fragment fragment = null;
         switch (type){
-            case Constants.PHOTO:
+            case PHOTO:
                 fragment = new PhotoFragment();
                 break;
-            case Constants.VIDEO:
+            case VIDEO:
                 fragment = new VideoFragment();
                 break;
-            case Constants.SOUNDRECORD:
+            case SOUNDRECORD:
                 fragment = new VideoFragment();
                 break;
         }

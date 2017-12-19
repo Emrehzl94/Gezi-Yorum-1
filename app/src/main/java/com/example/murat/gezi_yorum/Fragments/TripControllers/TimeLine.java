@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.murat.gezi_yorum.Entity.Constants;
+import com.example.murat.gezi_yorum.Entity.Trip;
 import com.example.murat.gezi_yorum.MediaActivity;
 import com.example.murat.gezi_yorum.R;
 import com.example.murat.gezi_yorum.Utils.LocationDbOpenHelper;
@@ -46,7 +47,7 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
             public void onClick(View view) {
                 long trip_id = pagerAdapter.getFragment(currentPosition).getTripId();
                 Intent intent = new Intent(getContext(), ZipFileUploader.class);
-                intent.putExtra(Constants.TRIPID, trip_id);
+                intent.putExtra(Trip.TRIPID, trip_id);
                 getActivity().startService(intent);
             }
         });

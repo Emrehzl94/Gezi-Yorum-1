@@ -28,6 +28,8 @@ import android.view.ViewGroup;
 import com.afollestad.materialcamera.MaterialCamera;
 import com.example.murat.gezi_yorum.Entity.Constants;
 import com.example.murat.gezi_yorum.Entity.MediaFile;
+import com.example.murat.gezi_yorum.Entity.Path;
+import com.example.murat.gezi_yorum.Entity.Trip;
 import com.example.murat.gezi_yorum.LocationSaveService;
 import com.example.murat.gezi_yorum.MainActivity;
 import com.example.murat.gezi_yorum.MediaActivity;
@@ -76,6 +78,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
     private FloatingActionButton add_video_fab;
     private FloatingActionButton add_sound_record_fab;
 
+    private Trip followingTrip;
     private long path_id;
     private boolean isFabMenuOpen = false;
 
@@ -96,24 +99,35 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
 
         pause_continue = view.findViewById(R.id.pause_continue);
 
-        String state = preferences.getString(Constants.RECORDSTATE, Constants.PASSIVE);
+        String state = preferences.getString(Trip.RECORDSTATE, Trip.PASSIVE);
         Bundle arguments = getArguments();
         if(arguments!=null) {
             String message = arguments.getString(Constants.MESSAGE);
             //This means coming from StartTripFragment
             if (message != null && message.equals(Constants.STARTNEWTRIP)) {
-
-                startNewTrip(arguments.getString(Constants.TRIPNAME),
-                        arguments.getString(Constants.MEMBERS));
+                Boolean isCreator = arguments.getBoolean(Trip.CREATOR, true);
+                startNewTrip(arguments.getString(Trip.TRIPNAME),
+                        arguments.getString(Trip.MEMBERS),
+                        arguments.getLong(Constants.TRIPIDONSERVER), isCreator);
+                Long choosen_id = arguments.getLong(Constants.CHOSEN_TRIPID);
+                if(choosen_id != 0) {
+                    SharedPreferences.Editor editor = preferences.edit();
+                    editor.putLong(Constants.CHOSEN_TRIPID, choosen_id);
+                    editor.apply();
+                    followingTrip = helper.getTrip(choosen_id);
+                }
             }
         }
         if(trip == null){
-            Long trip_id = preferences.getLong(Constants.TRIPID,-1);
-            path_id = preferences.getLong(Constants.PATH_ID, -1);
-
+            Long trip_id = preferences.getLong(Trip.TRIPID,-1);
+            path_id = preferences.getLong(Path.PATH_ID, -1);
             trip = helper.getTrip(trip_id);
         }
-
+        if(followingTrip == null){
+            Long choosen_id = preferences.getLong(Constants.CHOSEN_TRIPID, -1);
+            if(choosen_id != -1)
+                followingTrip = helper.getTrip(choosen_id);
+        }
         FloatingActionButton add_fab = view.findViewById(R.id.add_media);
         add_photo_fab = view.findViewById(R.id.add_photo);
         add_video_fab = view.findViewById(R.id.add_video);
@@ -169,13 +183,13 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
                 startPathRecording();
             }
         };
-        if (state.equals(Constants.PASSIVE)) {
+        if (state.equals(Trip.PASSIVE)) {
             pause_continue.setOnClickListener(continue_listener);
             pause_continue.setImageResource(R.drawable.aar_ic_play);
         } else {
             if(LocationSaveService.instance == null && checkLocationPermission(LOCATION_PERMISSION_REQUEST_ON_FAIL)){
                 Intent intent = new Intent(getContext(), LocationSaveService.class);
-                intent.putExtra(Constants.PATH_ID,path_id);
+                intent.putExtra(Path.PATH_ID,path_id);
                 parentActivity.startService(intent);
             }
             pause_continue.setOnClickListener(pause);
@@ -207,6 +221,9 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         }
         if(map!=null){
             requestToDrawPathOnMap(map,true);
+            if(followingTrip != null){
+                new Thread(new TripDrawer(followingTrip, null)).start();
+            }
         }
     }
 
@@ -221,44 +238,45 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         }
     }
 
-    public void startNewTrip(String name, String members){
-        trip = helper.startNewTrip(name, members);
-        parentActivity.showSnackbarMessage("Trip started", Snackbar.LENGTH_LONG);
+    public void startNewTrip(String name, String members, Long idOnServer, Boolean isCreator){
+        trip = helper.startNewTrip(name, members, idOnServer, isCreator);
+        parentActivity.showSnackbarMessage(getString(R.string.trip_created), Snackbar.LENGTH_LONG);
         SharedPreferences.Editor editor = preferences.edit();
-        editor.putLong(Constants.TRIPID,trip.id);
-        editor.putString(Constants.TRIPSTATE, Constants.STARTED);
+        editor.putLong(Trip.TRIPID, trip.id);
+        editor.putString(Trip.TRIPSTATE, Trip.STARTED);
         editor.apply();
     }
     public void endTrip(){
-        parentActivity.showSnackbarMessage("Trip stopped", Snackbar.LENGTH_LONG);
+        parentActivity.showSnackbarMessage(getString(R.string.trip_finished), Snackbar.LENGTH_LONG);
         SharedPreferences.Editor editor = preferences.edit();
         stopPathRecording();
         helper.endTrip(trip.id);
-        editor.putLong(Constants.TRIPID,-1);
-        editor.putString(Constants.TRIPSTATE,Constants.ENDED);
+        editor.putLong(Trip.TRIPID,-1);
+        editor.putString(Trip.TRIPSTATE, Trip.ENDED);
+        editor.putLong(Constants.CHOSEN_TRIPID, -1);
         editor.apply();
     }
     public void startPathRecording(){
         if(!checkLocationPermission(LOCATION_PERMISSION_REQUEST)) return;
         long path_id = helper.startNewPath(trip.id, getContext());
         SharedPreferences.Editor editor = preferences.edit();
-        editor.putLong(Constants.PATH_ID,path_id);
-        editor.putString(Constants.RECORDSTATE,Constants.ACTIVE);
+        editor.putLong(Path.PATH_ID,path_id);
+        editor.putString(Trip.RECORDSTATE,Trip.ACTIVE);
         editor.apply();
         Intent intent = new Intent(getContext(),LocationSaveService.class);
-        intent.putExtra(Constants.PATH_ID,path_id);
+        intent.putExtra(Path.PATH_ID,path_id);
         getActivity().startService(intent);
         pause_continue.setOnClickListener(pause);
         pause_continue.setImageResource(R.drawable.aar_ic_pause);
-        addPathOnMap(map, path_id);
+        //addPathOnMap(map, path_id);
     }
     public void stopPathRecording(){
         Intent intent = new Intent(getContext(),LocationSaveService.class);
         getActivity().stopService(intent);
         helper.endPath(path_id);
         SharedPreferences.Editor editor = preferences.edit();
-        editor.putLong(Constants.PATH_ID,-1);
-        editor.putString(Constants.RECORDSTATE,Constants.PASSIVE);
+        editor.putLong(Path.PATH_ID,-1);
+        editor.putString(Trip.RECORDSTATE,Trip.PASSIVE);
         editor.apply();
         pause_continue.setOnClickListener(continue_listener);
         pause_continue.setImageResource(R.drawable.aar_ic_play);
@@ -278,6 +296,9 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
             return;
         }
         map = googleMap;
+        if(followingTrip != null){
+            new Thread(new TripDrawer(followingTrip, null)).start();
+        }
         map.setLocationSource(this);
         map.setMyLocationEnabled(true);
 
@@ -303,7 +324,6 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
             }
         });
         requestToDrawPathOnMap(map,true);
-
     }
 
     /**
@@ -354,7 +374,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         if(!checkExternalStoragePermission(EXTERNAL_STORAGE_CAMERA_PERMISSION)
                 || !checkSoundRecordPermission(MIC_CAMERA_PERMISSION)
                 || !checkCameraPermission(PHOTO_CAMERA_PERMISSION)) return;
-        String outputDir = getOutputMediaFileDir(Constants.PHOTO);
+        String outputDir = getOutputMediaFileDir(MediaFile.PHOTO);
         new MaterialCamera(this)
                 .labelRetry(R.string.cancel)
                 .labelConfirm(R.string.save)
@@ -370,7 +390,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         if(!checkExternalStoragePermission(EXTERNAL_STORAGE_VIDEO_PERMISSION)
                 || !checkSoundRecordPermission(MIC_VIDEO_PERMISSION)
                 || !checkCameraPermission(VIDEO_CAMERA_PERMISSION)) return;
-        String outputDir = getOutputMediaFileDir(Constants.VIDEO);
+        String outputDir = getOutputMediaFileDir(MediaFile.VIDEO);
         new MaterialCamera(this)
                 .labelRetry(R.string.cancel)
                 .labelConfirm(R.string.save)
@@ -385,9 +405,9 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
     public void startNewAudioIntent() {
         if(!checkExternalStoragePermission(EXTERNAL_STORAGE_SOUNDRECORD_PERMISSION) || !checkSoundRecordPermission(SOUNDRECORD_PERMISSION)) return;
         int color = Color.CYAN;
-        String outputDir = getOutputMediaFileDir(Constants.SOUNDRECORD);
+        String outputDir = getOutputMediaFileDir(MediaFile.SOUNDRECORD);
         outputFile = outputDir + File.separator + System.currentTimeMillis()
-                +"."+MediaFile.getExtension(Constants.SOUNDRECORD);
+                +"."+MediaFile.getExtension(MediaFile.SOUNDRECORD);
         AndroidAudioRecorder.with(this)
                 .setFilePath(outputFile)
                 .setColor(color)
@@ -430,14 +450,14 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
             String type = "";
             if(requestCode == REQUEST_IMAGE_CAPTURE){
                 outputFile = data.getData().getPath();
-                type = Constants.PHOTO;
+                type = MediaFile.PHOTO;
             }else if(requestCode == REQUEST_VIDEO_CAPTURE){
                 outputFile = data.getData().getPath();
-                type = Constants.VIDEO;
+                type = MediaFile.VIDEO;
             }else if(requestCode == REQUEST_SOUND_RECORD){
-                type = Constants.SOUNDRECORD;
+                type = MediaFile.SOUNDRECORD;
             }
-            String share_option = preferences.getString(Constants.SHARE_OPTION, Constants.EVERYBODY);
+            String share_option = preferences.getString(MediaFile.SHARE_OPTION, MediaFile.EVERYBODY);
             new Thread(new ThumbnailGeneration(outputFile, type, share_option)).start();
             if(requestCode == REQUEST_IMAGE_CAPTURE){
                 startNewPhotoIntent();
@@ -525,7 +545,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
                     parentActivity.showSnackbarMessage("Konum izni olmadan konum kaydı yapılamaz.", Snackbar.LENGTH_LONG);
                 }else {
                     Intent intent = new Intent(getContext(), LocationSaveService.class);
-                    intent.putExtra(Constants.PATH_ID,path_id);
+                    intent.putExtra(Path.PATH_ID,path_id);
                     parentActivity.startService(intent);
                 }
                 break;

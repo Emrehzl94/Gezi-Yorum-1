@@ -5,11 +5,11 @@ import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.location.Address;
+import android.content.SharedPreferences;
 import android.location.Geocoder;
 import android.net.ConnectivityManager;
+import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
@@ -20,13 +20,11 @@ import com.example.murat.gezi_yorum.Entity.Constants;
 import com.example.murat.gezi_yorum.Entity.MediaFile;
 import com.example.murat.gezi_yorum.Entity.Trip;
 import com.example.murat.gezi_yorum.Entity.Path;
+import com.example.murat.gezi_yorum.Entity.User;
 import com.example.murat.gezi_yorum.Utils.LocationDbOpenHelper;
 import com.example.murat.gezi_yorum.Utils.MultipartUtility;
-import com.google.android.gms.maps.model.LatLng;
 
 import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -47,7 +45,7 @@ import java.util.zip.ZipOutputStream;
 
 public class ZipFileUploader extends Service {
     private File zipFile;
-    private long trip_id;
+    private Trip trip;
     private LocationDbOpenHelper helper;
 
     private int notificationId = 1000;
@@ -73,8 +71,6 @@ public class ZipFileUploader extends Service {
             stopSelf();
             return START_NOT_STICKY;
         }
-        //noinspection ConstantConditions
-        trip_id = extras.getLong(Constants.TRIPID);
 
         manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         not = new Notification.Builder(this).
@@ -82,10 +78,16 @@ public class ZipFileUploader extends Service {
                 setContentText("Dosyalar hazırlanıyor.").
                 setSmallIcon(R.mipmap.ic_launcher).
                 setProgress(100,0,false);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            not.setChannelId(Constants.CH2);
+        }
         startForeground(notificationId, not.build());
 
-        this.zipFile = new File(Environment.getExternalStoragePublicDirectory(getApplicationContext().getString(R.string.app_name)) + "/trip_"+trip_id+".zip");
+        this.zipFile = new File(getFilesDir()+"/trip.zip");
         helper = new LocationDbOpenHelper(getApplicationContext());
+        //noinspection ConstantConditions
+        Long trip_id = extras.getLong(Trip.TRIPID);
+        trip = helper.getTrip(trip_id);
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -99,12 +101,21 @@ public class ZipFileUploader extends Service {
     private void upload(){
         not.setContentTitle("Dosya yükleniyor...");
         manager.notify(notificationId,not.build());
-        String URL = "http://163.172.176.169:8080/Geziyorum/uploadFile";
-        String message;
+        String service = trip.isGroupTrip() ? "uploadGroupTripZip" : "uploadTripZip";
+        String URL = Constants.APP + service;
+        SharedPreferences preferences = getSharedPreferences(Constants.PREFNAME,Context.MODE_PRIVATE);
+        User user = new User(preferences);
+
+        String message ="";
         try {
             MultipartUtility multipart = new MultipartUtility(URL,"UTF-8", false);
-            multipart.addFormField("name",zipFile.getName());
+            multipart.addFormField("token", user.token);
+            multipart.addFormField("fileName",zipFile.getName());
             multipart.addFilePart("file",zipFile);
+            if(trip.isGroupTrip()){
+                multipart.addFormField("tripId", trip.idOnServer.toString());
+                multipart.addFormField("isFirstFileUpload", trip.isCreator.toString());
+            }
             List<String> response_messages = multipart.finish();
             for(String response_message : response_messages){
                 Log.w("Respons", "upload: " + response_message);
@@ -113,13 +124,17 @@ public class ZipFileUploader extends Service {
         } catch (Exception e) {
             e.printStackTrace();
             message = "Dosya yüklemesi sırasında hata meydana geldi..";
+        }finally {
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext(), getString(R.string.app_name));
+            builder.setSmallIcon(R.mipmap.ic_launcher);
+            builder.setContentTitle(message);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                builder.setChannelId(Constants.CH1);
+            }
+            manager.notify(0, builder.build());
+            stopSelf();
+            zipFile.delete();
         }
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext(), getString(R.string.app_name));
-        builder.setSmallIcon(R.mipmap.ic_launcher);
-        builder.setContentTitle(message);
-        manager.notify(0, builder.build());
-        stopSelf();
-
     }
     private void create(){
         try {
@@ -129,38 +144,38 @@ public class ZipFileUploader extends Service {
             }
             ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(zipFile));
 
-            // Trip meta preparing and writing to zip
-            Trip trip = helper.getTrip(trip_id);
-            ZipEntry tripMetaDataEntry = new ZipEntry(Constants.TRIP_META);
-            zipOutputStream.putNextEntry(tripMetaDataEntry);
-            zipOutputStream.write(trip.toJSONObject().toString().getBytes());
+            if(!trip.isGroupTrip() || trip.isCreator) {
+                // Trip meta preparing and writing to zip
+                ZipEntry tripMetaDataEntry = new ZipEntry(Constants.TRIP_META);
+                zipOutputStream.putNextEntry(tripMetaDataEntry);
+                zipOutputStream.write(trip.toJSONObject().toString().getBytes());
 
-            Geocoder geocoder;
-            geocoder = new Geocoder(this, Locale.getDefault());
+                Geocoder geocoder;
+                geocoder = new Geocoder(this, Locale.getDefault());
 
-            // Path metadata preparing and path and path metadata writing to zip
-            ArrayList<Long> pathIDs = helper.getPathsIDs(trip.id);
-            JSONArray pathMetaData = new JSONArray();
-            for (Long pathId : pathIDs) {
-                Path path = helper.getPath(pathId);
-                File pathFile = path.getFile();
+                // Path metadata preparing and path and path metadata writing to zip
+                ArrayList<Long> pathIDs = helper.getPathsIDs(trip.id);
+                JSONArray pathMetaData = new JSONArray();
+                for (Long pathId : pathIDs) {
+                    Path path = helper.getPath(pathId);
+                    File pathFile = path.getFile();
 
-                ZipEntry pathEntry = new ZipEntry("Paths/"+pathFile.getName());
-                zipOutputStream.putNextEntry(pathEntry);
-                RandomAccessFile randomAccessFile = new RandomAccessFile(pathFile, "r");
-                byte[] bytes = new byte[(int) randomAccessFile.length()];
-                randomAccessFile.readFully(bytes);
-                zipOutputStream.write(bytes);
+                    ZipEntry pathEntry = new ZipEntry("Paths/" + pathFile.getName());
+                    zipOutputStream.putNextEntry(pathEntry);
+                    RandomAccessFile randomAccessFile = new RandomAccessFile(pathFile, "r");
+                    byte[] bytes = new byte[(int) randomAccessFile.length()];
+                    randomAccessFile.readFully(bytes);
+                    zipOutputStream.write(bytes);
 
-                pathMetaData.put(path.toJSONObject(geocoder));
+                    pathMetaData.put(path.toJSONObject(geocoder));
+                }
+                ZipEntry pathMetaDataEntry = new ZipEntry(Constants.PATH_META);
+                zipOutputStream.putNextEntry(pathMetaDataEntry);
+                zipOutputStream.write(pathMetaData.toString().getBytes());
             }
-            ZipEntry pathMetaDataEntry = new ZipEntry(Constants.PATH_META);
-            zipOutputStream.putNextEntry(pathMetaDataEntry);
-            zipOutputStream.write(pathMetaData.toString().getBytes());
-
             // Media metadata preparing and media and media metadata writing to zip
             ArrayList<MediaFile> mediaFiles = helper.getMediaFiles(trip.id,null,
-                    " AND " + LocationDbOpenHelper.COLUMN_SHARE_OPTION +"!=\""+Constants.ONLY_ME+"\"");
+                    " AND " + LocationDbOpenHelper.COLUMN_SHARE_OPTION +"!=\""+MediaFile.ONLY_ME+"\"");
             JSONArray mediaMetaData = new JSONArray();
             int fileCount = 0;
             for (MediaFile file: mediaFiles){

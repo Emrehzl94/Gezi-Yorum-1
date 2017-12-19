@@ -7,20 +7,26 @@ import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.murat.gezi_yorum.Entity.Constants;
 import com.example.murat.gezi_yorum.Entity.Trip;
+import com.example.murat.gezi_yorum.Entity.User;
 import com.example.murat.gezi_yorum.MainActivity;
 import com.example.murat.gezi_yorum.R;
 import com.example.murat.gezi_yorum.Utils.LocationDbOpenHelper;
@@ -40,13 +46,19 @@ import java.util.ArrayList;
 public class StartTripFragment extends Fragment{
 
     private EditText trip_name_edit;
+    private EditText trip_explain_edit;
+    private TextView trip_explain_text;
     private Spinner friends;
     private ArrayList<String> friendsList;
     private ArrayList<String> selectedFriends;
     private ListView selecteds;
-    private String uname;
+    private User user;
+    private Handler handler;
+
 
     private Spinner choose_path;
+    private CheckBox use_selected_trip;
+    private long choosen_trip_id;
     private ArrayList<Trip> importedTrips;
 
     @Override
@@ -57,53 +69,119 @@ public class StartTripFragment extends Fragment{
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.start_trip_fragment, container, false);
-
+        handler = new Handler();
         trip_name_edit = view.findViewById(R.id.trip_name);
+        trip_explain_edit = view.findViewById(R.id.trip_explain);
+        trip_explain_text = view.findViewById(R.id.trip_explain_text);
 
         friends = view.findViewById(R.id.friends_list);
         selecteds = view.findViewById(R.id.selected_friends);
         choose_path = view.findViewById(R.id.choose_path);
 
+        selectedFriends = new ArrayList<>();
+
+        use_selected_trip = view.findViewById(R.id.use_choosen_trip);
         LocationDbOpenHelper helper = new LocationDbOpenHelper(getContext());
         importedTrips = helper.getImportedTrips();
         if(importedTrips.size() != 0){
             choose_path.setAdapter(new TripsAdapter(getContext(), true));
+            choose_path.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                    choosen_trip_id = importedTrips.get(i).id;
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> adapterView) {
+
+                }
+            });
         }else {
-            choose_path.setVisibility(View.INVISIBLE);
+            choose_path.setVisibility(View.GONE);
+            use_selected_trip.setVisibility(View.GONE);
         }
 
         SharedPreferences preferences = getActivity().getSharedPreferences(Constants.PREFNAME ,Context.MODE_PRIVATE);
-        String token = preferences.getString(Constants.TOKEN, "");
-        uname = preferences.getString(Constants.USERNAME,"");
+        user = new User(preferences);
 
         ConnectivityManager cm = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
         //noinspection ConstantConditions
         if(cm.getActiveNetworkInfo() == null){
             Toast.makeText(getContext(),
-                    getString(R.string.friend_list_unsuccessful) + getString(R.string.internet_warning),
+                    getString(R.string.friend_list_unsuccessful) +" " + getString(R.string.internet_warning),
                     Toast.LENGTH_LONG).show();
         }else {
-            new getUserFriendList(token, uname).execute();
+            new getUserFriendList(user.token, user.username).execute();
         }
 
         FloatingActionButton fab = view.findViewById(R.id.start);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                StringBuilder members = new StringBuilder();
-                members.append(uname);
-                for (String friend : selectedFriends){
-                    members.append(",");
-                    members.append(friend);
-                }
-                ContinuingTrip continuingTrip = new ContinuingTrip();
-                Bundle extras = new Bundle();
-                extras.putString(Constants.MESSAGE,Constants.STARTNEWTRIP);
-                extras.putString(Constants.TRIPNAME, trip_name_edit.getText().toString());
-                extras.putString(Constants.MEMBERS, members.toString());
-                continuingTrip.setArguments(extras);
-                MainActivity parentActivity = (MainActivity) getActivity();
-                parentActivity.changeFragment(continuingTrip);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        String trip_name = trip_name_edit.getText().toString();
+                        String trip_explain = trip_explain_edit.getText().toString();
+                        Long tripIdOnserver = -1L;
+
+                        boolean isPersonalTrip = true;
+                        JSONArray members = new JSONArray();
+                        members.put(user.username);
+                        for (String friend : selectedFriends){
+                            members.put(friend);
+                            isPersonalTrip = false;
+                        }
+                        if(!isPersonalTrip){
+                            ConnectivityManager cm = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+                            //noinspection ConstantConditions
+                            if(cm.getActiveNetworkInfo() == null){
+                                handler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        ((MainActivity) getActivity()).showSnackbarMessage(
+                                                getString(R.string.teamTripUnsuccesful) + " " + getString(R.string.internet_warning),
+                                                Snackbar.LENGTH_LONG);
+                                    }
+                                });
+                                return;
+                            }
+                            JSONObject trip_info = new JSONObject();
+                            try {
+                                trip_info.put("token",user.token);
+                                trip_info.put("tripAciklama", trip_name);
+                                trip_info.put("arkadaslaraAciklama", trip_explain);
+                                trip_info.put("usernames", members);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            String url = Constants.APP + "createTripDemand";
+                            URLRequestHandler handler = new URLRequestHandler(trip_info.toString(), url);
+                            if(!handler.getResponseMessage()){
+                                return;
+                            }
+                            tripIdOnserver = Long.parseLong(handler.getResponse());
+                        }
+                        final ContinuingTrip continuingTrip = new ContinuingTrip();
+                        Bundle extras = new Bundle();
+                        extras.putString(Constants.MESSAGE,Constants.STARTNEWTRIP);
+                        extras.putString(Trip.TRIPNAME, trip_name);
+                        extras.putString(Trip.MEMBERS, members.toString());
+                        extras.putLong(Constants.TRIPIDONSERVER, tripIdOnserver);
+
+                        if(use_selected_trip.isChecked()){
+                            extras.putLong(Constants.CHOSEN_TRIPID, choosen_trip_id);
+                        }
+                        continuingTrip.setArguments(extras);
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                MainActivity parentActivity = (MainActivity) getActivity();
+                                parentActivity.changeFragment(continuingTrip);
+                            }
+                        });
+                    }
+                }).start();
             }
         });
         fab.setBackgroundColor(Color.GREEN);
@@ -143,7 +221,7 @@ public class StartTripFragment extends Fragment{
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            return handler.getResponseMessage();
+            return handler.getResponseMessage() && !friendsList.isEmpty();
         }
 
         @Override
@@ -151,13 +229,14 @@ public class StartTripFragment extends Fragment{
             if (success) {
                 ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item,friendsList);
                 friends.setAdapter(adapter);
-                selectedFriends = new ArrayList<>();
                 friends.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                     @Override
                     public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                         selectedFriends.add(friendsList.get(i));
                         ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item,selectedFriends);
                         selecteds.setAdapter(adapter);
+                        trip_explain_edit.setVisibility(View.VISIBLE);
+                        trip_explain_text.setVisibility(View.VISIBLE);
                     }
 
                     @Override
@@ -171,10 +250,13 @@ public class StartTripFragment extends Fragment{
                         selectedFriends.remove(i);
                         ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item,selectedFriends);
                         selecteds.setAdapter(adapter);
+                        if (selectedFriends.size() == 0){
+                            trip_explain_edit.setVisibility(View.GONE);
+                            trip_explain_text.setVisibility(View.GONE);
+                        }
                     }
                 });
-            } else {
-                friends.setVisibility(View.INVISIBLE);
+                getActivity().findViewById(R.id.add_friends).setVisibility(View.VISIBLE);
             }
         }
 

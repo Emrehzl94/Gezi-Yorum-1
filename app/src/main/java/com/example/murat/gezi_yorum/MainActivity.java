@@ -21,6 +21,8 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 
 import com.example.murat.gezi_yorum.Entity.Constants;
+import com.example.murat.gezi_yorum.Entity.Trip;
+import com.example.murat.gezi_yorum.Entity.User;
 import com.example.murat.gezi_yorum.Fragments.Notifications;
 import com.example.murat.gezi_yorum.Fragments.Search;
 import com.example.murat.gezi_yorum.Fragments.TripControllers.ContinuingTrip;
@@ -61,11 +63,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         View header = navigationView.getHeaderView(0);
         ImageView profilePhoto = header.findViewById(R.id.profilePhoto);
-        String path = preferences.getString(Constants.PROFILEPHOTO,"");
-        profilePhoto.setImageBitmap(BitmapFactory.decodeFile(preferences.getString(Constants.PROFILEPHOTO,"")));
+        User user = new User(preferences);
+        profilePhoto.setImageBitmap(BitmapFactory.decodeFile(user.profilePicturePath));
 
-        String isActive = preferences.getString(Constants.RECORDSTATE, Constants.PASSIVE);
-        if(isActive.equals(Constants.ACTIVE)){
+        String isActive = preferences.getString(Trip.RECORDSTATE, Trip.PASSIVE);
+        if(isActive.equals(Trip.ACTIVE)){
             changeFragment(new ContinuingTrip());
         }else {
             Fragment home = new WebViewFragment();
@@ -81,12 +83,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
-        } else {
-            if(currentFragment.getClass().equals(WebViewFragment.class) && ((WebViewFragment)currentFragment).goBack()){
+        } else if(currentFragment.getClass().equals(WebViewFragment.class) && ((WebViewFragment)currentFragment).goBack()){
                 return;
+        } else {
+            //if there is no fragment on backstack then go finish
+            if (getSupportFragmentManager().getBackStackEntryCount() == 1) {
+                finishAffinity();
+            } else {
+                super.onBackPressed();
             }
-            finishAffinity();
         }
+
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -120,7 +127,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 fragment = new Search();
                 break;
             }case (R.id.nav_trip):{
-                if(Constants.STARTED.equals(preferences.getString(Constants.TRIPSTATE, Constants.ENDED))){
+                if(Trip.STARTED.equals(preferences.getString(Trip.TRIPSTATE, Trip.ENDED))){
                     fragment = new ContinuingTrip();
                 }else {
                     fragment = new StartTripFragment();
@@ -147,9 +154,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         new Thread(new Runnable() {
             @Override
             public void run() {
-                FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-                fragmentTransaction.replace(R.id.content_main,currentFragment);
-                fragmentTransaction.commit();
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.content_main,currentFragment)
+                        .addToBackStack(currentFragment.getClass().toString()).commit();
             }
         }).start();
     }

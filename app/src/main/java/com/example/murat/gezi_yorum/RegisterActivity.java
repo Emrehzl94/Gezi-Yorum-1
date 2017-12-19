@@ -12,6 +12,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.murat.gezi_yorum.Entity.Constants;
+import com.example.murat.gezi_yorum.Entity.User;
 import com.example.murat.gezi_yorum.Utils.URLRequestHandler;
 
 public class RegisterActivity extends AppCompatActivity {
@@ -71,10 +72,10 @@ public class RegisterActivity extends AppCompatActivity {
                 return false;
             }
 
-            String response = handler.getResponse();
+            String token = handler.getResponse();
 
             CookieManager manager = CookieManager.getInstance();
-            manager.setCookie(Constants.ROOT,   Constants.TOKEN+"="+response);
+            manager.setCookie(Constants.ROOT,   User.TOKEN+"="+token);
             manager.setCookie(Constants.ROOT,   Constants.APPLICATION+"=true");
             return true;
         }

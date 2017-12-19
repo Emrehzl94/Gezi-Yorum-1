@@ -47,4 +47,18 @@
     <string name="change_name">Gezi İsmini Değiştirin</string>
     <string name="internet_warning">Şu anda etkin internet bağlantısı bulunmamaktadır. Lütfen daha sonra deneyin.</string>
     <string name="friend_list_unsuccessful">Arkadaş listesi alınamıyor.</string>
+    <string name="trip_explain">Bu gezi hakkında açıklama</string>
+    <string name="teamTripUnsuccesful">Takım gezisi şu anda başlatılamadı.</string>
+    <string name="trip_created">Yeni gezi oluşturuldu. Kaydı başlatın.</string>
+    <string name="trip_finished">Gezi sonlandırıldı. Gezi zaman çizelgesine eklendi.</string>
+    <string name="accept">Onayla</string>
+    <string name="deny">Reddet</string>
+    <string name="invitation">Gezi Daveti</string>
+    <string name="invitee">Davet Eden</string>
+    <string name="explain">Açıklama :</string>
+    <string name="members">Katılımcılar :</string>
+    <string name="active_trip_warning">Şu anda etkin bir gezi bulunmakta yeni bir tane başlatılamaz.</string>
+    <string name="unsuccessful_download">İndirme sırasında bir hata meydana geldi.</string>
+    <string name="choose_path">Takip edilecek yolu şeçebilirsiniz</string>
+    <string name="invite_friends">Arkadaşlarınızı davet edin</string>
 </resources>

@@ -25,7 +25,7 @@ public class TripInfo extends TripSummary {
         super.onCreate(savedInstanceState);
         Bundle bundle = getArguments();
         helper = new LocationDbOpenHelper(getContext());
-        Long trip_id = bundle.getLong(Constants.TRIPID, -1);
+        Long trip_id = bundle.getLong(Trip.TRIPID, -1);
         trip = helper.getTrip(trip_id);
         position = bundle.getInt("position",0);
     }

@@ -21,7 +21,7 @@ public class TripsAdapter extends ArrayAdapter {
     private ArrayList<Trip> trips;
     private LocationDbOpenHelper helper;
     public TripsAdapter(@NonNull Context context, boolean is_imported) {
-        super(context, -1);
+        super(context, android.R.layout.simple_spinner_dropdown_item);
         helper = new LocationDbOpenHelper(context);
 
         if(is_imported){

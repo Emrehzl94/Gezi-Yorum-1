@@ -52,4 +52,18 @@
     <string name="change_name">Change Trip Name</string>
     <string name="internet_warning">There is no Internet connection at the moment. Please try again later.</string>
     <string name="friend_list_unsuccessful">Friend list cannot retrieving.</string>
+    <string name="trip_explain">Explanation about this trip</string>
+    <string name="teamTripUnsuccesful">Team trip cannot started now.</string>
+    <string name="trip_created">New trip created. Start recording.</string>
+    <string name="trip_finished">Trip finished. Trip added to timeline.</string>
+    <string name="accept">Accept</string>
+    <string name="deny">Deny</string>
+    <string name="invitation">Trip Invitation</string>
+    <string name="invitee">Invitee :</string>
+    <string name="explain">Explanation :</string>
+    <string name="members">Members :</string>
+    <string name="active_trip_warning">There is an active trip at the moment. Cannot star new one.</string>
+    <string name="unsuccessful_download">There was an error occurred when downloading.</string>
+    <string name="choose_path">You can choose a path to follow</string>
+    <string name="invite_friends">Invite your friends</string>
 </resources>
