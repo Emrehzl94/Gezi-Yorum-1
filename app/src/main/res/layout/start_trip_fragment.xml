@@ -10,7 +10,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/trip_name"/>
+            android:text="@string/give_a_name"/>
         <EditText
             android:id="@+id/trip_name"
             android:layout_width="match_parent"

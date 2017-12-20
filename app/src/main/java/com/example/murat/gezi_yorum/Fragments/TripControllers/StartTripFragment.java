@@ -11,7 +11,8 @@ import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
-import android.util.Log;
+import android.text.Html;
+import android.text.Spanned;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,7 +31,6 @@ import com.example.murat.gezi_yorum.Entity.User;
 import com.example.murat.gezi_yorum.MainActivity;
 import com.example.murat.gezi_yorum.R;
 import com.example.murat.gezi_yorum.Utils.LocationDbOpenHelper;
-import com.example.murat.gezi_yorum.Utils.TripsAdapter;
 import com.example.murat.gezi_yorum.Utils.URLRequestHandler;
 
 import org.json.JSONArray;
@@ -38,6 +38,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Trip configuration before start
@@ -84,7 +85,14 @@ public class StartTripFragment extends Fragment{
         LocationDbOpenHelper helper = new LocationDbOpenHelper(getContext());
         importedTrips = helper.getImportedTrips();
         if(importedTrips.size() != 0){
-            choose_path.setAdapter(new TripsAdapter(getContext(), true));
+            List<Spanned> texts = new ArrayList<>();
+            for (Trip trip : importedTrips){
+                String infoText = "<b>"+getContext().getString(R.string.trip_name)+trip.name + "</b><br>" +
+                        getContext().getString(R.string.start) + ": " + trip.getStartdate()+"<br>"+
+                        getContext().getString(R.string.finish) + ": " + trip.getFinishdate()+"<br>";
+                texts.add(Html.fromHtml(infoText));
+            }
+            choose_path.setAdapter(new ArrayAdapter(getContext(), android.R.layout.simple_list_item_1, texts));
             choose_path.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {

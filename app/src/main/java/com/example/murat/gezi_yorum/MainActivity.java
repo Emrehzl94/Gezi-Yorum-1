@@ -2,6 +2,7 @@ package com.example.murat.gezi_yorum;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -83,17 +84,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
-        } else if(currentFragment.getClass().equals(WebViewFragment.class) && ((WebViewFragment)currentFragment).goBack()){
-                return;
         } else {
-            //if there is no fragment on backstack then go finish
-            if (getSupportFragmentManager().getBackStackEntryCount() == 1) {
-                finishAffinity();
-            } else {
-                super.onBackPressed();
+            if(currentFragment.getClass().equals(WebViewFragment.class) && ((WebViewFragment)currentFragment).goBack()){
+                return;
             }
+            finishAffinity();
         }
-
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -123,7 +119,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             case (R.id.nav_timeline): {
                 fragment = new TimeLine();
                 break;
-            }case (R.id.nav_search): {
+            } case (R.id.nav_downloads): {
+                fragment = new TimeLine();
+                Bundle extras = new Bundle();
+                extras.putBoolean("isImported", true);
+                fragment.setArguments(extras);
+                break;
+            }
+            case (R.id.nav_search): {
                 fragment = new Search();
                 break;
             }case (R.id.nav_trip):{
@@ -134,7 +137,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 }
                 break;
             }case (R.id.nav_settings): {
-                break;
+                Intent intent = new Intent(this, SettingsActivity.class);
+                startActivity(intent);
+                return true;
             }case (R.id.nav_log_out): {
                 setResult(Activity.RESULT_CANCELED);
                 finish();
@@ -156,7 +161,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             public void run() {
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.content_main,currentFragment)
-                        .addToBackStack(currentFragment.getClass().toString()).commit();
+                        .commit();
             }
         }).start();
     }

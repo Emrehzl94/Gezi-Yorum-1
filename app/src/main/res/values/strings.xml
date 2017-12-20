@@ -41,7 +41,7 @@
     <string name="only_my_friends">Only My Friends</string>
     <string name="only_me">Only Me</string>
     <string name="trips">Trips</string>
-    <string name="trip_name">Give a name to this trip</string>
+    <string name="give_a_name">Give a name to this trip</string>
     <string name="logout">Log Out</string>
     <string name="register_ok">Account created successfully.</string>
     <string name="start">Start</string>
@@ -66,4 +66,9 @@
     <string name="unsuccessful_download">There was an error occurred when downloading.</string>
     <string name="choose_path">You can choose a path to follow</string>
     <string name="invite_friends">Invite your friends</string>
+    <string name="trip_name">Trip Name:</string>
+    <string name="downloads">Downloads</string>
+    <string name="nothing">There is nothing</string>
+    <string name="default_share_options">Default Share Option</string>
+    <string name="saved">Saved</string>
 </resources>

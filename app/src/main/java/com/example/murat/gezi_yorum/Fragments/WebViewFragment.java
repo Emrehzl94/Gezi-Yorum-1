@@ -33,12 +33,19 @@ public class WebViewFragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        getActivity().setTitle(getString(R.string.home));
 
         progressBar = view.findViewById(R.id.progressBar);
 
         Bundle extras = getArguments();
         String url = Constants.APP + extras.getString(Constants.PAGE);
+        switch (extras.getString(Constants.PAGE)){
+            case Constants.HOME:
+                getActivity().setTitle(getString(R.string.home));
+                break;
+            case Constants.PROFILE:
+                getActivity().setTitle(getString(R.string.profile));
+                break;
+        }
 
         webView = view.findViewById(R.id.webView);
 

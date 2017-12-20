@@ -8,4 +8,6 @@
         android:layout_height="match_parent">
     </ListView>
 
+    <include layout="@layout/nothing_warning" android:id="@+id/nothing" android:visibility="gone"/>
+
 </RelativeLayout>

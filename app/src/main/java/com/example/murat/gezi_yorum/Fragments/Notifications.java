@@ -45,18 +45,21 @@ public class Notifications extends Fragment {
                     trip.put("username", user.username);
                     String url = Constants.APP + "checkTripRequest";
                     URLRequestHandler urlhandler = new URLRequestHandler(trip.toString(), url);
-                    if(!urlhandler.getResponseMessage()){
-                        return;
+                    if(urlhandler.getResponseMessage()){
+                        String notitificationsResponse = urlhandler.getResponse();
+                        notificationsList = new JSONArray(notitificationsResponse);
                     }
-                    String notitificationsResponse = urlhandler.getResponse();
-                    notificationsList = new JSONArray(notitificationsResponse);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        notifications.setAdapter(new NotificationsAdapter(getContext(), notificationsList));
+                        if(notificationsList != null && notificationsList.length() > 0) {
+                            notifications.setAdapter(new NotificationsAdapter(getContext(), notificationsList));
+                        }else {
+                            getActivity().findViewById(R.id.nothing).setVisibility(View.VISIBLE);
+                        }
                     }
                 });
             }

@@ -189,20 +189,28 @@ public abstract class TripSummary extends Fragment {
         map.clear();
         new Thread(new TripDrawer(trip, move)).start();
     }
-
+    private static Boolean lock = true; // lock for database when drawing paths
     /**
      * Controls trip drawing on map can draw any trip
      */
     protected class TripDrawer implements Runnable {
         private Trip trip;
         private Boolean move;
-        public TripDrawer(Trip trip, Boolean move){
+        TripDrawer(Trip trip, Boolean move){
             this.trip = trip;
             this.move = move;
         }
 
         @Override
         public void run() {
+            while (!lock){
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            lock = false;
             ArrayList<Long> pathIds = helper.getPathsIDs(trip.id);
             if(map != null && !pathIds.isEmpty()) {
                 //waiting for media files
@@ -247,6 +255,7 @@ public abstract class TripSummary extends Fragment {
                                 ArrayList<MediaFile> media = helper.getMediaFiles(trip.id, null, null);
                                 addMarkersToMap(map, media, trip.isImported);
                             }
+                            lock = true;
                         }
                     }
                 }.setPathIds(pathIds));

@@ -39,8 +39,6 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        getActivity().setTitle(getString(R.string.timeline));
-
         FloatingActionButton shareTrip = view.findViewById(R.id.share_trip);
         shareTrip.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -55,17 +53,26 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(TimeLine.this);
         LocationDbOpenHelper helper = new LocationDbOpenHelper(getContext());
-        ArrayList<Long> trip_ids = helper.getTripsIDsForTimeLine();
+        ArrayList<Long> trip_ids;
+        Bundle args = getArguments();
+        if(args != null && args.getBoolean("isImported", false)){
+            trip_ids = helper.getTripsIDsForTimeLine(true);
+            getActivity().setTitle(getString(R.string.downloads));
+        }else {
+            trip_ids = helper.getTripsIDsForTimeLine(false);
+            getActivity().setTitle(getString(R.string.timeline));
+        }
         if(trip_ids.size() == 0){
             shareTrip.setEnabled(false);
-        }
-        Bundle args = getArguments();
-        if(args != null){
-            currentPosition = args.getInt("position");
-        }else {
-            currentPosition = trip_ids.size() - 1 ;
+            view.findViewById(R.id.nothing).setVisibility(View.VISIBLE);
         }
 
+        if(args != null && args.getBoolean("jump", false)) {
+            currentPosition = args.getInt("position");
+            getActivity().setTitle(getString(R.string.trip));
+        }else {
+            currentPosition = trip_ids.size() - 1;
+        }
         pagerAdapter = new TripPagerAdapter(getChildFragmentManager(), trip_ids);
         viewPager.setAdapter(pagerAdapter);
         viewPager.setCurrentItem(pagerAdapter.getCount());

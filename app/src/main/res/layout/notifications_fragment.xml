@@ -6,5 +6,5 @@
        android:id="@+id/notifications"
        android:layout_width="match_parent"
        android:layout_height="match_parent"/>
-
+   <include layout="@layout/nothing_warning" android:id="@+id/nothing" android:visibility="gone"/>
 </RelativeLayout>

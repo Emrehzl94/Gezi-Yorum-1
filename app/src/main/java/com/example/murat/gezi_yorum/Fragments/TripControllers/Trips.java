@@ -27,11 +27,15 @@ public class Trips extends Fragment {
         ListView listView = view.findViewById(R.id.trip_list);
         listViewAdapter = new TripsAdapter(getContext(), false);
         listView.setAdapter(listViewAdapter);
+        if(listViewAdapter.getCount() == 0){
+            view.findViewById(R.id.nothing).setVisibility(View.VISIBLE);
+        }
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Fragment fragment = new TimeLine();
                 Bundle extras = new Bundle();
+                extras.putBoolean("jump",true);
                 extras.putInt("position", i);
                 fragment.setArguments(extras);
                 ((MainActivity)getActivity()).changeFragment(fragment);

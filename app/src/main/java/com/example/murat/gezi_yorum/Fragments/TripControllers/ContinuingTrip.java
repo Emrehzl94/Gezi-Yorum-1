@@ -220,10 +220,10 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
             locationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, 0, 0, this);
         }
         if(map!=null){
-            requestToDrawPathOnMap(map,true);
             if(followingTrip != null){
                 new Thread(new TripDrawer(followingTrip, null)).start();
             }
+            requestToDrawPathOnMap(map,true);
         }
     }
 

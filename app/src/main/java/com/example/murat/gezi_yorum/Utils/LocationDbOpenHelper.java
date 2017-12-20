@@ -209,9 +209,9 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
      * Returns created trip_ids from user
      * @return trip_ids created from user
      */
-    public ArrayList<Long> getTripsIDsForTimeLine(){
+    public ArrayList<Long> getTripsIDsForTimeLine(Boolean isImported){
         String query = "SELECT "+COLUMN_ID+" FROM "+TABLE_TRIPS +" WHERE "+
-                COLUMN_FINISHDATE+"!="+Long.MAX_VALUE +" AND "+COLUMN_ISIMPORTED+"=0";
+                COLUMN_FINISHDATE+"!="+Long.MAX_VALUE +" AND "+COLUMN_ISIMPORTED+"="+(isImported ? 1 : 0);
         SQLiteDatabase database = getReadableDatabase();
         Cursor cursor = database.rawQuery(query,null);
         cursor.moveToFirst();

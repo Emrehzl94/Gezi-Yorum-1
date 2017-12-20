@@ -19,6 +19,10 @@
             android:icon="@android:drawable/ic_menu_myplaces"
             android:title="@string/timeline" />
         <item
+            android:id="@+id/nav_downloads"
+            android:icon="@android:drawable/stat_sys_download"
+            android:title="@string/downloads" />
+        <item
             android:id="@+id/nav_search"
             android:icon="@android:drawable/ic_menu_search"
             android:title="@string/search" />
@@ -30,9 +34,10 @@
             android:id="@+id/nav_settings"
             android:icon="@drawable/ic_menu_manage"
             android:title="@string/action_settings" />
+        <item
+            android:id="@+id/nav_log_out"
+            android:icon="@android:drawable/ic_lock_power_off"
+            android:title="@string/logout"/>
     </group>
-    <item
-        android:id="@+id/nav_log_out"
-        android:title="@string/logout"/>
 
 </menu>
