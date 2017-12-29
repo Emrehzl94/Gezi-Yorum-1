@@ -120,6 +120,7 @@ public class ZipFileUploader extends Service {
             for(String response_message : response_messages){
                 Log.w("Respons", "upload: " + response_message);
             }
+            helper.tripIsShared(trip.id);
             message = "Dosyalar başarıyla yüklendi.";
         } catch (Exception e) {
             e.printStackTrace();
@@ -149,6 +150,12 @@ public class ZipFileUploader extends Service {
                 ZipEntry tripMetaDataEntry = new ZipEntry(Constants.TRIP_META);
                 zipOutputStream.putNextEntry(tripMetaDataEntry);
                 zipOutputStream.write(trip.toJSONObject().toString().getBytes());
+
+                if(trip.cover_media_id != -1){
+                    ZipEntry coverEntry = new ZipEntry("kapak.jpg");
+                    zipOutputStream.putNextEntry(coverEntry);
+                    writeByteArrayOriginal(new File(helper.getMediaFile(trip.cover_media_id).path),zipOutputStream);
+                }
 
                 Geocoder geocoder;
                 geocoder = new Geocoder(this, Locale.getDefault());

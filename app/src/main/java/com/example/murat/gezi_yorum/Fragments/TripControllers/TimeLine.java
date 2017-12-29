@@ -1,17 +1,18 @@
 package com.example.murat.gezi_yorum.Fragments.TripControllers;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.example.murat.gezi_yorum.Entity.Constants;
 import com.example.murat.gezi_yorum.Entity.Trip;
 import com.example.murat.gezi_yorum.MediaActivity;
 import com.example.murat.gezi_yorum.R;
@@ -34,19 +35,30 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
 
     private TripPagerAdapter pagerAdapter;
     private int currentPosition;
-
+    private Boolean currentIsShared = false;
+    private FloatingActionButton shareTrip;
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        FloatingActionButton shareTrip = view.findViewById(R.id.share_trip);
+        View bottomsheet = view.findViewById(R.id.bottomsheet);
+        behavior = BottomSheetBehavior.from(bottomsheet);
+        behavior.setHideable(false);
+        behavior.setPeekHeight(300);
+
+        shareTrip = view.findViewById(R.id.share_trip);
         shareTrip.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                long trip_id = pagerAdapter.getFragment(currentPosition).getTripId();
-                Intent intent = new Intent(getContext(), ZipFileUploader.class);
-                intent.putExtra(Trip.TRIPID, trip_id);
-                getActivity().startService(intent);
+                if(!currentIsShared) {
+                    Snackbar.make(view, getString(R.string.trip_sharing), Snackbar.LENGTH_LONG).show();
+                    long trip_id = pagerAdapter.getFragment(currentPosition).getTripId();
+                    Intent intent = new Intent(getContext(), ZipFileUploader.class);
+                    intent.putExtra(Trip.TRIPID, trip_id);
+                    getActivity().startService(intent);
+                }else {
+                    Snackbar.make(view, getString(R.string.shared_before), Snackbar.LENGTH_LONG).show();
+                }
             }
         });
         viewPager = view.findViewById(R.id.pager);
@@ -65,6 +77,9 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
         if(trip_ids.size() == 0){
             shareTrip.setEnabled(false);
             view.findViewById(R.id.nothing).setVisibility(View.VISIBLE);
+            behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        }else {
+            behavior.setState(BottomSheetBehavior.STATE_DRAGGING);
         }
 
         if(args != null && args.getBoolean("jump", false)) {
@@ -90,7 +105,9 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
                 if(map != null){
                     lastClickedMarker = null;
                     currentPosition = position;
-                    pagerAdapter.getFragment(currentPosition).requestToDrawPathOnMap(map,false);
+                    TripInfo currentFragment = pagerAdapter.getFragment(currentPosition);
+                    currentFragment.requestToDrawPathOnMap(map,false);
+                    setIsShared(currentFragment.getIsShared());
                 }
             }
 
@@ -100,12 +117,6 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
             }
         });
         viewPager.setCurrentItem(currentPosition);
-
-        View bottomsheet = view.findViewById(R.id.bottomsheet);
-        behavior = BottomSheetBehavior.from(bottomsheet);
-        behavior.setState(BottomSheetBehavior.STATE_DRAGGING);
-        behavior.setHideable(false);
-        behavior.setPeekHeight(300);
     }
 
     @Nullable
@@ -151,5 +162,13 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
     }
     public void setPrevPage(){
         viewPager.setCurrentItem(viewPager.getCurrentItem()-1);
+    }
+    public void setIsShared(Boolean isShared){
+        currentIsShared = isShared;
+        if(isShared){
+            shareTrip.setBackgroundColor(Color.GREEN);
+        }else {
+            shareTrip.setBackgroundColor(Color.DKGRAY);
+        }
     }
 }

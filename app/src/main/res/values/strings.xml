@@ -71,4 +71,7 @@
     <string name="nothing">There is nothing</string>
     <string name="default_share_options">Default Share Option</string>
     <string name="saved">Saved</string>
+    <string name="shared_before">This trip shared before.</string>
+    <string name="trip_sharing">Preparing to share. You can watch process from notification bar.</string>
+    <string name="no_media">There is no media file to make cover.</string>
 </resources>

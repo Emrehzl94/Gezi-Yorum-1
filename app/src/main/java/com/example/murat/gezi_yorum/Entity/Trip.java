@@ -20,6 +20,7 @@ public class Trip {
     public Boolean isImported;
     public Boolean isCreator;
     public Boolean isShared;
+    public Long cover_media_id;
 
     public static final String TRIPNAME = "trip_name";
     public static final String MEMBERS = "members";
@@ -33,7 +34,7 @@ public class Trip {
     public static final String TRIPID = "trip_id";
     public static final String CREATOR = "creator";
 
-    public  Trip(long id, long startdate, long finishdate, String name, int isImported,String members, Long idOnServer, String isCreator, String isShared){
+    public Trip(long id, long startdate, long finishdate, String name, int isImported,String members, Long idOnServer, String isCreator, String isShared, Long cover_media_id){
         this.id = id;
         this.startdate = startdate;
         this.finishdate = finishdate;
@@ -43,6 +44,8 @@ public class Trip {
         this.isImported = isImported != 0;
         this.isCreator = Boolean.parseBoolean(isCreator);
         this.isShared = Boolean.parseBoolean(isShared);
+        this.cover_media_id = cover_media_id;
+
     }
 
     public String getStartdate() {

@@ -36,6 +36,7 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
     public static final String COLUMN_IDONSERVER = "idonserver";
     public static final String COLUMN_CREATOR = "iscreator";
     public static final String COLUMN_SHARED = "isshared";
+    public static final String COLUMN_COVER_MEDIA_ID = "coverPhoto";
 
     public static final String TABLE_PATHS = "Paths";
 
@@ -67,7 +68,8 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
                  COLUMN_MEMBERS + " text default '' ," +
                  COLUMN_IDONSERVER +" INTEGER not null," +
                  COLUMN_CREATOR + " INTEGER not null," +
-                 COLUMN_SHARED+" text default 'false')";
+                 COLUMN_SHARED+" text default 'false'," +
+                 COLUMN_COVER_MEDIA_ID + " int default -1)";
         String pathTableCreateQuery = "CREATE TABLE " + TABLE_PATHS +
                 "("+COLUMN_ID+" integer PRIMARY KEY AUTOINCREMENT," +
                 COLUMN_STARTDATE +" INTEGER not null," +
@@ -141,15 +143,33 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
         SQLiteDatabase database = getWritableDatabase();
         database.update(TABLE_TRIPS, values, COLUMN_ID + "=" +trip_id, null);
     }
+
+    public void updateTripCoverPhoto(Long trip_id, Long media_id){
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_COVER_MEDIA_ID,media_id);
+        SQLiteDatabase database = getWritableDatabase();
+        database.update(TABLE_TRIPS, values, COLUMN_ID + "=" +trip_id, null);
+    }
     /**
      * Ends trip
-     * @param path_id path id
+     * @param trip_id trip id
      */
-    public void endTrip(long path_id){
+    public void endTrip(long trip_id){
         ContentValues values = new ContentValues();
         values.put(COLUMN_FINISHDATE,System.currentTimeMillis());
         SQLiteDatabase database = getWritableDatabase();
-        database.update(TABLE_TRIPS, values, COLUMN_ID + "=" + path_id, null);
+        database.update(TABLE_TRIPS, values, COLUMN_ID + "=" + trip_id, null);
+    }
+
+    /**
+     * Sign trip as shared
+     * @param trip_id trip id
+     */
+    public void tripIsShared(long trip_id){
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_SHARED, new Boolean(true).toString());
+        SQLiteDatabase database = getWritableDatabase();
+        database.update(TABLE_TRIPS, values, COLUMN_ID + "=" + trip_id, null);
     }
 
     /**
@@ -246,7 +266,8 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
                     cursor.getString(cursor.getColumnIndex(COLUMN_MEMBERS)),
                     cursor.getLong(cursor.getColumnIndex(COLUMN_IDONSERVER)),
                     cursor.getString(cursor.getColumnIndex(COLUMN_CREATOR)),
-                    cursor.getString(cursor.getColumnIndex(COLUMN_SHARED))
+                    cursor.getString(cursor.getColumnIndex(COLUMN_SHARED)),
+                    cursor.getLong(cursor.getColumnIndex(COLUMN_COVER_MEDIA_ID))
             ));
             cursor.moveToNext();
         }
@@ -274,7 +295,8 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
                     cursor.getString(cursor.getColumnIndex(COLUMN_MEMBERS)),
                     cursor.getLong(cursor.getColumnIndex(COLUMN_IDONSERVER)),
                     cursor.getString(cursor.getColumnIndex(COLUMN_CREATOR)),
-                    cursor.getString(cursor.getColumnIndex(COLUMN_SHARED))
+                    cursor.getString(cursor.getColumnIndex(COLUMN_SHARED)),
+                    cursor.getLong(cursor.getColumnIndex(COLUMN_COVER_MEDIA_ID))
             ));
             cursor.moveToNext();
         }
@@ -324,7 +346,8 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
                 cursor.getString(cursor.getColumnIndex(COLUMN_MEMBERS)),
                 cursor.getLong(cursor.getColumnIndex(COLUMN_IDONSERVER)),
                 cursor.getString(cursor.getColumnIndex(COLUMN_CREATOR)),
-                cursor.getString(cursor.getColumnIndex(COLUMN_SHARED))
+                cursor.getString(cursor.getColumnIndex(COLUMN_SHARED)),
+                cursor.getLong(cursor.getColumnIndex(COLUMN_COVER_MEDIA_ID))
         );
         cursor.close();
         database.close();
@@ -374,6 +397,7 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
         values.put(COLUMN_SHARE_OPTION,mediaFile.share_option);
         SQLiteDatabase database = getWritableDatabase();
         mediaFile.id = database.insert(TABLE_MEDIA, null, values);
+        database.close();
     }
 
     /**
@@ -403,6 +427,24 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
         cursor.close();
         db.close();
         return media;
+    }
+    /**
+     * Returns media files taken in trip
+     * @param trip_id Trip id
+     * @param type Media Type
+     * @param additionalQuery additional SQL query
+     * @return mediaFiles
+     */
+    public Long getMediaFileCount(long trip_id, String type) {
+        SQLiteDatabase db = getReadableDatabase();
+        String query = "SELECT COUNT(*) FROM "+TABLE_MEDIA+" WHERE "+COLUMN_TRIPID+"='"+trip_id+"'";
+        if(type != null){
+            query+=" AND "+ COLUMN_TYPE + "='" +type+"'";
+        }
+        query += " ORDER BY "+ COLUMN_DATE + " DESC, "+COLUMN_LATITUDE +","+COLUMN_LONGTITUDE;
+        Cursor cursor = db.rawQuery(query, null);
+        cursor.moveToFirst();
+        return cursor.getLong(0);
     }
 
     /**

@@ -66,4 +66,7 @@
     <string name="nothing">Hiçbir şey yok</string>
     <string name="default_share_options">Varsayılan Paylaşım Seçeneği</string>
     <string name="saved">Kaydedildi</string>
+    <string name="shared_before">Bu gezi daha önce paylaşılmış.</string>
+    <string name="trip_sharing">Paylaşım için hazırlanıyor. İlerlemeyi bildirim panelinden takip edebilirsiniz.</string>
+    <string name="no_media">Kapak fotoğrafı yapmak için resim yok.</string>
 </resources>

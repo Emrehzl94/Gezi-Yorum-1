@@ -39,6 +39,7 @@ public class TripPagerAdapter extends FragmentPagerAdapter{
         Bundle info = new Bundle();
         info.putLong(Trip.TRIPID, trip_ids.get(position));
         info.putInt("position",position);
+        info.putBoolean("islast", getCount()-1 == position);
         fragment.setArguments(info);
         fragments.put(position,fragment);
         return fragment;
