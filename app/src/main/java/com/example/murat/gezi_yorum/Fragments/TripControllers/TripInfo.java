@@ -75,7 +75,9 @@ public class TripInfo extends TripSummary {
         parentFragment.setIsShared(getIsShared());
 
         cover = view.findViewById(R.id.cover);
-        if(trip.cover_media_id != -1){
+        if(trip.isImported){
+            cover.setVisibility(View.GONE);
+        }else if(trip.cover_media_id != -1){
             cover.setImageBitmap(BitmapFactory.decodeFile(helper.getMediaFile(trip.cover_media_id).path));
         }
         cover.setOnClickListener(new View.OnClickListener() {

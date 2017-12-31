@@ -13,13 +13,14 @@ public class Constants {
     public static final String MEDIA_META = "media_metadata.JSON";
 
     //Server side constants
-    //public static final String ROOT = "http://192.168.1.35:8080";
-    //public static final String APP = "http://192.168.1.35:8080/Geziyorum/";
+    //public static final String ROOT = "http://192.168.1.36:8080";
+    //public static final String APP = "http://192.168.1.36:8080/Geziyorum/";
     public static final String ROOT = "http://163.172.176.169:8080";
     public static final String APP = "http://163.172.176.169:8080/Geziyorum/";
     public static final String PAGE = "page";
     public static final String HOME = "home";
     public static final String PROFILE = "profile";
+    public static final String SEARCH = "search";
     public static final String APPLICATION = "application";
     public static final String TRIPIDONSERVER = "tripIdOnServer";
     public static final String CHOSEN_TRIPID = "chosen_trip_id";
@@ -38,4 +39,6 @@ public class Constants {
 
     public static final String CH1 = "channel1";
     public static final String CH2 = "channel2";
+
+    public static final String LIVE_TRACK = "live_track";
 }

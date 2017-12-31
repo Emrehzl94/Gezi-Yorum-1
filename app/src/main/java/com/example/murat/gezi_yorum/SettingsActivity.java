@@ -8,12 +8,14 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.RadioGroup;
+import android.widget.Switch;
 
 import com.example.murat.gezi_yorum.Entity.Constants;
 import com.example.murat.gezi_yorum.Entity.MediaFile;
 
 public class SettingsActivity extends AppCompatActivity {
     RadioGroup share_options_radio;
+    Switch live_track;
     SharedPreferences preferences;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +39,9 @@ public class SettingsActivity extends AppCompatActivity {
         }
         share_options_radio.check(selected);
 
+        live_track = findViewById(R.id.live_track);
+        live_track.setChecked(preferences.getBoolean(Constants.LIVE_TRACK, true));
+
         Button save_button = findViewById(R.id.save);
         save_button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -55,6 +60,7 @@ public class SettingsActivity extends AppCompatActivity {
                 }
                 SharedPreferences.Editor editor = preferences.edit();
                 editor.putString(MediaFile.SHARE_OPTION, option);
+                editor.putBoolean(Constants.LIVE_TRACK, live_track.isChecked());
                 editor.apply();
                 Snackbar.make(view, getString(R.string.saved), Snackbar.LENGTH_LONG).show();
             }

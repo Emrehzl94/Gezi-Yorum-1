@@ -7,10 +7,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.media.ThumbnailUtils;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -30,6 +32,7 @@ import com.example.murat.gezi_yorum.Entity.Constants;
 import com.example.murat.gezi_yorum.Entity.MediaFile;
 import com.example.murat.gezi_yorum.Entity.Path;
 import com.example.murat.gezi_yorum.Entity.Trip;
+import com.example.murat.gezi_yorum.Entity.User;
 import com.example.murat.gezi_yorum.LocationSaveService;
 import com.example.murat.gezi_yorum.MainActivity;
 import com.example.murat.gezi_yorum.MediaActivity;
@@ -39,10 +42,19 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.LocationSource;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import cafe.adriel.androidaudiorecorder.AndroidAudioRecorder;
 
@@ -59,6 +71,8 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
     private static final int VIDEO_CAMERA_PERMISSION = 8;
     private static final int LOCATION_PERMISSION_REQUEST = 9;
     private static final int LOCATION_PERMISSION_REQUEST_ON_FAIL = 10;
+    private Boolean PHOTO_CONTIUNE = false;
+
     private int REQUEST_IMAGE_CAPTURE = 1;
     private int REQUEST_VIDEO_CAPTURE = 2;
     private int REQUEST_SOUND_RECORD= 3;
@@ -84,6 +98,9 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
 
     Handler activityHandler;
 
+    Timer timer;
+    User user;
+    private HashMap<String,Marker> usersMarkers;
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
@@ -190,6 +207,8 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
             if(LocationSaveService.instance == null && checkLocationPermission(LOCATION_PERMISSION_REQUEST_ON_FAIL)){
                 Intent intent = new Intent(getContext(), LocationSaveService.class);
                 intent.putExtra(Path.PATH_ID,path_id);
+                intent.putExtra(Trip.TRIPID, trip.id);
+                intent.putExtra(Constants.LIVE_TRACK, trip.isGroupTrip() && preferences.getBoolean(Constants.LIVE_TRACK, true));
                 parentActivity.startService(intent);
             }
             pause_continue.setOnClickListener(pause);
@@ -219,11 +238,67 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
             //noinspection ConstantConditions
             locationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, 0, 0, this);
         }
-        if(map!=null){
-            if(followingTrip != null){
-                new Thread(new TripDrawer(followingTrip, null)).start();
+        if(map!=null && !PHOTO_CONTIUNE){
+            requestToDrawPathOnMap(map,true, followingTrip);
+        }
+        if(trip.isGroupTrip() && preferences.getBoolean(Constants.LIVE_TRACK, true)){
+            timer = new Timer();
+            user = new User(preferences);
+            usersMarkers = new HashMap<>();
+            //Getting all of team members locations in 10 seconds
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    String team_info =  LocationSaveService.instance.getTeamMembersLocation();
+                    try {
+                        JSONArray array = new JSONArray(team_info);
+                        for(int i=0;i<array.length();i++){
+                            JSONObject member = array.getJSONObject(i);
+                            if(member.getString("username").equals(user.username)){
+                                array.remove(i);
+                                i--;
+                            }
+                        }
+                        activityHandler.post(new TeamLocationPost(array));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }, 5000,10000);
+        }
+    }
+
+    private class TeamLocationPost implements Runnable{
+        private JSONArray members_info;
+        TeamLocationPost(JSONArray members_info){
+            this.members_info = members_info;
+        }
+        public void run(){
+            for(int i=0; i<members_info.length(); i++){
+                try {
+                    JSONObject member = members_info.getJSONObject(i);
+                    Marker added = usersMarkers.get(member.getString("username"));
+                    if(added == null){
+                        added = map.addMarker(new MarkerOptions().position(new LatLng(
+                                        member.getDouble("latitude"), member.getDouble("longitude")
+                                )).icon(BitmapDescriptorFactory.fromBitmap(
+                                ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(
+                                        getContext().getFilesDir()+"/"+member.getString("username")+".jpg"
+                                ), 100, 100)
+                                )
+                                )
+                        );
+                        usersMarkers.put(member.getString("username"), added);
+                    }else {
+                        added.setPosition(new LatLng(
+                                member.getDouble("latitude"), member.getDouble("longitude")
+                        ));
+                    }
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
-            requestToDrawPathOnMap(map,true);
         }
     }
 
@@ -265,6 +340,8 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         editor.apply();
         Intent intent = new Intent(getContext(),LocationSaveService.class);
         intent.putExtra(Path.PATH_ID,path_id);
+        intent.putExtra(Trip.TRIPID, trip.id);
+        intent.putExtra(Constants.LIVE_TRACK, trip.isGroupTrip() && preferences.getBoolean(Constants.LIVE_TRACK, true));
         getActivity().startService(intent);
         pause_continue.setOnClickListener(pause);
         pause_continue.setImageResource(R.drawable.aar_ic_pause);
@@ -296,9 +373,6 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
             return;
         }
         map = googleMap;
-        if(followingTrip != null){
-            new Thread(new TripDrawer(followingTrip, null)).start();
-        }
         map.setLocationSource(this);
         map.setMyLocationEnabled(true);
 
@@ -323,7 +397,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
                 }
             }
         });
-        requestToDrawPathOnMap(map,true);
+        requestToDrawPathOnMap(map,true, followingTrip);
     }
 
     /**
@@ -375,6 +449,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
                 || !checkSoundRecordPermission(MIC_CAMERA_PERMISSION)
                 || !checkCameraPermission(PHOTO_CAMERA_PERMISSION)) return;
         String outputDir = getOutputMediaFileDir(MediaFile.PHOTO);
+        PHOTO_CONTIUNE = true;
         new MaterialCamera(this)
                 .labelRetry(R.string.cancel)
                 .labelConfirm(R.string.save)
@@ -462,6 +537,8 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
             if(requestCode == REQUEST_IMAGE_CAPTURE){
                 startNewPhotoIntent();
             }
+        }else {
+            PHOTO_CONTIUNE = false;
         }
     }
     private String getOutputMediaFileDir(String type){
@@ -546,6 +623,8 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
                 }else {
                     Intent intent = new Intent(getContext(), LocationSaveService.class);
                     intent.putExtra(Path.PATH_ID,path_id);
+                    intent.putExtra(Trip.TRIPID, trip.id);
+                    intent.putExtra(Constants.LIVE_TRACK, trip.isGroupTrip() && preferences.getBoolean(Constants.LIVE_TRACK, true));
                     parentActivity.startService(intent);
                 }
                 break;

@@ -25,29 +25,38 @@ import org.json.JSONObject;
  */
 
 public class Notifications extends Fragment {
-    private ListView notifications;
+    private ListView trip_invitation_notifications;
+    private ListView friendship_requests;
     private Handler handler;
-    private JSONArray notificationsList;
+    private JSONArray trip_invitation_notificationsList;
+    private JSONArray friendship_requestsList;
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         getActivity().setTitle(getString(R.string.notification));
-        notifications = view.findViewById(R.id.notifications);
+        trip_invitation_notifications = view.findViewById(R.id.trip_invite_notifications);
+        friendship_requests = view.findViewById(R.id.friend_notifications);
         handler = new Handler();
         new Thread(new Runnable() {
             @Override
             public void run() {
 
-                JSONObject trip = new JSONObject();
+                JSONObject request = new JSONObject();
                 User user = new User(getContext().getSharedPreferences(Constants.PREFNAME, Context.MODE_PRIVATE));
                 try {
-                    trip.put("token", user.token);
-                    trip.put("username", user.username);
+                    request.put("token", user.token);
+                    request.put("username", user.username);
                     String url = Constants.APP + "checkTripRequest";
-                    URLRequestHandler urlhandler = new URLRequestHandler(trip.toString(), url);
+                    URLRequestHandler urlhandler = new URLRequestHandler(request.toString(), url);
                     if(urlhandler.getResponseMessage()){
                         String notitificationsResponse = urlhandler.getResponse();
-                        notificationsList = new JSONArray(notitificationsResponse);
+                        trip_invitation_notificationsList = new JSONArray(notitificationsResponse);
+                    }
+                    url = Constants.APP + "getFriendRequests";
+                    urlhandler = new URLRequestHandler(request.toString(), url);
+                    if(urlhandler.getResponseMessage()){
+                        String notitificationsResponse = urlhandler.getResponse();
+                        friendship_requestsList = new JSONArray(notitificationsResponse);
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -55,9 +64,18 @@ public class Notifications extends Fragment {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        if(notificationsList != null && notificationsList.length() > 0) {
-                            notifications.setAdapter(new NotificationsAdapter(getContext(), notificationsList));
-                        }else {
+                        if(trip_invitation_notificationsList != null && trip_invitation_notificationsList.length() > 0) {
+                            trip_invitation_notifications.setAdapter(
+                                    new NotificationsAdapter(getContext(), trip_invitation_notificationsList, NotificationsAdapter.TRIP)
+                            );
+                        }
+                        if(friendship_requestsList != null && trip_invitation_notificationsList.length() > 0) {
+                            friendship_requests.setAdapter(
+                                    new NotificationsAdapter(getContext(), friendship_requestsList, NotificationsAdapter.FRIENDSHIP)
+                            );
+                        }
+                        if((trip_invitation_notificationsList == null || trip_invitation_notificationsList.length() == 0)
+                                && (friendship_requestsList == null || friendship_requestsList.length() == 0)) {
                             getActivity().findViewById(R.id.nothing).setVisibility(View.VISIBLE);
                         }
                     }

@@ -10,7 +10,6 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -25,7 +24,6 @@ import com.example.murat.gezi_yorum.Entity.Constants;
 import com.example.murat.gezi_yorum.Entity.Trip;
 import com.example.murat.gezi_yorum.Entity.User;
 import com.example.murat.gezi_yorum.Fragments.Notifications;
-import com.example.murat.gezi_yorum.Fragments.Search;
 import com.example.murat.gezi_yorum.Fragments.TripControllers.ContinuingTrip;
 import com.example.murat.gezi_yorum.Fragments.TripControllers.StartTripFragment;
 import com.example.murat.gezi_yorum.Fragments.TripControllers.TimeLine;
@@ -43,7 +41,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        ImageButton notification = findViewById(R.id.notifications);
+        ImageButton notification = findViewById(R.id.trip_invite_notifications);
         notification.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -127,7 +125,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 break;
             }
             case (R.id.nav_search): {
-                fragment = new Search();
+                fragment = new WebViewFragment();
+                Bundle extras = new Bundle();
+                extras.putString(Constants.PAGE, Constants.SEARCH);
+                fragment.setArguments(extras);
                 break;
             }case (R.id.nav_trip):{
                 if(Trip.STARTED.equals(preferences.getString(Trip.TRIPSTATE, Trip.ENDED))){

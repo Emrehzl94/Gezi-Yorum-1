@@ -69,4 +69,12 @@
     <string name="shared_before">Bu gezi daha önce paylaşılmış.</string>
     <string name="trip_sharing">Paylaşım için hazırlanıyor. İlerlemeyi bildirim panelinden takip edebilirsiniz.</string>
     <string name="no_media">Kapak fotoğrafı yapmak için resim yok.</string>
+    <string name="name">İsim</string>
+    <string name="surname">Soyisim</string>
+    <string name="invited_friends">Davet edilecek arkadaşlar</string>
+    <string name="error">Bir hata oluştu.</string>
+    <string name="enable_live_location">Takım gezilerinde canlı takibi etkinleştir</string>
+    <string name="invitations">Gezi Davetleri</string>
+    <string name="friendship_requests">Arkadaşlık İstekleri</string>
+    <string name="friendship_request">Arkadaşlık İsteği</string>
 </resources>

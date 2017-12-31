@@ -35,12 +35,16 @@ public class NotificationsAdapter extends ArrayAdapter {
     private SharedPreferences preferences;
     private Handler handler;
     private int selectedId;
+    private int type;
 
-    public NotificationsAdapter(@NonNull Context context, JSONArray notifications) {
+    public static final int TRIP = 1;
+    public static final int FRIENDSHIP = 2;
+    public NotificationsAdapter(@NonNull Context context, JSONArray notifications, int type) {
         super(context, -1);
         this.notifications = notifications;
         preferences = getContext().getSharedPreferences(Constants.PREFNAME, Context.MODE_PRIVATE);
         user = new User(preferences);
+        this.type = type;
         handler = new Handler();
     }
     @Override
@@ -54,26 +58,31 @@ public class NotificationsAdapter extends ArrayAdapter {
         View view = LayoutInflater.from(getContext()).inflate(R.layout.notification_template_layout, null);
         try {
             JSONObject notification = notifications.getJSONObject(position);
-            JSONArray members = notification.getJSONArray("digerKatilimcilar");
-            StringBuilder membersBuilder = new StringBuilder();
-            for(int i = 0; i<members.length(); i++){
-                JSONObject member = members.getJSONObject(i);
-                membersBuilder.append(member.get("name"));
-                membersBuilder.append(" ");
-                membersBuilder.append(member.get("surname"));
-                membersBuilder.append("<br>");
+            String text = "";
+            if(type == TRIP) {
+                JSONArray members = notification.getJSONArray("digerKatilimcilar");
+                StringBuilder membersBuilder = new StringBuilder();
+                for (int i = 0; i < members.length(); i++) {
+                    JSONObject member = members.getJSONObject(i);
+                    membersBuilder.append(member.get("name"));
+                    membersBuilder.append(" ");
+                    membersBuilder.append(member.get("surname"));
+                    membersBuilder.append("<br>");
+                }
+                text = "<b>" + getContext().getString(R.string.invitation) + "</b><br>" +
+                        getContext().getString(R.string.invitee) + notification.getString("name") + " " + notification.getString("surname") + "<br>" +
+                        getContext().getString(R.string.explain) + notification.getString("explanation") + "<br>" +
+                        getContext().getString(R.string.members) + membersBuilder.toString();
+            }else if(type == FRIENDSHIP){
+                text = getContext().getString(R.string.friendship_request) +"<br>" +
+                        notification.getString("name") + " " + notification.getString("surname");
             }
-            String text = "<b>"+getContext().getString(R.string.invitation)+"</b><br>"+
-                getContext().getString(R.string.invitee) + notification.getString("name")+" " +notification.getString("surname")+ "<br>"+
-                getContext().getString(R.string.explain) + notification.getString("explanation") + "<br>" +
-                getContext().getString(R.string.members) + membersBuilder.toString();
             TextView textMessage = view.findViewById(R.id.notification_text);
             textMessage.setText(Html.fromHtml(text));
 
             ImageButton acceptButton = view.findViewById(R.id.accept);
             acceptButton.setId(position);
-
-            acceptButton.setOnClickListener(new View.OnClickListener() {
+            View.OnClickListener trip_acceptListener = new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     if(preferences.getString(Trip.TRIPSTATE, "").equals(Trip.STARTED)) {
@@ -119,19 +128,45 @@ public class NotificationsAdapter extends ArrayAdapter {
                                     }
                                 });
 
-                               // Toast.makeText(getContext(), getContext().getString(R.string.accept) + selectedId, Toast.LENGTH_LONG).show();
+                                // Toast.makeText(getContext(), getContext().getString(R.string.accept) + selectedId, Toast.LENGTH_LONG).show();
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
                         }
                     }).start();
                 }
-            });
+            };
+
+            View.OnClickListener friendshipAcceptListener = new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    selectedId = view.getId();
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            JSONObject request = new JSONObject();
+                            try {
+                                request.put("token", user.token);
+                                request.put("id", notifications.getJSONObject(selectedId).getLong("friendRequestId"));
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            String url = Constants.APP + "acceptFriend"; // accept Friend
+
+                            URLRequestHandler requestHandler = new URLRequestHandler(request.toString(), url);
+                            if (!requestHandler.getResponseMessage() || !requestHandler.getResponse().equals("true")) {
+                                //Hata
+                            }
+                        }
+                    }).start();
+                }
+            };
+            acceptButton.setOnClickListener(type == TRIP ? trip_acceptListener : friendshipAcceptListener);
 
             ImageButton denyButton = view.findViewById(R.id.deny);
             denyButton.setId(position);
 
-            denyButton.setOnClickListener(new View.OnClickListener() {
+            View.OnClickListener tripDenyListener = new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     selectedId = view.getId();
@@ -157,7 +192,36 @@ public class NotificationsAdapter extends ArrayAdapter {
                         }
                     }).start();
                 }
-            });
+            };
+
+            View.OnClickListener friendDenyListener = new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    selectedId = view.getId();
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            JSONObject request = new JSONObject();
+                            try {
+                                request.put("token", user.token);
+                                request.put("id", notifications.getJSONObject(selectedId).getLong("friendRequestId"));
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            String url = Constants.APP + "denyFriend"; // accept Friend
+
+                            URLRequestHandler requestHandler = new URLRequestHandler(request.toString(), url);
+                            if (!requestHandler.getResponseMessage() || !requestHandler.getResponse().equals("true")) {
+                                //Hata
+                                Toast.makeText(getContext(), getContext().getString(R.string.error), Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    });
+
+                }
+            };
+
+            denyButton.setOnClickListener(type == TRIP ? tripDenyListener : friendDenyListener);
         } catch (JSONException e) {
             e.printStackTrace();
         }

@@ -62,7 +62,7 @@
     <string name="invitee">Invitee :</string>
     <string name="explain">Explanation :</string>
     <string name="members">Members :</string>
-    <string name="active_trip_warning">There is an active trip at the moment. Cannot star new one.</string>
+    <string name="active_trip_warning">There is an active trip at the moment. Cannot start new one.</string>
     <string name="unsuccessful_download">There was an error occurred when downloading.</string>
     <string name="choose_path">You can choose a path to follow</string>
     <string name="invite_friends">Invite your friends</string>
@@ -74,4 +74,12 @@
     <string name="shared_before">This trip shared before.</string>
     <string name="trip_sharing">Preparing to share. You can watch process from notification bar.</string>
     <string name="no_media">There is no media file to make cover.</string>
+    <string name="name">Name</string>
+    <string name="surname">Surname</string>
+    <string name="invited_friends">Friends to be invited</string>
+    <string name="error">An error occurred.</string>
+    <string name="enable_live_location">Enable live tracking on team trips</string>
+    <string name="invitations">Trip Invitations</string>
+    <string name="friendship_requests">Friendship Requests</string>
+    <string name="friendship_request">Friendship Request</string>
 </resources>

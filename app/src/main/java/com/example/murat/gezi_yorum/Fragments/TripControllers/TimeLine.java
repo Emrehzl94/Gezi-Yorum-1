@@ -1,6 +1,7 @@
 package com.example.murat.gezi_yorum.Fragments.TripControllers;
 
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -70,12 +71,13 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
         if(args != null && args.getBoolean("isImported", false)){
             trip_ids = helper.getTripsIDsForTimeLine(true);
             getActivity().setTitle(getString(R.string.downloads));
+            shareTrip.setVisibility(View.INVISIBLE);
         }else {
             trip_ids = helper.getTripsIDsForTimeLine(false);
             getActivity().setTitle(getString(R.string.timeline));
         }
         if(trip_ids.size() == 0){
-            shareTrip.setEnabled(false);
+            shareTrip.setVisibility(View.INVISIBLE);
             view.findViewById(R.id.nothing).setVisibility(View.VISIBLE);
             behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
         }else {
@@ -106,7 +108,7 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
                     lastClickedMarker = null;
                     currentPosition = position;
                     TripInfo currentFragment = pagerAdapter.getFragment(currentPosition);
-                    currentFragment.requestToDrawPathOnMap(map,false);
+                    currentFragment.requestToDrawPathOnMap(map,false, null);
                     setIsShared(currentFragment.getIsShared());
                 }
             }
@@ -153,7 +155,7 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
         });
 
         if(pagerAdapter.getCount()>0) {
-            pagerAdapter.getFragment(currentPosition).requestToDrawPathOnMap(map,true);
+            pagerAdapter.getFragment(currentPosition).requestToDrawPathOnMap(map,true, null);
         }
     }
 
@@ -166,9 +168,9 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
     public void setIsShared(Boolean isShared){
         currentIsShared = isShared;
         if(isShared){
-            shareTrip.setBackgroundColor(Color.GREEN);
+            shareTrip.setBackgroundTintList(ColorStateList.valueOf(Color.GREEN));
         }else {
-            shareTrip.setBackgroundColor(Color.DKGRAY);
+            shareTrip.setBackgroundTintList(ColorStateList.valueOf(Color.DKGRAY));
         }
     }
 }

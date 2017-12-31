@@ -37,6 +37,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -169,6 +174,26 @@ public class StartTripFragment extends Fragment{
                                 return;
                             }
                             tripIdOnserver = Long.parseLong(handler.getResponse());
+                            for (int i=0; i<members.length(); i++){
+                                try {
+                                    String member = members.getString(i);
+                                    handler = new URLRequestHandler(member, Constants.APP+"downloadProfilePhotoPath");
+                                    handler.getResponseMessage();
+                                    String link = handler.getResponse();
+                                    String profilePicturePath = getContext().getFilesDir() + "/"+member+".jpg";
+                                    try {
+                                        URL website = new URL(Constants.ROOT+link);
+                                        ReadableByteChannel rbc = Channels.newChannel(website.openStream());
+                                        FileOutputStream fos = new FileOutputStream(profilePicturePath);
+                                        fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+
+                            }
                         }
                         final ContinuingTrip continuingTrip = new ContinuingTrip();
                         Bundle extras = new Bundle();
@@ -226,7 +251,7 @@ public class StartTripFragment extends Fragment{
                     JSONObject friend = friendsJson.optJSONObject(i);
                     friendsList.add(friend.getString("username"));
                 }
-            } catch (JSONException e) {
+            } catch (JSONException|NullPointerException e) {
                 e.printStackTrace();
             }
             return handler.getResponseMessage() && !friendsList.isEmpty();

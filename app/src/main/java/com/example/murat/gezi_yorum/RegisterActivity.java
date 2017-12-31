@@ -15,8 +15,11 @@ import com.example.murat.gezi_yorum.Entity.Constants;
 import com.example.murat.gezi_yorum.Entity.User;
 import com.example.murat.gezi_yorum.Utils.URLRequestHandler;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class RegisterActivity extends AppCompatActivity {
-    private EditText username_edit, pass1_edit, pass2_edit, email_edit;
+    private EditText username_edit, pass1_edit, pass2_edit, email_edit, name_edit, surname_edit;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -27,6 +30,8 @@ public class RegisterActivity extends AppCompatActivity {
         pass1_edit = findViewById(R.id.password_edit);
         pass2_edit = findViewById(R.id.password2_edit);
         email_edit = findViewById(R.id.email_edit);
+        name_edit = findViewById(R.id.name_edit);
+        surname_edit = findViewById(R.id.surname_edit);
         FloatingActionButton registerButton = findViewById(R.id.register);
         registerButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -39,8 +44,10 @@ public class RegisterActivity extends AppCompatActivity {
             }
             String username = username_edit.getText().toString();
             String email = email_edit.getText().toString();
+            String name = name_edit.getText().toString();
+            String surname = surname_edit.getText().toString();
 
-            new UserRegister(username, pass1, email).execute();
+            new UserRegister(username, pass1, email, name, surname).execute();
 
             }
         });
@@ -55,18 +62,31 @@ public class RegisterActivity extends AppCompatActivity {
         private String uname;
         private String password;
         private String email;
+        private String name;
+        private String surname;
 
-        UserRegister(String uname, String password, String email) {
+        UserRegister(String uname, String password, String email, String name, String surname) {
             this.uname = uname;
             this.password = password;
             this.email = email;
+            this.name = name;
+            this.surname = surname;
         }
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            String data = "{ \"username\" : \""+uname+"\" , \"password\" : \""+password+"\" , \"email\" : \" "+email+"\" }";
+            JSONObject user_info = new JSONObject();
+            try {
+                user_info.put("username", uname);
+                user_info.put("password",password);
+                user_info.put("email",email);
+                user_info.put("name",name);
+                user_info.put("surname",surname);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
             String url = Constants.APP+"userRegister";
-            URLRequestHandler handler = new URLRequestHandler(data,url);
+            URLRequestHandler handler = new URLRequestHandler(user_info.toString(), url);
             if(!handler.getResponseMessage()){
                 //unsuccesful
                 return false;
@@ -83,9 +103,10 @@ public class RegisterActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(final Boolean success) {
             if(success){
+                Toast.makeText(getApplicationContext(), getString(R.string.register_ok), Toast.LENGTH_LONG).show();
                 finish();
             }else {
-                Toast.makeText(getApplicationContext(), "Hata oluştu", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), getString(R.string.error), Toast.LENGTH_LONG).show();
             }
         }
 

@@ -134,7 +134,7 @@ public abstract class TripSummary extends Fragment {
         ArrayList<Long> mediaGroup = new ArrayList<>();
         for(MediaFile file : mediaFiles){
             // İf distance between previous file is lower than 5 meters add this file to media group
-            if(previous == null || (previous.location.distInMeters(file.location)<1)){
+            if(previous == null || (previous.location.distInMeters(file.location)<5)){
                 mediaGroup.add(file.id);
             }else {
                 // else if media group is empty add this file to map
@@ -183,10 +183,18 @@ public abstract class TripSummary extends Fragment {
      * @param googleMap GoogleMap
      * @param move move map or animate
      */
-    public void requestToDrawPathOnMap(GoogleMap googleMap, boolean move){
+    public void requestToDrawPathOnMap(GoogleMap googleMap, boolean move, Trip followingTrip){
         if(googleMap == null) return;
         this.map = googleMap;
         map.clear();
+        if(followingTrip != null){
+            new Thread(new TripDrawer(followingTrip, move)).start();
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
         new Thread(new TripDrawer(trip, move)).start();
     }
     private static Boolean lock = true; // lock for database when drawing paths
@@ -226,40 +234,46 @@ public abstract class TripSummary extends Fragment {
                     Runnable setPathIds(ArrayList<Long> pathIds){this.pathIds = pathIds; return this;}
                     @Override
                     public void run() {
-                        LatLngBounds.Builder builder = new LatLngBounds.Builder();
 
                         for (long path_id : pathIds) {
                             if(!trip.isImported){
                                 active_path = helper.getPath(path_id);
                                 points = active_path.getLocationsAsLatLng();
                                 addedPolyLine = active_path.drawOnMap(map, points, trip.isImported);
-                                for (LatLng point : points) {
-                                    builder.include(point);
-                                }
                                 addMarkersToMap(map, mediaFiles, trip.isImported);
                                 points = addedPolyLine.getPoints();
-                                try {
-                                    int routePadding = 200;
-                                    CameraUpdate update = CameraUpdateFactory.newLatLngBounds(builder.build(), routePadding);
-                                    if (move) {
-                                        map.moveCamera(update);
-                                    } else {
-                                        map.animateCamera(update);
-                                    }
-                                }catch (Exception e){
-                                    e.printStackTrace();
-                                }
+                                updateAndAnimateMap(map, points, move);
                             }else {
                                 Path path = helper.getPath(path_id);
-                                path.drawOnMap(map, path.getLocationsAsLatLng(), trip.isImported);
                                 ArrayList<MediaFile> media = helper.getMediaFiles(trip.id, null, null);
                                 addMarkersToMap(map, media, trip.isImported);
+                                updateAndAnimateMap(map, path.drawOnMap(map, path.getLocationsAsLatLng(), trip.isImported).getPoints(), move);
                             }
                             lock = true;
                         }
                     }
                 }.setPathIds(pathIds));
+            }else {
+                lock = true;
             }
+        }
+    }
+
+    private void updateAndAnimateMap(GoogleMap map, List<LatLng> points, Boolean move){
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        for (LatLng point : points) {
+            builder.include(point);
+        }
+        try {
+            int routePadding = 200;
+            CameraUpdate update = CameraUpdateFactory.newLatLngBounds(builder.build(), routePadding);
+            if (move) {
+                map.moveCamera(update);
+            } else {
+                map.animateCamera(update);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 }

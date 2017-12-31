@@ -45,6 +45,9 @@ public class WebViewFragment extends Fragment {
             case Constants.PROFILE:
                 getActivity().setTitle(getString(R.string.profile));
                 break;
+            case Constants.SEARCH:
+                getActivity().setTitle(getString(R.string.search));
+                break;
         }
 
         webView = view.findViewById(R.id.webView);

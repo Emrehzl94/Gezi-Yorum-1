@@ -77,7 +77,7 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(LoginActivity.this,MainActivity.class);
-                startActivity(intent);
+                startActivityForResult(intent, MAIN_ACTIVITY_RESULT);
             }
         });
 
@@ -210,7 +210,6 @@ public class LoginActivity extends AppCompatActivity {
             CookieManager manager = CookieManager.getInstance();
             manager.setCookie(Constants.ROOT,   User.TOKEN+"="+token);
             manager.setCookie(Constants.ROOT,   Constants.APPLICATION+"=true");
-
             SharedPreferences preferences = getSharedPreferences(Constants.PREFNAME, Context.MODE_PRIVATE);
 
             handler = new URLRequestHandler(uname, Constants.APP+"downloadProfilePhotoPath");
@@ -236,7 +235,7 @@ public class LoginActivity extends AppCompatActivity {
 
             if (success) {
                 Intent intent = new Intent(LoginActivity.this,MainActivity.class);
-                startActivity(intent);
+                startActivityForResult(intent, MAIN_ACTIVITY_RESULT);
             } else {
                 passwordEdit.setError(getString(R.string.error_incorrect_password));
                 passwordEdit.requestFocus();

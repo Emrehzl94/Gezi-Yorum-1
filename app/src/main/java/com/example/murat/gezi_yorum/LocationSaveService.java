@@ -12,6 +12,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.ConnectivityManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -20,7 +21,13 @@ import android.widget.Toast;
 
 import com.example.murat.gezi_yorum.Entity.Constants;
 import com.example.murat.gezi_yorum.Entity.Path;
+import com.example.murat.gezi_yorum.Entity.Trip;
+import com.example.murat.gezi_yorum.Entity.User;
 import com.example.murat.gezi_yorum.Utils.LocationDbOpenHelper;
+import com.example.murat.gezi_yorum.Utils.URLRequestHandler;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Listens and saves locations to database. Must run as service.
@@ -34,6 +41,11 @@ public class LocationSaveService extends Service implements LocationListener {
     private Path path;
     LocationManager locationManager;
     private LocationDbOpenHelper helper;
+
+    private Boolean isTeamTrackEnabled;
+    private Location lastLocation;
+    private User user;
+    private Trip trip;
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent,flags,startId);
@@ -63,7 +75,39 @@ public class LocationSaveService extends Service implements LocationListener {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME, MIN_DISTANCE, this);
             Toast.makeText(this, "Service started", Toast.LENGTH_LONG).show();
         }
+
+        isTeamTrackEnabled = intent.getExtras().getBoolean(Constants.LIVE_TRACK, false);
+        if(isTeamTrackEnabled){
+            user = new User(getSharedPreferences(Constants.PREFNAME, Context.MODE_PRIVATE));
+            trip = helper.getTrip(intent.getExtras().getLong(Trip.TRIPID));
+        }
         return START_STICKY;
+    }
+
+    public String getTeamMembersLocation(){
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        //noinspection ConstantConditions
+        if(cm.getActiveNetworkInfo() == null || lastLocation == null){
+            return "";
+        }
+        JSONObject request = new JSONObject();
+        try {
+            request.put("token", user.token);
+            JSONObject currentLocation = new JSONObject();
+            currentLocation.put("tripId", trip.idOnServer);
+            currentLocation.put("username", user.username);
+            currentLocation.put("longitude", lastLocation.getLongitude());
+            currentLocation.put("latitude", lastLocation.getLatitude());
+            currentLocation.put("altitude", lastLocation.getAltitude());
+            request.put("currentLocation", currentLocation);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        URLRequestHandler urlRequestHandler = new URLRequestHandler(request.toString(),Constants.APP+"saveLocation");
+        if(urlRequestHandler.getResponseMessage()){
+            return urlRequestHandler.getResponse();
+        }
+        return "";
     }
 
     @Override
@@ -82,9 +126,10 @@ public class LocationSaveService extends Service implements LocationListener {
 
     @Override
     public void onLocationChanged(Location location) {
-        //if(location.getAccuracy()<4)
-        Toast.makeText(this, "Konum kaydedildi.", Toast.LENGTH_LONG).show();
+        if(location.getAccuracy()<40) {
+            lastLocation = location;
             path.saveLocation(location);
+        }
     }
 
     @Override
