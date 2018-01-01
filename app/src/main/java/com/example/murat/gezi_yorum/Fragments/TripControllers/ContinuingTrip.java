@@ -229,7 +229,6 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         setUpView(view);
         return view;
     }
-
     @Override
     public void onResume() {
         super.onResume();
@@ -246,53 +245,52 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
             user = new User(preferences);
             usersMarkers = new HashMap<>();
             //Getting all of team members locations in 10 seconds
-            timer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    String team_info =  LocationSaveService.instance.getTeamMembersLocation();
-                    try {
-                        JSONArray array = new JSONArray(team_info);
-                        for(int i=0;i<array.length();i++){
-                            JSONObject member = array.getJSONObject(i);
-                            if(member.getString("username").equals(user.username)){
-                                array.remove(i);
-                                i--;
-                            }
-                        }
-                        activityHandler.post(new TeamLocationPost(array));
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }, 5000,10000);
+            try {
+                timer.schedule(publishTask, 5000, 10000);
+            }catch (IllegalStateException ex){
+                ex.printStackTrace();
+            }
         }
     }
-
+    TimerTask publishTask = new TimerTask() {
+        @Override
+        public void run() {
+            if(LocationSaveService.instance != null && LocationSaveService.instance.lastknownteamlocation != null)
+                activityHandler.post(new TeamLocationPost(LocationSaveService.instance.lastknownteamlocation, getActivity().getFilesDir().getAbsolutePath()));
+        }
+    };
     private class TeamLocationPost implements Runnable{
         private JSONArray members_info;
-        TeamLocationPost(JSONArray members_info){
+        private String filesDir;
+        TeamLocationPost(JSONArray members_info, String filesDir){
             this.members_info = members_info;
+            this.filesDir = filesDir;
         }
         public void run(){
             for(int i=0; i<members_info.length(); i++){
                 try {
                     JSONObject member = members_info.getJSONObject(i);
-                    Marker added = usersMarkers.get(member.getString("username"));
-                    if(added == null){
-                        added = map.addMarker(new MarkerOptions().position(new LatLng(
-                                        member.getDouble("latitude"), member.getDouble("longitude")
-                                )).icon(BitmapDescriptorFactory.fromBitmap(
-                                ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(
-                                        getContext().getFilesDir()+"/"+member.getString("username")+".jpg"
-                                ), 100, 100)
-                                )
-                                )
-                        );
-                        usersMarkers.put(member.getString("username"), added);
-                    }else {
-                        added.setPosition(new LatLng(
-                                member.getDouble("latitude"), member.getDouble("longitude")
-                        ));
+                    if (!member.getString("username").equals(user.username)) {
+                        Marker added = usersMarkers.get(member.getString("username"));
+                        if (added == null) {
+                            File iconFile = new File(filesDir + "/" + member.getString("username") + ".jpg");
+                        if(iconFile.exists()) {
+                            added = map.addMarker(new MarkerOptions().position(new LatLng(
+                                            member.getDouble("latitude"), member.getDouble("longitude")
+                                    )).icon(BitmapDescriptorFactory.fromBitmap(
+                                    ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(
+                                            iconFile.getAbsolutePath()
+                                    ), 100, 100)
+                                    )
+                                    )
+                            );
+                            usersMarkers.put(member.getString("username"), added);
+                        }
+                        } else {
+                            added.setPosition(new LatLng(
+                                    member.getDouble("latitude"), member.getDouble("longitude")
+                            ));
+                        }
                     }
 
                 } catch (JSONException e) {
@@ -343,6 +341,13 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         intent.putExtra(Trip.TRIPID, trip.id);
         intent.putExtra(Constants.LIVE_TRACK, trip.isGroupTrip() && preferences.getBoolean(Constants.LIVE_TRACK, true));
         getActivity().startService(intent);
+        if(trip.isGroupTrip() && preferences.getBoolean(Constants.LIVE_TRACK, true)){
+            try {
+                timer.schedule(publishTask, 5000, 10000);
+            }catch (IllegalStateException ex){
+                ex.printStackTrace();
+            }
+        }
         pause_continue.setOnClickListener(pause);
         pause_continue.setImageResource(R.drawable.aar_ic_pause);
         //addPathOnMap(map, path_id);

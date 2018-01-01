@@ -220,7 +220,7 @@ public class LoginActivity extends AppCompatActivity {
                 URL website = new URL(Constants.ROOT+link);
                 ReadableByteChannel rbc = Channels.newChannel(website.openStream());
                 FileOutputStream fos = new FileOutputStream(profilePicturePath);
-                fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+                fos.getChannel().transferFrom(rbc, 0, 5242880);
             } catch (IOException e) {
                 e.printStackTrace();
             }

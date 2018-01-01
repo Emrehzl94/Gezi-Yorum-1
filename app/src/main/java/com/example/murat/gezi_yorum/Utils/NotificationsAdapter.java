@@ -25,6 +25,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+
 /**
  * Notifications ListViewAdapter
  */
@@ -111,8 +117,30 @@ public class NotificationsAdapter extends ArrayAdapter {
                                 membersAsArray.put(notification.get("username"));
                                 for (int i = 0; i < members.length(); i++) {
                                     JSONObject member = members.getJSONObject(i);
-                                    membersAsArray.put(member.get("username"));
+                                    if(!member.getString("username").equals(user.username))
+                                        membersAsArray.put(member.get("username"));
                                 }
+                                for (int i=0; i<membersAsArray.length(); i++){
+                                    try {
+                                        String member = membersAsArray.getString(i);
+                                        URLRequestHandler handler = new URLRequestHandler(member, Constants.APP+"downloadProfilePhotoPath");
+                                        handler.getResponseMessage();
+                                        String link = handler.getResponse();
+                                        String profilePicturePath = getContext().getFilesDir() + "/"+member+".jpg";
+                                        try {
+                                            URL website = new URL(Constants.ROOT+link);
+                                            ReadableByteChannel rbc = Channels.newChannel(website.openStream());
+                                            FileOutputStream fos = new FileOutputStream(profilePicturePath);
+                                            fos.getChannel().transferFrom(rbc, 0, 5242880);
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+
+                                }
+
                                 final ContinuingTrip continuingTrip = new ContinuingTrip();
                                 Bundle extras = new Bundle();
                                 extras.putString(Constants.MESSAGE, Constants.STARTNEWTRIP);

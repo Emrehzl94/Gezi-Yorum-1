@@ -23,11 +23,16 @@ import com.example.murat.gezi_yorum.Entity.Constants;
 import com.example.murat.gezi_yorum.Entity.Path;
 import com.example.murat.gezi_yorum.Entity.Trip;
 import com.example.murat.gezi_yorum.Entity.User;
+import com.example.murat.gezi_yorum.Fragments.TripControllers.ContinuingTrip;
 import com.example.murat.gezi_yorum.Utils.LocationDbOpenHelper;
 import com.example.murat.gezi_yorum.Utils.URLRequestHandler;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Listens and saves locations to database. Must run as service.
@@ -46,6 +51,7 @@ public class LocationSaveService extends Service implements LocationListener {
     private Location lastLocation;
     private User user;
     private Trip trip;
+    private Timer timer;
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent,flags,startId);
@@ -80,9 +86,31 @@ public class LocationSaveService extends Service implements LocationListener {
         if(isTeamTrackEnabled){
             user = new User(getSharedPreferences(Constants.PREFNAME, Context.MODE_PRIVATE));
             trip = helper.getTrip(intent.getExtras().getLong(Trip.TRIPID));
+            timer = new Timer();
+            timer.schedule(publishTask, 5000, 10000);
         }
         return START_STICKY;
     }
+    public JSONArray lastknownteamlocation = null;
+    TimerTask publishTask = new TimerTask() {
+        @Override
+        public void run() {
+            String team_info = getTeamMembersLocation();
+            try {
+                JSONArray array = new JSONArray(team_info);
+                for (int i = 0; i < array.length(); i++) {
+                    JSONObject member = array.getJSONObject(i);
+                    if (member.getString("username").equals(user.username)) {
+                        array.remove(i);
+                        i--;
+                    }
+                }
+                lastknownteamlocation = array;
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    };
 
     public String getTeamMembersLocation(){
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -117,6 +145,7 @@ public class LocationSaveService extends Service implements LocationListener {
         helper.updateTypeOfPath(path, type);
         Toast.makeText(this,"Service stopped",Toast.LENGTH_LONG).show();
         instance = null;
+        timer.cancel();
         super.onDestroy();
     }
     @Override

@@ -177,17 +177,19 @@ public class StartTripFragment extends Fragment{
                             for (int i=0; i<members.length(); i++){
                                 try {
                                     String member = members.getString(i);
-                                    handler = new URLRequestHandler(member, Constants.APP+"downloadProfilePhotoPath");
-                                    handler.getResponseMessage();
-                                    String link = handler.getResponse();
-                                    String profilePicturePath = getContext().getFilesDir() + "/"+member+".jpg";
-                                    try {
-                                        URL website = new URL(Constants.ROOT+link);
-                                        ReadableByteChannel rbc = Channels.newChannel(website.openStream());
-                                        FileOutputStream fos = new FileOutputStream(profilePicturePath);
-                                        fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
+                                    if(!member.equals(user.username)) {
+                                        handler = new URLRequestHandler(member, Constants.APP + "downloadProfilePhotoPath");
+                                        handler.getResponseMessage();
+                                        String link = handler.getResponse();
+                                        String profilePicturePath = getContext().getFilesDir() + "/" + member + ".jpg";
+                                        try {
+                                            URL website = new URL(Constants.ROOT + link);
+                                            ReadableByteChannel rbc = Channels.newChannel(website.openStream());
+                                            FileOutputStream fos = new FileOutputStream(profilePicturePath);
+                                            fos.getChannel().transferFrom(rbc, 0, 5242880);
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
                                     }
                                 } catch (JSONException e) {
                                     e.printStackTrace();
