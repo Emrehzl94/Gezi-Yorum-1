@@ -100,6 +100,8 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
 
     Timer timer;
     User user;
+
+    private String filesDir;
     private HashMap<String,Marker> usersMarkers;
     @Nullable
     @Override
@@ -115,7 +117,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         activityHandler = new Handler();
 
         pause_continue = view.findViewById(R.id.pause_continue);
-
+        filesDir = getActivity().getFilesDir().getAbsolutePath();
         String state = preferences.getString(Trip.RECORDSTATE, Trip.PASSIVE);
         Bundle arguments = getArguments();
         if(arguments!=null) {
@@ -256,15 +258,13 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         @Override
         public void run() {
             if(LocationSaveService.instance != null && LocationSaveService.instance.lastknownteamlocation != null)
-                activityHandler.post(new TeamLocationPost(LocationSaveService.instance.lastknownteamlocation, getActivity().getFilesDir().getAbsolutePath()));
+                activityHandler.post(new TeamLocationPost(LocationSaveService.instance.lastknownteamlocation));
         }
     };
     private class TeamLocationPost implements Runnable{
         private JSONArray members_info;
-        private String filesDir;
-        TeamLocationPost(JSONArray members_info, String filesDir){
+        TeamLocationPost(JSONArray members_info){
             this.members_info = members_info;
-            this.filesDir = filesDir;
         }
         public void run(){
             for(int i=0; i<members_info.length(); i++){

@@ -87,7 +87,8 @@ public class LocationSaveService extends Service implements LocationListener {
             user = new User(getSharedPreferences(Constants.PREFNAME, Context.MODE_PRIVATE));
             trip = helper.getTrip(intent.getExtras().getLong(Trip.TRIPID));
             timer = new Timer();
-            timer.schedule(publishTask, 5000, 10000);
+            timer.schedule(publishTask, 2000, 10000);
+            lastLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         }
         return START_STICKY;
     }
@@ -145,7 +146,9 @@ public class LocationSaveService extends Service implements LocationListener {
         helper.updateTypeOfPath(path, type);
         Toast.makeText(this,"Service stopped",Toast.LENGTH_LONG).show();
         instance = null;
-        timer.cancel();
+        if(timer != null){
+            timer.cancel();
+        }
         super.onDestroy();
     }
     @Override

@@ -30,6 +30,7 @@ public class Notifications extends Fragment {
     private Handler handler;
     private JSONArray trip_invitation_notificationsList;
     private JSONArray friendship_requestsList;
+    private User user;
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -37,12 +38,12 @@ public class Notifications extends Fragment {
         trip_invitation_notifications = view.findViewById(R.id.trip_invite_notifications);
         friendship_requests = view.findViewById(R.id.friend_notifications);
         handler = new Handler();
+        user = new User(getContext().getSharedPreferences(Constants.PREFNAME, Context.MODE_PRIVATE));
         new Thread(new Runnable() {
             @Override
             public void run() {
 
                 JSONObject request = new JSONObject();
-                User user = new User(getContext().getSharedPreferences(Constants.PREFNAME, Context.MODE_PRIVATE));
                 try {
                     request.put("token", user.token);
                     request.put("username", user.username);
@@ -69,7 +70,7 @@ public class Notifications extends Fragment {
                                     new NotificationsAdapter(getContext(), trip_invitation_notificationsList, NotificationsAdapter.TRIP)
                             );
                         }
-                        if(friendship_requestsList != null && trip_invitation_notificationsList.length() > 0) {
+                        if(friendship_requestsList != null && friendship_requestsList.length() > 0) {
                             friendship_requests.setAdapter(
                                     new NotificationsAdapter(getContext(), friendship_requestsList, NotificationsAdapter.FRIENDSHIP)
                             );
