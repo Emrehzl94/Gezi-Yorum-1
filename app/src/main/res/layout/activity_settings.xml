@@ -19,13 +19,9 @@
         </TableRow>
 
         <TableRow>
-            <TextView
-                android:gravity="center"
-                android:text="@string/enable_live_location"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
 
             <Switch
+                android:text="@string/enable_live_location"
                 android:id="@+id/live_track"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />

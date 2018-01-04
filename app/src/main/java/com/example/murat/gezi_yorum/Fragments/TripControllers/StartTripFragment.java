@@ -8,6 +8,8 @@ import android.net.ConnectivityManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
@@ -22,7 +24,6 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.murat.gezi_yorum.Entity.Constants;
@@ -65,6 +66,7 @@ public class StartTripFragment extends Fragment{
     private long choosen_trip_id;
     private ArrayList<Trip> importedTrips;
 
+    private SharedPreferences preferences;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,14 +75,33 @@ public class StartTripFragment extends Fragment{
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.start_trip_fragment, container, false);
+        preferences = getActivity().getSharedPreferences(Constants.PREFNAME ,Context.MODE_PRIVATE);
         handler = new Handler();
+        if(preferences.getString(Trip.TRIPSTATE, Trip.ENDED).equals(Trip.STARTED)){
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Thread.sleep(300);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            getActivity().onBackPressed();
+                        }
+                    });
+                }
+            }).start();
+            return view;
+        }
         trip_name_edit = view.findViewById(R.id.trip_name);
 
         friends = view.findViewById(R.id.friends_list);
         selecteds = view.findViewById(R.id.selected_friends);
         choose_path = view.findViewById(R.id.choose_path);
 
-        SharedPreferences preferences = getActivity().getSharedPreferences(Constants.PREFNAME ,Context.MODE_PRIVATE);
         user = new User(preferences);
 
         selectedFriends = new ArrayList<>();

@@ -45,6 +45,7 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
     private LocationDbOpenHelper helper;
 
     private View nothing;
+
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -57,11 +58,9 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
         behavior.setPeekHeight(300);
 
         viewPager = view.findViewById(R.id.pager);
-        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
-        mapFragment.getMapAsync(TimeLine.this);
         helper = new LocationDbOpenHelper(getContext());
-        Bundle args = getArguments();
         user = new User(getContext().getSharedPreferences(Constants.PREFNAME, Context.MODE_PRIVATE));
+        Bundle args = getArguments();
         if(args != null){
             loadImporteds = args.getBoolean("isImported", false);
         }
@@ -70,7 +69,6 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
             currentPosition = args.getInt("position");
             getActivity().setTitle(getString(R.string.trip));
         }
-        loadAdapter();
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -83,7 +81,8 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
                     lastClickedMarker = null;
                     currentPosition = position;
                     TripInfo currentFragment = pagerAdapter.getFragment(currentPosition);
-                    currentFragment.requestToDrawPathOnMap(map,false, null);
+                    if(currentFragment!=null)
+                        currentFragment.requestToDrawPathOnMap(map,false, null);
                 }
             }
 
@@ -92,8 +91,14 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
 
             }
         });
+        loadAdapter();
+        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+        mapFragment.getMapAsync(TimeLine.this);
     }
-
+    @Override
+    public void onResume() {
+        super.onResume();
+    }
     public void loadAdapter(){
         ArrayList<Long> trip_ids;
         if(loadImporteds){
@@ -110,15 +115,14 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
         }else {
             behavior.setState(BottomSheetBehavior.STATE_DRAGGING);
         }
-        pagerAdapter = new TripPagerAdapter(getChildFragmentManager(), trip_ids);
-        pagerAdapter.setLimit(10);
-        viewPager.setAdapter(pagerAdapter);
-        viewPager.setCurrentItem(pagerAdapter.getCount());
         if(currentPosition == null){
             currentPosition = trip_ids.size() - 1;
         }else if(currentPosition == trip_ids.size() && currentPosition != 0){
             currentPosition -= 1;
         }
+        if(pagerAdapter == null)
+            pagerAdapter = new TripPagerAdapter(getChildFragmentManager(), trip_ids);
+        viewPager.setAdapter(pagerAdapter);
         viewPager.setCurrentItem(currentPosition);
     }
 
@@ -156,7 +160,8 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
         });
 
         if(pagerAdapter.getCount()>0) {
-            pagerAdapter.getFragment(currentPosition).requestToDrawPathOnMap(map,true, null);
+            TripInfo fragment = pagerAdapter.getFragment(currentPosition);
+            fragment.requestToDrawPathOnMap(map, true, null);
         }
     }
 

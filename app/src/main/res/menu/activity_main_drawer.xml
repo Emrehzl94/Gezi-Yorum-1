@@ -4,31 +4,31 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_profile"
-            android:icon="@android:drawable/ic_menu_crop"
+            android:icon="@drawable/ic_action_avatar"
             android:title="@string/profile" />
         <item
             android:id="@+id/nav_home"
-            android:icon="@android:drawable/ic_menu_view"
-            android:title="@string/home" />
+            android:icon="@drawable/ic_action_news"
+            android:title="@string/news_feed" />
         <item
             android:id="@+id/nav_trips"
             android:icon="@drawable/ic_menu_slideshow"
             android:title="@string/trips" />
         <item
             android:id="@+id/nav_timeline"
-            android:icon="@android:drawable/ic_menu_myplaces"
+            android:icon="@drawable/ic_action_map"
             android:title="@string/timeline" />
         <item
             android:id="@+id/nav_downloads"
-            android:icon="@android:drawable/stat_sys_download"
+            android:icon="@drawable/ic_action_download"
             android:title="@string/downloads" />
         <item
             android:id="@+id/nav_search"
-            android:icon="@android:drawable/ic_menu_search"
+            android:icon="@drawable/ic_action_search"
             android:title="@string/search" />
         <item
             android:id="@+id/nav_trip"
-            android:icon="@android:drawable/ic_menu_gallery"
+            android:icon="@drawable/ic_action_trip"
             android:title="@string/trip" />
         <item
             android:id="@+id/nav_settings"

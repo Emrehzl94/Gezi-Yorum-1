@@ -65,26 +65,35 @@ public class Notifications extends Fragment {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        if(trip_invitation_notificationsList != null && trip_invitation_notificationsList.length() > 0) {
-                            trip_invitation_notifications.setAdapter(
-                                    new NotificationsAdapter(getContext(), trip_invitation_notificationsList, NotificationsAdapter.TRIP)
-                            );
-                        }
-                        if(friendship_requestsList != null && friendship_requestsList.length() > 0) {
-                            friendship_requests.setAdapter(
-                                    new NotificationsAdapter(getContext(), friendship_requestsList, NotificationsAdapter.FRIENDSHIP)
-                            );
-                        }
-                        if((trip_invitation_notificationsList == null || trip_invitation_notificationsList.length() == 0)
-                                && (friendship_requestsList == null || friendship_requestsList.length() == 0)) {
-                            getActivity().findViewById(R.id.nothing).setVisibility(View.VISIBLE);
-                        }
+                        loadAdapter();
                     }
                 });
             }
         }).start();
     }
 
+    public void loadAdapter(){
+        if(trip_invitation_notificationsList != null && trip_invitation_notificationsList.length() > 0) {
+            trip_invitation_notifications.setAdapter(
+                    new NotificationsAdapter(getContext(), trip_invitation_notificationsList, NotificationsAdapter.TRIP, this)
+            );
+        }
+        if(friendship_requestsList != null && friendship_requestsList.length() > 0) {
+            friendship_requests.setAdapter(
+                    new NotificationsAdapter(getContext(), friendship_requestsList, NotificationsAdapter.FRIENDSHIP,this)
+            );
+        }
+        if((trip_invitation_notificationsList == null || trip_invitation_notificationsList.length() == 0)
+                && (friendship_requestsList == null || friendship_requestsList.length() == 0)) {
+            getActivity().findViewById(R.id.nothing).setVisibility(View.VISIBLE);
+        }
+    }
+    public void acceptFriendRequest(int i){
+        friendship_requestsList.remove(i);
+        friendship_requests.setAdapter(
+                new NotificationsAdapter(getContext(), friendship_requestsList, NotificationsAdapter.FRIENDSHIP,this)
+        );
+    }
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {

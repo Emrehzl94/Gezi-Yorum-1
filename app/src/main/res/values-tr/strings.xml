@@ -12,7 +12,7 @@
     <string name="prompt_password">Şifre</string>
     <string name="title_activity_main">Ana Sayfa</string>
     <string name="search">Ara</string>
-    <string name="home">Ana Sayfa</string>
+    <string name="news_feed">Haber Akışı</string>
     <string name="timeline">Zaman Çizelgesi</string>
     <string name="trip">Gezi</string>
     <string name="photo">Fotoğraf</string>
@@ -83,4 +83,8 @@
     <string name="more">Daha Fazla</string>
     <string name="share">Paylaş</string>
     <string name="sharing">Gezi paylaşılıyor...</string>
+    <string name="trip_accepting">Gezi daveti kabul ediliyor.</string>
+    <string name="friend_request_accepting">Arkadaşlık isteği kabu ediliyor.</string>
+    <string name="friend_accepted">Arkadaşlık isteği kabul edildi.</string>
+    <string name="quit_sure">Çıkmak istediğinize emin misiniz?</string>
 </resources>

@@ -125,6 +125,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
             String message = arguments.getString(Constants.MESSAGE);
             //This means coming from StartTripFragment
             if (message != null && message.equals(Constants.STARTNEWTRIP)) {
+                arguments.putString(Constants.MESSAGE, "");
                 Boolean isCreator = arguments.getBoolean(Trip.CREATOR, true);
                 startNewTrip(arguments.getString(Trip.TRIPNAME),
                         arguments.getString(Trip.MEMBERS),

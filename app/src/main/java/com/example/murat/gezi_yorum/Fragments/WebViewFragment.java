@@ -1,7 +1,6 @@
 package com.example.murat.gezi_yorum.Fragments;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -46,7 +45,7 @@ public class WebViewFragment extends Fragment {
         String url = Constants.APP + extras.getString(Constants.PAGE);
         switch (extras.getString(Constants.PAGE)){
             case Constants.HOME:
-                getActivity().setTitle(getString(R.string.home));
+                getActivity().setTitle(getString(R.string.news_feed));
                 break;
             case Constants.PROFILE:
                 getActivity().setTitle(getString(R.string.profile));

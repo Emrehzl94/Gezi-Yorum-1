@@ -1,7 +1,9 @@
 package com.example.murat.gezi_yorum;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
@@ -22,6 +24,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.murat.gezi_yorum.Entity.Constants;
+import com.example.murat.gezi_yorum.Entity.MediaFile;
+import com.example.murat.gezi_yorum.Entity.Path;
 import com.example.murat.gezi_yorum.Entity.Trip;
 import com.example.murat.gezi_yorum.Entity.User;
 import com.example.murat.gezi_yorum.Fragments.Notifications;
@@ -30,6 +34,10 @@ import com.example.murat.gezi_yorum.Fragments.TripControllers.StartTripFragment;
 import com.example.murat.gezi_yorum.Fragments.TripControllers.TimeLine;
 import com.example.murat.gezi_yorum.Fragments.TripControllers.Trips;
 import com.example.murat.gezi_yorum.Fragments.WebViewFragment;
+import com.example.murat.gezi_yorum.Fragments.WelcomeScreen;
+
+import java.io.File;
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private SharedPreferences preferences;
@@ -70,16 +78,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         TextView username = header.findViewById(R.id.username);
         username.setText("@"+user.username);
 
-        String isActive = preferences.getString(Trip.RECORDSTATE, Trip.PASSIVE);
-        if(isActive.equals(Trip.ACTIVE)){
-            changeFragment(new ContinuingTrip());
-        }else {
-            Fragment home = new WebViewFragment();
-            Bundle extras = new Bundle();
-            extras.putString(Constants.PAGE, Constants.HOME);
-            home.setArguments(extras);
-            changeFragment(home);
-        }
+        changeFragment(new WelcomeScreen());
     }
 
     @Override
@@ -87,11 +86,29 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
+        } else if(currentFragment.getClass().equals(WebViewFragment.class) && ((WebViewFragment)currentFragment).goBack()){
+            return;
         } else {
-            if(currentFragment.getClass().equals(WebViewFragment.class) && ((WebViewFragment)currentFragment).goBack()){
-                return;
+            //if there is no fragment on backstack then go finish
+            if (getSupportFragmentManager().getBackStackEntryCount() == 1) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle(getString(R.string.quit_sure));
+                builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+
+                    }
+                });
+                builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        finishAffinity();
+                    }
+                });
+                builder.create();
+                builder.show();
+            } else {
+                super.onBackPressed();
             }
-            finishAffinity();
         }
     }
 
@@ -99,8 +116,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         // Handle navigation view item clicks here.
-        Fragment fragment = null;
         int id = item.getItemId();
+
+
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+        return itemSelected(id);
+    }
+
+    public boolean itemSelected(int id){
+        Fragment fragment = null;
         switch (id){
             case(R.id.nav_profile): {
                 fragment = new WebViewFragment();
@@ -155,11 +180,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if(fragment != null){
             changeFragment(fragment);
         }
-
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
     public void changeFragment(Fragment fragment){
         currentFragment =fragment;
         new Thread(new Runnable() {
@@ -167,6 +190,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             public void run() {
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.content_main,currentFragment)
+                        .addToBackStack(currentFragment.getClass().toString())
                         .commit();
             }
         }).start();

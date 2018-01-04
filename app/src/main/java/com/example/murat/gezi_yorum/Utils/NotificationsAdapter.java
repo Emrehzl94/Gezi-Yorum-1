@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +18,7 @@ import android.widget.Toast;
 import com.example.murat.gezi_yorum.Entity.Constants;
 import com.example.murat.gezi_yorum.Entity.Trip;
 import com.example.murat.gezi_yorum.Entity.User;
+import com.example.murat.gezi_yorum.Fragments.Notifications;
 import com.example.murat.gezi_yorum.Fragments.TripControllers.ContinuingTrip;
 import com.example.murat.gezi_yorum.MainActivity;
 import com.example.murat.gezi_yorum.R;
@@ -42,16 +44,18 @@ public class NotificationsAdapter extends ArrayAdapter {
     private Handler handler;
     private int selectedId;
     private int type;
+    private Notifications parentFragment;
 
     public static final int TRIP = 1;
     public static final int FRIENDSHIP = 2;
-    public NotificationsAdapter(@NonNull Context context, JSONArray notifications, int type) {
+    public NotificationsAdapter(@NonNull Context context, JSONArray notifications, int type, Notifications parentFragment) {
         super(context, -1);
         this.notifications = notifications;
         preferences = getContext().getSharedPreferences(Constants.PREFNAME, Context.MODE_PRIVATE);
         user = new User(preferences);
         this.type = type;
         handler = new Handler();
+        this.parentFragment = parentFragment;
     }
     @Override
     public int getCount() {
@@ -92,9 +96,10 @@ public class NotificationsAdapter extends ArrayAdapter {
                 @Override
                 public void onClick(View view) {
                     if(preferences.getString(Trip.TRIPSTATE, "").equals(Trip.STARTED)) {
-                        Toast.makeText(getContext(), getContext().getString(R.string.active_trip_warning), Toast.LENGTH_LONG).show();
+                        Snackbar.make(view, getContext().getString(R.string.active_trip_warning), Snackbar.LENGTH_LONG).show();
                         return;
                     }
+                    Snackbar.make(view, getContext().getString(R.string.trip_accepting), Snackbar.LENGTH_SHORT).show();
                     selectedId = view.getId();
                     new Thread(new Runnable() {
                         @Override
@@ -110,6 +115,12 @@ public class NotificationsAdapter extends ArrayAdapter {
                                 URLRequestHandler requestHandler = new URLRequestHandler(trip.toString(), url);
                                 if (!requestHandler.getResponseMessage() || !requestHandler.getResponse().equals("true")) {
                                     //Hata
+                                    handler.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Toast.makeText(getContext(), getContext().getString(R.string.error), Toast.LENGTH_LONG).show();
+                                        }
+                                    });
                                     return;
                                 }
                                 final JSONArray members = notification.getJSONArray("digerKatilimcilar");
@@ -155,8 +166,6 @@ public class NotificationsAdapter extends ArrayAdapter {
                                         ((MainActivity) getContext()).changeFragment(continuingTrip);
                                     }
                                 });
-
-                                // Toast.makeText(getContext(), getContext().getString(R.string.accept) + selectedId, Toast.LENGTH_LONG).show();
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
@@ -169,6 +178,7 @@ public class NotificationsAdapter extends ArrayAdapter {
                 @Override
                 public void onClick(View view) {
                     selectedId = view.getId();
+                    Snackbar.make(view, R.string.friend_request_accepting, Snackbar.LENGTH_SHORT).show();
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
@@ -184,7 +194,21 @@ public class NotificationsAdapter extends ArrayAdapter {
                             URLRequestHandler requestHandler = new URLRequestHandler(request.toString(), url);
                             if (!requestHandler.getResponseMessage() || !requestHandler.getResponse().equals("true")) {
                                 //Hata
+                                handler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(getContext(), R.string.error, Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                                return;
                             }
+                            handler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(getContext(), R.string.friend_accepted, Toast.LENGTH_SHORT).show();
+                                    parentFragment.acceptFriendRequest(selectedId);
+                                }
+                            });
                         }
                     }).start();
                 }
