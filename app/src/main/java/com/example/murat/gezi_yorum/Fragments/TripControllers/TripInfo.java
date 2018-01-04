@@ -1,23 +1,33 @@
 package com.example.murat.gezi_yorum.Fragments.TripControllers;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.media.ThumbnailUtils;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.example.murat.gezi_yorum.Entity.Constants;
 import com.example.murat.gezi_yorum.Entity.MediaFile;
+import com.example.murat.gezi_yorum.Entity.Path;
 import com.example.murat.gezi_yorum.Entity.Trip;
+import com.example.murat.gezi_yorum.GalleryActivity;
 import com.example.murat.gezi_yorum.MediaActivity;
 import com.example.murat.gezi_yorum.R;
 import com.example.murat.gezi_yorum.Utils.LocationDbOpenHelper;
+import com.example.murat.gezi_yorum.ZipFileUploader;
+
+import java.io.File;
+import java.util.ArrayList;
 
 /**
  * Shows trip info in Timeline fragment under viewpager.
@@ -30,6 +40,8 @@ public class TripInfo extends TripSummary {
     TimeLine parentFragment;
     private Boolean isLast;
     private ImageView cover;
+
+    private Button share_trip;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -72,15 +84,18 @@ public class TripInfo extends TripSummary {
         String headertext = trip_info.name;
         header.setText(headertext);
         setUpView(view);
-        parentFragment.setIsShared(getIsShared());
 
         cover = view.findViewById(R.id.cover);
+        Button changeCover = view.findViewById(R.id.change_cover);
         if(trip.isImported){
             cover.setVisibility(View.GONE);
         }else if(trip.cover_media_id != -1){
-            cover.setImageBitmap(BitmapFactory.decodeFile(helper.getMediaFile(trip.cover_media_id).path));
+            cover.setImageBitmap(ThumbnailUtils.extractThumbnail(
+                    BitmapFactory.decodeFile(helper.getMediaFile(trip.cover_media_id).path)
+                    , 500, 500
+            ));
         }
-        cover.setOnClickListener(new View.OnClickListener() {
+        changeCover.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if(helper.getMediaFileCount(trip.id, MediaFile.PHOTO) > 0) {
@@ -92,12 +107,74 @@ public class TripInfo extends TripSummary {
                 }
             }
         });
+        Button deleteTrip = view.findViewById(R.id.delete_trip);
+        deleteTrip.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                builder.setTitle(getString(R.string.delete_sure));
+                builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+
+                    }
+                });
+                builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        ArrayList<Long> paths = helper.getPathsIDs(trip.id);
+                        for(Long path_id : paths ){
+                            Path path = helper.getPath(path_id);
+                            path.getFile().delete();
+                            helper.deletePath(path_id);
+                        }
+                        ArrayList<MediaFile> mediaFiles = helper.getMediaFiles(trip.id, null, null, null);
+                        for(MediaFile file: mediaFiles){
+                            File media = new File(file.path);
+                            if(media.exists()){
+                                media.delete();
+                            }
+                            helper.deleteMediaFile(file.id);
+                        }
+                        helper.deleteTrip(trip.id);
+                        parentFragment.loadAdapter();
+                    }
+                });
+                builder.create();
+                builder.show();
+            }
+        });
+        share_trip = view.findViewById(R.id.share_trip);
+        if(trip.isShared){
+            share_trip.setBackgroundColor(Color.DKGRAY);
+            share_trip.setText(R.string.shared_before);
+        }else {
+            share_trip.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if(!trip.isShared) {
+                        Snackbar.make(view, getString(R.string.trip_sharing), Snackbar.LENGTH_LONG).show();
+                        Intent intent = new Intent(getContext(), ZipFileUploader.class);
+                        intent.putExtra(Trip.TRIPID, trip.id);
+                        getActivity().startService(intent);
+                        share_trip.setText(R.string.sharing);
+                        share_trip.setOnClickListener(null);
+                    }else {
+                        Snackbar.make(view, getString(R.string.shared_before), Snackbar.LENGTH_LONG).show();
+                    }
+                }
+            });
+        }
+        Button more = view.findViewById(R.id.more);
+        more.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getContext(), GalleryActivity.class);
+                intent.putExtra(Trip.TRIPID, trip.id);
+                startActivity(intent);
+            }
+        });
         return view;
     }
-    public long getTripId(){
-        return trip.id;
-    }
-    public Boolean getIsShared(){ return trip.isShared;}
 
     @SuppressWarnings("ConstantConditions")
     @Override

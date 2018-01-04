@@ -19,6 +19,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.example.murat.gezi_yorum.Entity.Constants;
 import com.example.murat.gezi_yorum.Entity.Trip;
@@ -64,6 +65,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         ImageView profilePhoto = header.findViewById(R.id.profilePhoto);
         User user = new User(preferences);
         profilePhoto.setImageBitmap(BitmapFactory.decodeFile(user.profilePicturePath));
+        TextView name_surname = header.findViewById(R.id.name_surname);
+        name_surname.setText(user.name_surname);
+        TextView username = header.findViewById(R.id.username);
+        username.setText("@"+user.username);
 
         String isActive = preferences.getString(Trip.RECORDSTATE, Trip.PASSIVE);
         if(isActive.equals(Trip.ACTIVE)){

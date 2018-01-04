@@ -1,25 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
-    android:background="@color/colorPrimary"
+    android:background="@color/colorBlackLowAlpha"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <ScrollView
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:padding="10dp">
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-            <ImageView
-                android:id="@+id/cover"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:adjustViewBounds="true"
-                android:src="@android:drawable/ic_menu_gallery"
-                />
-
+        android:layout_height="wrap_content">
             <ImageButton
                 android:id="@+id/prevbutton"
                 android:layout_width="wrap_content"
@@ -37,12 +25,76 @@
                 android:background="#00000000"
                 android:scaleX="-1"
                 android:layout_alignParentEnd="true" />
-
-            <include layout="@layout/media_layout"
-                android:layout_below="@id/cover"
+            <ImageView
+                android:id="@+id/cover"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:adjustViewBounds="true"
+                android:layout_marginLeft="@dimen/mcam_action_icon_size"
+                android:layout_marginRight="@dimen/mcam_action_icon_size"
+                android:src="@android:drawable/ic_menu_gallery"
+                android:layout_toEndOf="@id/prevbutton"
+                android:layout_toStartOf="@id/nextbutton"
+                />
+            <LinearLayout
+                android:id="@+id/control"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_below="@id/cover"
+                android:layout_centerHorizontal="true">
+
+                <Button
+                    android:id="@+id/change_cover"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="10dp"
+                    android:background="@android:color/holo_blue_light"
+                    android:text="@string/change_cover"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+
+                <Button
+                    android:id="@+id/delete_trip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:background="@android:color/holo_red_light"
+                    android:text="@string/delete_trip"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                    android:drawableRight="@android:drawable/ic_menu_delete"/>
+
+            </LinearLayout>
+            <include layout="@layout/media_layout"
+                android:id="@+id/media_view"
+                android:layout_below="@id/control"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
                 />
-        </RelativeLayout>
-    </ScrollView>
-</RelativeLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/media_view"
+            android:text="@string/last_added"
+            android:textAppearance="@style/TextAppearance.AppCompat.Large" />
+        <Button
+            android:id="@+id/more"
+            android:layout_below="@id/media_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:background="@android:color/holo_green_light"
+            android:text="@string/more"
+            android:drawableRight="@drawable/ic_menu_slideshow"
+            />
+        <Button
+            android:id="@+id/share_trip"
+            android:layout_below="@+id/more"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:background="@android:color/holo_blue_light"
+            android:drawableEnd="@drawable/ic_menu_share"
+            android:text="@string/share" />
+    </RelativeLayout>
+</ScrollView>

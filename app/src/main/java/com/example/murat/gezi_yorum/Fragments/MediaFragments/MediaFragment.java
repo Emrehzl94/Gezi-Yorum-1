@@ -15,7 +15,6 @@ import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 
-import com.example.murat.gezi_yorum.Entity.Constants;
 import com.example.murat.gezi_yorum.Entity.MediaFile;
 import com.example.murat.gezi_yorum.R;
 import com.example.murat.gezi_yorum.Utils.LocationDbOpenHelper;
@@ -118,6 +117,7 @@ abstract class MediaFragment extends Fragment {
                         String noteText = noteEdit.getText().toString();
                         helper.updateMediaNote(mediaFile, noteText);
                         note.setText(noteText);
+                        mediaFile.about_note = noteText;
                     }
                 });
                 builder.create();
@@ -128,7 +128,7 @@ abstract class MediaFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                builder.setTitle(getString(R.string.delete));
+                builder.setTitle(getString(R.string.delete_sure));
                 builder.setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
@@ -139,7 +139,9 @@ abstract class MediaFragment extends Fragment {
                     public void onClick(DialogInterface dialog, int id) {
                         helper.deleteMediaFile(mediaFile.id);
                         File file = new File(mediaFile.path);
-                        file.delete();
+                        if(file.exists()){
+                            file.delete();
+                        }
                     }
                 });
                 builder.create();

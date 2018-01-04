@@ -27,7 +27,7 @@
     <string name="note">Not</string>
     <string name="cancel">Vazgeç</string>
     <string name="save">Kaydet</string>
-    <string name="delete">Silmek istediğinize emin misiniz?</string>
+    <string name="delete_sure">Silmek istediğinize emin misiniz?</string>
     <string name="yes">Evet</string>
     <string name="share_options">Paylaşım Seçenekleri</string>
     <string name="only_me">Sadece Ben</string>
@@ -77,4 +77,10 @@
     <string name="invitations">Gezi Davetleri</string>
     <string name="friendship_requests">Arkadaşlık İstekleri</string>
     <string name="friendship_request">Arkadaşlık İsteği</string>
+    <string name="change_cover">Kapak fotoğrafını değiştir</string>
+    <string name="delete_trip">Sil</string>
+    <string name="last_added">En son eklenenler</string>
+    <string name="more">Daha Fazla</string>
+    <string name="share">Paylaş</string>
+    <string name="sharing">Gezi paylaşılıyor...</string>
 </resources>

@@ -20,13 +20,15 @@ public class User {
     public User(SharedPreferences preferences){
         token = preferences.getString(TOKEN,"");
         username = preferences.getString(USERNAME, "");
+        name_surname = preferences.getString(NAME_SURNAME,"");
         profilePicturePath = preferences.getString(PROFILEPHOTO, "");
     }
-    public static void setArguments(String token, String username, String profilePicturePath, SharedPreferences preferences){
+    public static void setArguments(String token, String username, String name_surname,String profilePicturePath, SharedPreferences preferences){
         SharedPreferences.Editor editor = preferences.edit();
         editor.putString(TOKEN, token);
         editor.putString(USERNAME, username);
         editor.putString(PROFILEPHOTO, profilePicturePath);
+        editor.putString(NAME_SURNAME, name_surname);
         editor.apply();
     }
 }

@@ -114,6 +114,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         parentActivity = (MainActivity) getActivity();
         helper = new LocationDbOpenHelper(getContext());
         preferences = parentActivity.getSharedPreferences(Constants.PREFNAME, Context.MODE_PRIVATE);
+        user = new User(preferences);
         activityHandler = new Handler();
 
         pause_continue = view.findViewById(R.id.pause_continue);
@@ -244,7 +245,6 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         }
         if(trip.isGroupTrip() && preferences.getBoolean(Constants.LIVE_TRACK, true)){
             timer = new Timer();
-            user = new User(preferences);
             usersMarkers = new HashMap<>();
             //Getting all of team members locations in 10 seconds
             try {
@@ -312,7 +312,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
     }
 
     public void startNewTrip(String name, String members, Long idOnServer, Boolean isCreator){
-        trip = helper.startNewTrip(name, members, idOnServer, isCreator);
+        trip = helper.startNewTrip(name, members, idOnServer, isCreator, user.username);
         parentActivity.showSnackbarMessage(getString(R.string.trip_created), Snackbar.LENGTH_LONG);
         SharedPreferences.Editor editor = preferences.edit();
         editor.putLong(Trip.TRIPID, trip.id);

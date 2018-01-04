@@ -17,18 +17,6 @@
             android:layout_height="wrap_content"
             android:inputType="text"
             />
-        <TextView
-            android:id="@+id/trip_explain_text"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/trip_explain"
-            android:visibility="gone"/>
-        <EditText
-            android:id="@+id/trip_explain"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="text"
-            android:visibility="gone"/>
         <CheckBox
             android:id="@+id/use_choosen_trip"
             android:layout_width="wrap_content"

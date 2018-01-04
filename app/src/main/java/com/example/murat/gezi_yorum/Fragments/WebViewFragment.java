@@ -1,16 +1,19 @@
 package com.example.murat.gezi_yorum.Fragments;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.DownloadListener;
+import android.webkit.ValueCallback;
+import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -29,6 +32,9 @@ public class WebViewFragment extends Fragment {
 
     private WebView webView;
     private ProgressBar progressBar;
+
+    private int REQUEST_SELECT_FILE = 1;
+    private ValueCallback<Uri[]> mUploadMessage;
     @SuppressLint("SetJavaScriptEnabled")
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
@@ -82,8 +88,29 @@ public class WebViewFragment extends Fragment {
                 progressBar.setVisibility(View.GONE);
             }
         });
+        webView.setWebChromeClient(new WebChromeClient(){
+            @Override
+            public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
+                Intent intent = fileChooserParams.createIntent();
+                try
+                {
+                    mUploadMessage = filePathCallback;
+                    startActivityForResult(intent, REQUEST_SELECT_FILE);
+                } catch (ActivityNotFoundException e)
+                {
+                    mUploadMessage = null;
+                    return false;
+                }
+                return true;
+
+            }
+
+        });
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
+        settings.setAllowFileAccess(true);
+        settings.setAllowContentAccess(true);
+        settings.setAllowFileAccessFromFileURLs(true);
         try {
             webView.loadUrl(url);
         }catch (Exception e){
@@ -108,5 +135,16 @@ public class WebViewFragment extends Fragment {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent intent)
+    {
+        if (requestCode == REQUEST_SELECT_FILE) {
+            if (mUploadMessage == null)
+                return;
+            mUploadMessage.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, intent));
+        }
+        mUploadMessage = null;
     }
 }

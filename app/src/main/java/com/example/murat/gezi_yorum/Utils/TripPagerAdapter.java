@@ -19,11 +19,16 @@ import java.util.HashMap;
 public class TripPagerAdapter extends FragmentPagerAdapter{
     private HashMap<Integer,TripInfo> fragments;
     private ArrayList<Long> trip_ids;
+    private int limit = -1;
 
     public TripPagerAdapter(FragmentManager fragmentManager, ArrayList<Long> trip_ids) {
         super(fragmentManager);
         this.trip_ids = trip_ids;
         fragments = new HashMap<>();
+    }
+
+    public void setLimit(int limit){
+        this.limit = limit;
     }
 
     // Returns total number of pages
@@ -40,6 +45,7 @@ public class TripPagerAdapter extends FragmentPagerAdapter{
         info.putLong(Trip.TRIPID, trip_ids.get(position));
         info.putInt("position",position);
         info.putBoolean("islast", getCount()-1 == position);
+        info.putInt("limit", limit);
         fragment.setArguments(info);
         fragments.put(position,fragment);
         return fragment;

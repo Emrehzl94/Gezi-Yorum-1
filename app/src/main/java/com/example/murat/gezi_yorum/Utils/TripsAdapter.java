@@ -8,7 +8,9 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+import com.example.murat.gezi_yorum.Entity.Constants;
 import com.example.murat.gezi_yorum.Entity.Trip;
+import com.example.murat.gezi_yorum.Entity.User;
 import com.example.murat.gezi_yorum.R;
 
 import java.util.ArrayList;
@@ -23,11 +25,11 @@ public class TripsAdapter extends ArrayAdapter {
     public TripsAdapter(@NonNull Context context, boolean is_imported) {
         super(context, android.R.layout.simple_spinner_dropdown_item);
         helper = new LocationDbOpenHelper(context);
-
+        User user = new User(context.getSharedPreferences(Constants.PREFNAME, Context.MODE_PRIVATE));
         if(is_imported){
-            this.trips = helper.getImportedTrips();
+            this.trips = helper.getImportedTrips(user.username);
         }else {
-            this.trips = helper.getTrips();
+            this.trips = helper.getTrips(user.username);
         }
 
     }

@@ -52,8 +52,6 @@ import java.util.List;
 public class StartTripFragment extends Fragment{
 
     private EditText trip_name_edit;
-    private EditText trip_explain_edit;
-    private TextView trip_explain_text;
     private Spinner friends;
     private ArrayList<String> friendsList;
     private ArrayList<String> selectedFriends;
@@ -77,18 +75,19 @@ public class StartTripFragment extends Fragment{
         View view = inflater.inflate(R.layout.start_trip_fragment, container, false);
         handler = new Handler();
         trip_name_edit = view.findViewById(R.id.trip_name);
-        trip_explain_edit = view.findViewById(R.id.trip_explain);
-        trip_explain_text = view.findViewById(R.id.trip_explain_text);
 
         friends = view.findViewById(R.id.friends_list);
         selecteds = view.findViewById(R.id.selected_friends);
         choose_path = view.findViewById(R.id.choose_path);
 
+        SharedPreferences preferences = getActivity().getSharedPreferences(Constants.PREFNAME ,Context.MODE_PRIVATE);
+        user = new User(preferences);
+
         selectedFriends = new ArrayList<>();
 
         use_selected_trip = view.findViewById(R.id.use_choosen_trip);
         LocationDbOpenHelper helper = new LocationDbOpenHelper(getContext());
-        importedTrips = helper.getImportedTrips();
+        importedTrips = helper.getImportedTrips(user.username);
         if(importedTrips.size() != 0){
             List<Spanned> texts = new ArrayList<>();
             for (Trip trip : importedTrips){
@@ -114,9 +113,6 @@ public class StartTripFragment extends Fragment{
             use_selected_trip.setVisibility(View.GONE);
         }
 
-        SharedPreferences preferences = getActivity().getSharedPreferences(Constants.PREFNAME ,Context.MODE_PRIVATE);
-        user = new User(preferences);
-
         ConnectivityManager cm = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
         //noinspection ConstantConditions
         if(cm.getActiveNetworkInfo() == null){
@@ -135,7 +131,6 @@ public class StartTripFragment extends Fragment{
                     @Override
                     public void run() {
                         String trip_name = trip_name_edit.getText().toString();
-                        String trip_explain = trip_explain_edit.getText().toString();
                         Long tripIdOnserver = -1L;
 
                         boolean isPersonalTrip = true;
@@ -163,7 +158,7 @@ public class StartTripFragment extends Fragment{
                             try {
                                 trip_info.put("token",user.token);
                                 trip_info.put("tripAciklama", trip_name);
-                                trip_info.put("arkadaslaraAciklama", trip_explain);
+                                trip_info.put("arkadaslaraAciklama", trip_name);
                                 trip_info.put("usernames", members);
                             } catch (JSONException e) {
                                 e.printStackTrace();
@@ -270,8 +265,6 @@ public class StartTripFragment extends Fragment{
                         selectedFriends.add(friendsList.get(i));
                         ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item,selectedFriends);
                         selecteds.setAdapter(adapter);
-                        trip_explain_edit.setVisibility(View.VISIBLE);
-                        trip_explain_text.setVisibility(View.VISIBLE);
                     }
 
                     @Override
@@ -285,10 +278,6 @@ public class StartTripFragment extends Fragment{
                         selectedFriends.remove(i);
                         ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item,selectedFriends);
                         selecteds.setAdapter(adapter);
-                        if (selectedFriends.size() == 0){
-                            trip_explain_edit.setVisibility(View.GONE);
-                            trip_explain_text.setVisibility(View.GONE);
-                        }
                     }
                 });
                 getActivity().findViewById(R.id.add_friends).setVisibility(View.VISIBLE);

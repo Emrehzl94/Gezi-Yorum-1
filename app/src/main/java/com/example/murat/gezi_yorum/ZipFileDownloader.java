@@ -17,6 +17,7 @@ import android.widget.Toast;
 import com.example.murat.gezi_yorum.Entity.Constants;
 import com.example.murat.gezi_yorum.Entity.MediaFile;
 import com.example.murat.gezi_yorum.Entity.Path;
+import com.example.murat.gezi_yorum.Entity.User;
 import com.example.murat.gezi_yorum.Utils.LocationDbOpenHelper;
 
 import org.json.JSONArray;
@@ -48,6 +49,7 @@ public class ZipFileDownloader extends Service {
 
     NotificationManager manager;
     private Notification.Builder not;
+    private User user;
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -73,7 +75,7 @@ public class ZipFileDownloader extends Service {
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
-
+        user = new User(getSharedPreferences(Constants.PREFNAME, Context.MODE_PRIVATE));
         manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         not = new Notification.Builder(this).
                 setContentTitle(getText(R.string.app_name)).
@@ -126,7 +128,7 @@ public class ZipFileDownloader extends Service {
 
             ZipEntry tripMetaEntry = zipFile.getEntry(Constants.TRIP_META);
             JSONObject tripMeta = new JSONObject(entryToString(zipFile, tripMetaEntry));
-            long trip_id = helper.importTrip(tripMeta.getLong("startdate"), tripMeta.getLong("finishdate"), tripMeta.getString("name"));
+            long trip_id = helper.importTrip(tripMeta.getLong("startdate"), tripMeta.getLong("finishdate"), tripMeta.getString("name"), user.username);
 
             ZipEntry mediaMetaEntry = zipFile.getEntry(Constants.MEDIA_META);
             JSONArray mediaMeta = new JSONArray(entryToString(zipFile, mediaMetaEntry));

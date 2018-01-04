@@ -2,6 +2,7 @@ package com.example.murat.gezi_yorum.Fragments.TripControllers;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.StrictMode;
 import android.support.v4.app.Fragment;
@@ -51,6 +52,8 @@ public abstract class TripSummary extends Fragment {
     protected Handler handler;
     protected Path active_path;
     protected boolean preview_setted = false;
+
+    private Integer limit;
     /**
      * Seting up preview for media
      * @param view view element
@@ -96,10 +99,17 @@ public abstract class TripSummary extends Fragment {
 
         preview = view.findViewById(R.id.preview);
         handler = new Handler();
+        Bundle arguments = getArguments();
+        if(arguments != null) {
+            limit = getArguments().getInt("limit", -1);
+            if(limit != -1) {
+                limit = null;
+            }
+        }
         new Thread(new Runnable() {
             @Override
             public void run() {
-                mediaFiles = helper.getMediaFiles(trip.id,null,null);
+                mediaFiles = helper.getMediaFiles(trip.id,null, null, limit);
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
@@ -236,7 +246,7 @@ public abstract class TripSummary extends Fragment {
                                 updateAndAnimateMap(map, points, move);
                             }else {
                                 Path path = helper.getPath(path_id);
-                                ArrayList<MediaFile> media = helper.getMediaFiles(trip.id, null, null);
+                                ArrayList<MediaFile> media = helper.getMediaFiles(trip.id, null, null, null);
                                 addMarkersToMap(map, media, trip.isImported);
                                 updateAndAnimateMap(map, path.drawOnMap(map, path.getLocationsAsLatLng(), trip.isImported).getPoints(), move);
                             }

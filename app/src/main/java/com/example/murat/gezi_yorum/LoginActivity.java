@@ -26,6 +26,9 @@ import com.example.murat.gezi_yorum.Entity.Constants;
 import com.example.murat.gezi_yorum.Entity.User;
 import com.example.murat.gezi_yorum.Utils.URLRequestHandler;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
@@ -207,6 +210,18 @@ public class LoginActivity extends AppCompatActivity {
 
             String token = handler.getResponse();
 
+            handler = new URLRequestHandler(token, Constants.APP + "getUserInfoByToken");
+            if(!handler.getResponseMessage()){
+                return false;
+            }
+            String name_surname = "";
+            try {
+                JSONObject userInfo = new JSONObject(handler.getResponse());
+                name_surname = userInfo.getString("name") + " " + userInfo.getString("surname");
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
             CookieManager manager = CookieManager.getInstance();
             manager.setCookie(Constants.ROOT,   User.TOKEN+"="+token);
             manager.setCookie(Constants.ROOT,   Constants.APPLICATION+"=true");
@@ -223,8 +238,9 @@ public class LoginActivity extends AppCompatActivity {
                 fos.getChannel().transferFrom(rbc, 0, 5242880);
             } catch (IOException e) {
                 e.printStackTrace();
+                return false;
             }
-            User.setArguments(token, uname, profilePicturePath, preferences);
+            User.setArguments(token, uname, name_surname, profilePicturePath, preferences);
             return true;
         }
 

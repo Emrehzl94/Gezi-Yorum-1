@@ -37,6 +37,7 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
     public static final String COLUMN_CREATOR = "iscreator";
     public static final String COLUMN_SHARED = "isshared";
     public static final String COLUMN_COVER_MEDIA_ID = "coverPhoto";
+    public static final String COLUMN_USERNAME = "username";
 
     public static final String TABLE_PATHS = "Paths";
 
@@ -84,7 +85,8 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
                  COLUMN_IDONSERVER +" INTEGER not null," +
                  COLUMN_CREATOR + " INTEGER not null," +
                  COLUMN_SHARED+" text default 'false'," +
-                 COLUMN_COVER_MEDIA_ID + " int default -1)";
+                 COLUMN_COVER_MEDIA_ID + " int default -1," +
+                 COLUMN_USERNAME+" text not null)";
         String pathTableCreateQuery = "CREATE TABLE " + TABLE_PATHS +
                 "("+COLUMN_ID+" integer PRIMARY KEY AUTOINCREMENT," +
                 COLUMN_STARTDATE +" INTEGER not null," +
@@ -121,7 +123,7 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
      * Inserts new trip to database created by user
      * @return trip_id
      */
-    public Trip startNewTrip(String name, String members, Long idOnServer, Boolean isCreator){
+    public Trip startNewTrip(String name, String members, Long idOnServer, Boolean isCreator, String username){
         waitForLock();
         ContentValues values = new ContentValues();
         values.put(COLUMN_STARTDATE,System.currentTimeMillis());
@@ -131,6 +133,7 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
         values.put(COLUMN_MEMBERS, members);
         values.put(COLUMN_IDONSERVER, idOnServer);
         values.put(COLUMN_CREATOR, isCreator.toString());
+        values.put(COLUMN_USERNAME, username);
         SQLiteDatabase database = getWritableDatabase();
         long id = database.insert(TABLE_TRIPS,null ,values);
         database.close();
@@ -142,7 +145,7 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
      * @return trip_id
      */
     //TODO: Add new ArrayList<Long> user_ids to this trip
-    public long importTrip(long startdate, long finishdate, String name){
+    public long importTrip(long startdate, long finishdate, String name, String username){
         waitForLock();
         ContentValues values = new ContentValues();
         values.put(COLUMN_STARTDATE,startdate);
@@ -151,6 +154,7 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
         values.put(COLUMN_ISIMPORTED, 1);
         values.put(COLUMN_IDONSERVER, -1);
         values.put(COLUMN_CREATOR, new Boolean(false).toString());
+        values.put(COLUMN_USERNAME, username);
         SQLiteDatabase database = getWritableDatabase();
         Long trip_id = database.insert(TABLE_TRIPS,null ,values);
         releaseLock();
@@ -184,6 +188,18 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
         values.put(COLUMN_FINISHDATE,System.currentTimeMillis());
         SQLiteDatabase database = getWritableDatabase();
         database.update(TABLE_TRIPS, values, COLUMN_ID + "=" + trip_id, null);
+        releaseLock();
+    }
+
+    /**
+     * Removes trip entry from database
+     * @param trip_id trip_id
+     */
+    public void deleteTrip(Long trip_id){
+        waitForLock();
+        SQLiteDatabase db = getReadableDatabase();
+        String query = "DELETE FROM "+TABLE_TRIPS+" WHERE "+COLUMN_ID+"='"+trip_id+"'";
+        db.execSQL(query);
         releaseLock();
     }
 
@@ -251,6 +267,18 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
     }
 
     /**
+     * Removes trip entry from database
+     * @param path_id path_id
+     */
+    public void deletePath(Long path_id){
+        waitForLock();
+        SQLiteDatabase db = getReadableDatabase();
+        String query = "DELETE FROM "+TABLE_PATHS+" WHERE "+COLUMN_ID+"='"+path_id+"'";
+        db.execSQL(query);
+        releaseLock();
+    }
+
+    /**
      * Updates type of path
      * @param path path
      */
@@ -267,10 +295,11 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
      * Returns created trip_ids from user
      * @return trip_ids created from user
      */
-    public ArrayList<Long> getTripsIDsForTimeLine(Boolean isImported){
+    public ArrayList<Long> getTripsIDsForTimeLine(Boolean isImported, String username){
         waitForLock();
         String query = "SELECT "+COLUMN_ID+" FROM "+TABLE_TRIPS +" WHERE "+
-                COLUMN_FINISHDATE+"!="+Long.MAX_VALUE +" AND "+COLUMN_ISIMPORTED+"="+(isImported ? 1 : 0);
+                COLUMN_FINISHDATE+"!="+Long.MAX_VALUE +" AND "+COLUMN_ISIMPORTED+"="+(isImported ? 1 : 0) +
+                " AND " + COLUMN_USERNAME +" = '"+username+"'";
         SQLiteDatabase database = getReadableDatabase();
         Cursor cursor = database.rawQuery(query,null);
         cursor.moveToFirst();
@@ -289,10 +318,11 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
      * Returns created trip_ids from user
      * @return trip_ids created from user
      */
-    public ArrayList<Trip> getTrips(){
+    public ArrayList<Trip> getTrips(String username){
         waitForLock();
         String query = "SELECT * FROM "+TABLE_TRIPS +" WHERE "+
-                COLUMN_FINISHDATE+"!="+Long.MAX_VALUE +" AND "+COLUMN_ISIMPORTED+"=0";
+                COLUMN_FINISHDATE+"!="+Long.MAX_VALUE +" AND "+COLUMN_ISIMPORTED+"=0" +
+                " AND " + COLUMN_USERNAME + " = '"+username+"'";
         SQLiteDatabase database = getReadableDatabase();
         Cursor cursor = database.rawQuery(query,null);
         cursor.moveToFirst();
@@ -321,9 +351,10 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
      * Returns created trip_ids from user
      * @return trip_ids created from user
      */
-    public ArrayList<Trip> getImportedTrips(){
+    public ArrayList<Trip> getImportedTrips(String username){
         waitForLock();
-        String query = "SELECT * FROM "+TABLE_TRIPS +" WHERE "+COLUMN_ISIMPORTED+"=1";
+        String query = "SELECT * FROM "+TABLE_TRIPS +" WHERE "+COLUMN_ISIMPORTED+"=1" +
+                " AND " + COLUMN_USERNAME + " = '"+username+"'";
         SQLiteDatabase database = getReadableDatabase();
         Cursor cursor = database.rawQuery(query,null);
         cursor.moveToFirst();
@@ -457,7 +488,7 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
      * @param additionalQuery additional SQL query
      * @return mediaFiles
      */
-    public ArrayList<MediaFile> getMediaFiles(long trip_id, @Nullable String type ,@Nullable String additionalQuery) {
+    public ArrayList<MediaFile> getMediaFiles(long trip_id, @Nullable String type ,@Nullable String additionalQuery, Integer limit) {
         waitForLock();
         SQLiteDatabase db = getReadableDatabase();
         String query = "SELECT * FROM "+TABLE_MEDIA+" WHERE "+COLUMN_TRIPID+"='"+trip_id+"'";
@@ -468,6 +499,9 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
             query += additionalQuery;
         }
         query += " ORDER BY "+ COLUMN_DATE + " DESC, "+COLUMN_LATITUDE +","+COLUMN_LONGTITUDE;
+        if(limit != null){
+            query += " LIMIT "+ limit;
+        }
         Cursor cursor = db.rawQuery(query, null);
         cursor.moveToFirst();
         ArrayList<MediaFile> media = new ArrayList<>();
@@ -550,7 +584,7 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
         values.put(COLUMN_SHARE_OPTION,option);
         SQLiteDatabase database = getWritableDatabase();
         database.update(TABLE_MEDIA, values, COLUMN_ID + "=" + mediaFile.id, null);
-        mediaFile.about_note = option;
+        mediaFile.share_option = option;
         releaseLock();
     }
 

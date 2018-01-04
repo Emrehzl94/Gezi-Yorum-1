@@ -182,7 +182,7 @@ public class ZipFileUploader extends Service {
             }
             // Media metadata preparing and media and media metadata writing to zip
             ArrayList<MediaFile> mediaFiles = helper.getMediaFiles(trip.id,null,
-                    " AND " + LocationDbOpenHelper.COLUMN_SHARE_OPTION +"!=\""+MediaFile.ONLY_ME+"\"");
+                    " AND " + LocationDbOpenHelper.COLUMN_SHARE_OPTION +"!=\""+MediaFile.ONLY_ME+"\"", null);
             JSONArray mediaMetaData = new JSONArray();
             int fileCount = 0;
             for (MediaFile file: mediaFiles){

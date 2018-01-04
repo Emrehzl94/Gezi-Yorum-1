@@ -34,7 +34,7 @@
     <string name="note">Note</string>
     <string name="cancel">Cancel</string>
     <string name="save">Save</string>
-    <string name="delete">Are you sure to delete?</string>
+    <string name="delete_sure">Are you sure to delete?</string>
     <string name="yes">Yes</string>
     <string name="share_options">Share Options</string>
     <string name="eveybody">Everybody</string>
@@ -82,4 +82,10 @@
     <string name="invitations">Trip Invitations</string>
     <string name="friendship_requests">Friendship Requests</string>
     <string name="friendship_request">Friendship Request</string>
+    <string name="change_cover">Change cover photo</string>
+    <string name="delete_trip">Delete</string>
+    <string name="last_added">Last added media</string>
+    <string name="more">More</string>
+    <string name="share">Share</string>
+    <string name="sharing">Trip sharing...</string>
 </resources>
