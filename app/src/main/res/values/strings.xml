@@ -109,8 +109,13 @@
     <string name="change_profile_photo">Change profile photo</string>
     <string name="select">Select a photo</string>
     <string name="pp_success">Profile photo changed successfuly.</string>
-    <string name="update_successful">Information updated succesfully.</string>
+    <string name="update_successful">Information updated successfully.</string>
     <string name="cannot_empty">cannot empty.</string>
     <string name="username_wrong">Username can contain only English characters.</string>
     <string name="username_empty">Username cannot be empty.</string>
+    <string name="not_suitable_for_share">This trip is not suitable for share. There is no location data.</string>
+    <string name="trips_info">See your trips as list. After that watch on timeline.</string>
+    <string name="timeline_info">See your trips on map with media markers and path.</string>
+    <string name="downloads_info">See your downloaded trips on map like timeline.</string>
+    <string name="trip_info">Start a new trip or watch started one.</string>
 </resources>

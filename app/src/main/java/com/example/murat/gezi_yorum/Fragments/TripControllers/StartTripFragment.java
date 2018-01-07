@@ -98,6 +98,7 @@ public class StartTripFragment extends Fragment{
             }).start();
             return view;
         }
+        getActivity().setTitle(R.string.title_activity_start_trip);
         trip_name_edit = view.findViewById(R.id.trip_name);
 
         friends = view.findViewById(R.id.friends_list);

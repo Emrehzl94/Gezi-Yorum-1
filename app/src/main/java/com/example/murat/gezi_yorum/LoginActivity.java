@@ -63,6 +63,8 @@ public class LoginActivity extends AppCompatActivity {
 
             mChannel = new NotificationChannel(Constants.CH2, name, NotificationManager.IMPORTANCE_DEFAULT);
             mChannel.enableVibration(false);
+            mChannel.enableLights(false);
+            mChannel.setSound(null, null);
             manager.createNotificationChannel(mChannel);
 
         }

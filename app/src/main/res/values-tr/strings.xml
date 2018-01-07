@@ -108,4 +108,9 @@
     <string name="cannot_empty">boş olamaz.</string>
     <string name="username_wrong">Kullanıcı adı Tükçe karakter içermemelidir.</string>
     <string name="username_empty">Kullanıcı adı boş olamaz.</string>
+    <string name="not_suitable_for_share">Bu gezi paylaşım için uygun değil. Hiç konum yok.</string>
+    <string name="trips_info">Gezilerinizi liste halinde görün. Daha sonra zaman çizelgesinde izleyin.</string>
+    <string name="timeline_info">Gezilerinizi harita üzerinde medya işaretçileri ve yol çizimi ile birlikte görün.</string>
+    <string name="downloads_info">İndirdiğiniz gezileri harita üzerinde zaman çizelgesi gibi görün.</string>
+    <string name="trip_info">Yeni bir gezi başlatın ya da başlattığınız geziyi izleyin.</string>
 </resources>

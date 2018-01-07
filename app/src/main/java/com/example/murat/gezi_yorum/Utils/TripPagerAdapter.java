@@ -4,6 +4,8 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.view.PagerAdapter;
 
 import com.example.murat.gezi_yorum.Entity.Constants;
 import com.example.murat.gezi_yorum.Entity.Trip;
@@ -16,7 +18,7 @@ import java.util.HashMap;
  * Custom adapter for viewPager
  */
 
-public class TripPagerAdapter extends FragmentPagerAdapter{
+public class TripPagerAdapter extends FragmentStatePagerAdapter{
     private HashMap<Integer,TripInfo> fragments;
     private ArrayList<Long> trip_ids;
     private int limit = -1;
@@ -25,6 +27,11 @@ public class TripPagerAdapter extends FragmentPagerAdapter{
         super(fragmentManager);
         this.trip_ids = trip_ids;
         fragments = new HashMap<>();
+    }
+
+    public void setDataset(ArrayList<Long> trip_ids){
+        this.trip_ids = trip_ids;
+        notifyDataSetChanged();
     }
 
     public void setLimit(int limit){
@@ -57,4 +64,9 @@ public class TripPagerAdapter extends FragmentPagerAdapter{
         return "Page " + position;
     }
     public TripInfo getFragment(int position){return fragments.get(position);}
+
+    @Override
+    public int getItemPosition(Object object){
+        return PagerAdapter.POSITION_NONE;
+    }
 }

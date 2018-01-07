@@ -124,7 +124,9 @@ public class TripInfo extends TripSummary {
                         ArrayList<Long> paths = helper.getPathsIDs(trip.id);
                         for(Long path_id : paths ){
                             Path path = helper.getPath(path_id);
-                            path.getFile().delete();
+                            File pathfile = path.getFile();
+                            if(pathfile.exists())
+                                path.getFile().delete();
                             helper.deletePath(path_id);
                         }
                         ArrayList<MediaFile> mediaFiles = helper.getMediaFiles(trip.id, null, null, null);

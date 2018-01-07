@@ -65,6 +65,9 @@ public class Path {
     public long getPath_id() {
         return path_id;
     }
+    public int getLocationsSize(){
+        return locations.size();
+    }
     private void create(){
         try {
             if(file.createNewFile()) {

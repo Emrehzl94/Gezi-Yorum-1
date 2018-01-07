@@ -112,8 +112,6 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
             nothing.setVisibility(View.VISIBLE);
             behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
             currentPosition = 0;
-        }else {
-            behavior.setState(BottomSheetBehavior.STATE_DRAGGING);
         }
         if(currentPosition == null){
             currentPosition = trip_ids.size() - 1;
@@ -122,6 +120,10 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
         }
         if(pagerAdapter == null)
             pagerAdapter = new TripPagerAdapter(getChildFragmentManager(), trip_ids);
+        else {
+            if(pagerAdapter.getCount() != trip_ids.size())
+                 pagerAdapter.setDataset(trip_ids);
+        }
         viewPager.setAdapter(pagerAdapter);
         viewPager.setCurrentItem(currentPosition);
     }

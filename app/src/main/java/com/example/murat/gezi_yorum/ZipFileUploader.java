@@ -10,6 +10,7 @@ import android.location.Geocoder;
 import android.net.ConnectivityManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
@@ -52,6 +53,9 @@ public class ZipFileUploader extends Service {
 
     NotificationManager manager;
     private Notification.Builder not;
+
+    private Boolean isValidToShare = false;
+    private Handler handler;
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -88,11 +92,23 @@ public class ZipFileUploader extends Service {
         //noinspection ConstantConditions
         Long trip_id = extras.getLong(Trip.TRIPID);
         trip = helper.getTrip(trip_id);
+        handler = new Handler();
         new Thread(new Runnable() {
             @Override
             public void run() {
                 create();
-                upload();
+                if(isValidToShare) {
+                    upload();
+                }else {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getApplicationContext(),
+                                    R.string.not_suitable_for_share, Toast.LENGTH_LONG).show();
+                        }
+                    });
+                    stopSelf();
+                }
             }
         }).start();
 
@@ -117,9 +133,6 @@ public class ZipFileUploader extends Service {
                 multipart.addFormField("isFirstFileUpload", trip.isCreator.toString());
             }
             List<String> response_messages = multipart.finish();
-            for(String response_message : response_messages){
-                Log.w("Respons", "upload: " + response_message);
-            }
             helper.tripIsShared(trip.id);
             message = "Dosyalar başarıyla yüklendi.";
         } catch (Exception e) {
@@ -133,8 +146,8 @@ public class ZipFileUploader extends Service {
                 builder.setChannelId(Constants.CH1);
             }
             manager.notify(0, builder.build());
-            stopSelf();
             zipFile.delete();
+            stopSelf();
         }
     }
     private void create(){
@@ -165,21 +178,25 @@ public class ZipFileUploader extends Service {
                 JSONArray pathMetaData = new JSONArray();
                 for (Long pathId : pathIDs) {
                     Path path = helper.getPath(pathId);
-                    File pathFile = path.getFile();
+                    if(path.getLocationsSize()>1) {
+                        isValidToShare = true;
+                        File pathFile = path.getFile();
 
-                    ZipEntry pathEntry = new ZipEntry("Paths/" + pathFile.getName());
-                    zipOutputStream.putNextEntry(pathEntry);
-                    RandomAccessFile randomAccessFile = new RandomAccessFile(pathFile, "r");
-                    byte[] bytes = new byte[(int) randomAccessFile.length()];
-                    randomAccessFile.readFully(bytes);
-                    zipOutputStream.write(bytes);
+                        ZipEntry pathEntry = new ZipEntry("Paths/" + pathFile.getName());
+                        zipOutputStream.putNextEntry(pathEntry);
+                        RandomAccessFile randomAccessFile = new RandomAccessFile(pathFile, "r");
+                        byte[] bytes = new byte[(int) randomAccessFile.length()];
+                        randomAccessFile.readFully(bytes);
+                        zipOutputStream.write(bytes);
 
-                    pathMetaData.put(path.toJSONObject(geocoder));
+                        pathMetaData.put(path.toJSONObject(geocoder));
+                    }
                 }
                 ZipEntry pathMetaDataEntry = new ZipEntry(Constants.PATH_META);
                 zipOutputStream.putNextEntry(pathMetaDataEntry);
                 zipOutputStream.write(pathMetaData.toString().getBytes());
             }
+            if(!isValidToShare) return;
             // Media metadata preparing and media and media metadata writing to zip
             ArrayList<MediaFile> mediaFiles = helper.getMediaFiles(trip.id,null,
                     " AND " + LocationDbOpenHelper.COLUMN_SHARE_OPTION +"!=\""+MediaFile.ONLY_ME+"\"", null);

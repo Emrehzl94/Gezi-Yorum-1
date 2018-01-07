@@ -1,5 +1,6 @@
 package com.example.murat.gezi_yorum.Fragments.TripControllers;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -130,7 +131,9 @@ public abstract class TripSummary extends Fragment {
     }
 
     protected void setUpPreview(){
-        preview.setAdapter(new MediaGridViewAdapter(getActivity(),mediaFiles));
+        Activity activity = getActivity();
+        if(activity != null)
+            preview.setAdapter(new MediaGridViewAdapter(getActivity(),mediaFiles));
     }
 
     /**

@@ -11,22 +11,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
-            <Button android:layout_height="wrap_content"
-                android:id="@+id/nav_profile"
-                android:layout_width="match_parent"
-                android:background="@color/colorLowAlpha"
-                android:drawableTop="@drawable/ic_action_avatar"
-                android:layout_margin="5dp"
-                android:text="@string/profile"
-                />
-            <Button
-                android:id="@+id/nav_home"
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/colorLowAlpha"
-                android:drawableTop="@drawable/ic_action_news"
-                android:layout_margin="5dp"
-                android:text="@string/news_feed"/>
+                android:text="@string/trips_info"
+                android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium"
+                android:textAlignment="center"/>
             <Button
                 android:id="@+id/nav_trips"
                 android:layout_height="wrap_content"
@@ -35,6 +25,13 @@
                 android:drawableTop="@drawable/ic_menu_slideshow"
                 android:layout_margin="5dp"
                 android:text="@string/trips"
+                />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/timeline_info"
+                android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium"
+                android:textAlignment="center"
                 />
             <Button
                 android:id="@+id/nav_timeline"
@@ -45,6 +42,12 @@
                 android:layout_margin="5dp"
                 android:text="@string/timeline"
                 />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/downloads_info"
+                android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium"
+                android:textAlignment="center"/>
             <Button
                 android:id="@+id/nav_downloads"
                 android:layout_width="match_parent"
@@ -53,15 +56,12 @@
                 android:drawableTop="@drawable/ic_action_download"
                 android:layout_margin="5dp"
                 android:text="@string/downloads"/>
-            <Button
-                android:id="@+id/nav_search"
-                android:layout_height="wrap_content"
+            <TextView
                 android:layout_width="match_parent"
-                android:background="@color/colorLowAlpha"
-                android:drawableTop="@drawable/ic_action_search"
-                android:layout_margin="5dp"
-                android:text="@string/search"
-                />
+                android:layout_height="wrap_content"
+                android:text="@string/trip_info"
+                android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium"
+                android:textAlignment="center"/>
             <Button
                 android:id="@+id/nav_trip"
                 android:layout_width="match_parent"
@@ -70,22 +70,6 @@
                 android:drawableTop="@drawable/ic_action_trip"
                 android:layout_margin="5dp"
                 android:text="@string/trip"/>
-            <Button
-                android:id="@+id/nav_settings"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@color/colorLowAlpha"
-                android:drawableTop="@drawable/ic_menu_manage"
-                android:layout_margin="5dp"
-                android:text="@string/action_settings"/>
-            <Button
-                android:id="@+id/nav_edit_profile"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@color/colorLowAlpha"
-                android:drawableTop="@drawable/ic_action_edit_profile"
-                android:layout_margin="5dp"
-                android:text="@string/edit_profile"/>
         </LinearLayout>
     </ScrollView>
 
