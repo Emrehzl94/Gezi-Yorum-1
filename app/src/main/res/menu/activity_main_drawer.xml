@@ -35,6 +35,10 @@
             android:icon="@drawable/ic_menu_manage"
             android:title="@string/action_settings" />
         <item
+            android:id="@+id/nav_edit_profile"
+            android:icon="@drawable/ic_action_edit_profile"
+            android:title="@string/edit_profile" />
+        <item
             android:id="@+id/nav_log_out"
             android:icon="@android:drawable/ic_lock_power_off"
             android:title="@string/logout"/>

@@ -115,6 +115,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         helper = new LocationDbOpenHelper(getContext());
         preferences = parentActivity.getSharedPreferences(Constants.PREFNAME, Context.MODE_PRIVATE);
         user = new User(preferences);
+        preferences = parentActivity.getSharedPreferences(Constants.PREFNAME + user.username, Context.MODE_PRIVATE);
         activityHandler = new Handler();
 
         pause_continue = view.findViewById(R.id.pause_continue);
@@ -451,7 +452,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
      * starts new photo intent for taking photo
      */
     public void startNewPhotoIntent() {
-        if(!checkExternalStoragePermission(EXTERNAL_STORAGE_CAMERA_PERMISSION)
+        if(checkServiceEnabled() || !checkExternalStoragePermission(EXTERNAL_STORAGE_CAMERA_PERMISSION)
                 || !checkSoundRecordPermission(MIC_CAMERA_PERMISSION)
                 || !checkCameraPermission(PHOTO_CAMERA_PERMISSION)) return;
         String outputDir = getOutputMediaFileDir(MediaFile.PHOTO);
@@ -468,7 +469,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
      * Starts new photo intent for video
      */
     public void startNewVideoIntent() {
-        if(!checkExternalStoragePermission(EXTERNAL_STORAGE_VIDEO_PERMISSION)
+        if(checkServiceEnabled() || !checkExternalStoragePermission(EXTERNAL_STORAGE_VIDEO_PERMISSION)
                 || !checkSoundRecordPermission(MIC_VIDEO_PERMISSION)
                 || !checkCameraPermission(VIDEO_CAMERA_PERMISSION)) return;
         String outputDir = getOutputMediaFileDir(MediaFile.VIDEO);
@@ -484,7 +485,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
      * starts activity RecordAudio
      */
     public void startNewAudioIntent() {
-        if(!checkExternalStoragePermission(EXTERNAL_STORAGE_SOUNDRECORD_PERMISSION) || !checkSoundRecordPermission(SOUNDRECORD_PERMISSION)) return;
+        if(checkServiceEnabled() || !checkExternalStoragePermission(EXTERNAL_STORAGE_SOUNDRECORD_PERMISSION) || !checkSoundRecordPermission(SOUNDRECORD_PERMISSION)) return;
         int color = Color.CYAN;
         String outputDir = getOutputMediaFileDir(MediaFile.SOUNDRECORD);
         outputFile = outputDir + File.separator + System.currentTimeMillis()
@@ -494,6 +495,14 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
                 .setColor(color)
                 .setRequestCode(REQUEST_SOUND_RECORD)
                 .recordFromFragment();
+    }
+
+    public Boolean checkServiceEnabled(){
+        if(preferences.getString(Trip.RECORDSTATE, Trip.PASSIVE).equals(Trip.ACTIVE)){
+            return false;
+        }
+        parentActivity.showSnackbarMessage(getString(R.string.cannot_save_media), Snackbar.LENGTH_LONG);
+        return true;
     }
 
     /**
@@ -562,70 +571,70 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         switch (requestCode){
             case EXTERNAL_STORAGE_CAMERA_PERMISSION:
                 if(grantResults[0] != PackageManager.PERMISSION_GRANTED){
-                    parentActivity.showSnackbarMessage("Depolama izni olmadan fotoğraf kaydedilemez", Snackbar.LENGTH_LONG);
+                    parentActivity.showSnackbarMessage(getString(R.string.warn_storage), Snackbar.LENGTH_LONG);
                 }else {
                     startNewPhotoIntent();
                 }
                 break;
             case EXTERNAL_STORAGE_VIDEO_PERMISSION:
                 if(grantResults[0] != PackageManager.PERMISSION_GRANTED){
-                    parentActivity.showSnackbarMessage("Depolama izni olmadan video kaydedilemez", Snackbar.LENGTH_LONG);
+                    parentActivity.showSnackbarMessage(getString(R.string.warn_storage), Snackbar.LENGTH_LONG);
                 }else {
                     startNewVideoIntent();
                 }
                 break;
             case EXTERNAL_STORAGE_SOUNDRECORD_PERMISSION:
                 if(grantResults[0] != PackageManager.PERMISSION_GRANTED){
-                    parentActivity.showSnackbarMessage("Depolama izni olmadan ses kaydedilemez.", Snackbar.LENGTH_LONG);
+                    parentActivity.showSnackbarMessage(getString(R.string.warn_storage), Snackbar.LENGTH_LONG);
                 }else {
                     startNewAudioIntent();
                 }
                 break;
             case SOUNDRECORD_PERMISSION:
                 if(grantResults[0] != PackageManager.PERMISSION_GRANTED){
-                    parentActivity.showSnackbarMessage("Ses kayıt izni olmadan ses kaydı yapılamaz.", Snackbar.LENGTH_LONG);
+                    parentActivity.showSnackbarMessage(getString(R.string.warn_sound_record), Snackbar.LENGTH_LONG);
                 }else {
                     startNewAudioIntent();
                 }
                 break;
             case MIC_CAMERA_PERMISSION:
                 if(grantResults[0] != PackageManager.PERMISSION_GRANTED){
-                    parentActivity.showSnackbarMessage("Ses kayıt izni olmadan ses kaydı yapılamaz.", Snackbar.LENGTH_LONG);
+                    parentActivity.showSnackbarMessage(getString(R.string.warn_sound_record), Snackbar.LENGTH_LONG);
                 }else {
                     startNewPhotoIntent();
                 }
                 break;
             case MIC_VIDEO_PERMISSION:
                 if(grantResults[0] != PackageManager.PERMISSION_GRANTED){
-                    parentActivity.showSnackbarMessage("Ses kayıt izni olmadan ses kaydı yapılamaz.", Snackbar.LENGTH_LONG);
+                    parentActivity.showSnackbarMessage(getString(R.string.warn_sound_record), Snackbar.LENGTH_LONG);
                 }else {
                     startNewVideoIntent();
                 }
                 break;
             case PHOTO_CAMERA_PERMISSION:
                 if(grantResults[0] != PackageManager.PERMISSION_GRANTED){
-                    parentActivity.showSnackbarMessage("Kamera izni olmadan fotoğraf çekilemez.", Snackbar.LENGTH_LONG);
+                    parentActivity.showSnackbarMessage(getString(R.string.warn_camera), Snackbar.LENGTH_LONG);
                 }else {
                     startNewPhotoIntent();
                 }
                 break;
             case VIDEO_CAMERA_PERMISSION:
                 if(grantResults[0] != PackageManager.PERMISSION_GRANTED){
-                    parentActivity.showSnackbarMessage("Kamera izni olmadan video kaydedilemez.", Snackbar.LENGTH_LONG);
+                    parentActivity.showSnackbarMessage(getString(R.string.warn_camera), Snackbar.LENGTH_LONG);
                 }else {
                     startNewVideoIntent();
                 }
                 break;
             case LOCATION_PERMISSION_REQUEST:
                 if(grantResults[0] != PackageManager.PERMISSION_GRANTED){
-                    parentActivity.showSnackbarMessage("Konum izni olmadan konum kaydı yapılamaz", Snackbar.LENGTH_LONG);
+                    parentActivity.showSnackbarMessage(getString(R.string.warn_location), Snackbar.LENGTH_LONG);
                 }else {
                     startPathRecording();
                 }
                 break;
             case LOCATION_PERMISSION_REQUEST_ON_FAIL:
                 if(grantResults[0] != PackageManager.PERMISSION_GRANTED){
-                    parentActivity.showSnackbarMessage("Konum izni olmadan konum kaydı yapılamaz.", Snackbar.LENGTH_LONG);
+                    parentActivity.showSnackbarMessage(getString(R.string.warn_location), Snackbar.LENGTH_LONG);
                 }else {
                     Intent intent = new Intent(getContext(), LocationSaveService.class);
                     intent.putExtra(Path.PATH_ID,path_id);

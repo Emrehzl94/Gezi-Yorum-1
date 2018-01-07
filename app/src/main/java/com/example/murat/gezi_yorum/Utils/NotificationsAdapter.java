@@ -53,6 +53,7 @@ public class NotificationsAdapter extends ArrayAdapter {
         this.notifications = notifications;
         preferences = getContext().getSharedPreferences(Constants.PREFNAME, Context.MODE_PRIVATE);
         user = new User(preferences);
+        preferences = getContext().getSharedPreferences(Constants.PREFNAME + user.username, Context.MODE_PRIVATE);
         this.type = type;
         handler = new Handler();
         this.parentFragment = parentFragment;

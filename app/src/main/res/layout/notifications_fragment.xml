@@ -17,7 +17,7 @@
              android:layout_height="wrap_content"
              android:text="@string/invitations"/>
          <ListView
-             android:id="@+id/trip_invite_notifications"
+             android:id="@+id/notifications"
              android:layout_width="match_parent"
              android:layout_height="wrap_content"/>
          <TextView

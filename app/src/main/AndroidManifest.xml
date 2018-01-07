@@ -53,7 +53,8 @@
             android:name="com.afollestad.materialcamera.CaptureActivity2"
             android:theme="@style/MaterialCamera.CaptureActivity" />
         <activity android:name=".SettingsActivity" />
-        <activity android:name=".GalleryActivity"></activity>
+        <activity android:name=".GalleryActivity" />
+        <activity android:name=".EditProfile"></activity>
     </application>
 
 </manifest>

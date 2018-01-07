@@ -12,6 +12,7 @@ import android.widget.Switch;
 
 import com.example.murat.gezi_yorum.Entity.Constants;
 import com.example.murat.gezi_yorum.Entity.MediaFile;
+import com.example.murat.gezi_yorum.Entity.User;
 
 public class SettingsActivity extends AppCompatActivity {
     RadioGroup share_options_radio;
@@ -24,6 +25,8 @@ public class SettingsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_settings);
 
         preferences = getSharedPreferences(Constants.PREFNAME, Context.MODE_PRIVATE);
+        User user = new User(preferences);
+        preferences = getSharedPreferences(Constants.PREFNAME + user.username, Context.MODE_PRIVATE);
 
         share_options_radio = findViewById(R.id.share_options_radio);
         int selected = 0;

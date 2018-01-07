@@ -2,7 +2,7 @@
     <string name="app_name">Trip Comment</string>
 
     <!-- Strings related to login -->
-    <string name="prompt_email">Email</string>
+    <string name="email">Email</string>
     <string name="prompt_password">Password</string>
     <string name="action_sign_in">Sign in</string>
     <string name="error_invalid_email">This email address is invalid</string>
@@ -92,4 +92,25 @@
     <string name="friend_request_accepting">Friend request accepting.</string>
     <string name="friend_accepted">Friendship request accepted.</string>
     <string name="quit_sure">Are you sure want to quit?</string>
+    <string name="sevce_cannot_started">Save sevice cannot started. Location permission is not granted.</string>
+    <string name="service_started">Location save enabled.</string>
+    <string name="service_stopped">Save service stopped.</string>
+    <string name="service_open">Location track enabled.</string>
+    <string name="cannot_save_media">Location service not active. Cannot save media.</string>
+    <string name="warn_storage">Cannot save media unless storage permission.</string>
+    <string name="warn_sound_record">Cannot save voice without sound record permission.</string>
+    <string name="warn_camera">Cannot use camera.</string>
+    <string name="warn_location">Cannot save location without location permission.</string>
+    <string name="edit_profile">Edit Profile</string>
+    <string name="biography">Biography</string>
+    <string name="website">Website</string>
+    <string name="birthday">Birthday</string>
+    <string name="phone">Phone</string>
+    <string name="change_profile_photo">Change profile photo</string>
+    <string name="select">Select a photo</string>
+    <string name="pp_success">Profile photo changed successfuly.</string>
+    <string name="update_successful">Information updated succesfully.</string>
+    <string name="cannot_empty">cannot empty.</string>
+    <string name="username_wrong">Username can contain only English characters.</string>
+    <string name="username_empty">Username cannot be empty.</string>
 </resources>

@@ -8,7 +8,7 @@
     <string name="error_invalid_email">E-posta adresi geçersiz</string>
     <string name="error_invalid_password">Şifre çok kısa</string>
     <string name="navigation_drawer_close"/>
-    <string name="prompt_email">E-posta</string>
+    <string name="email">E-posta</string>
     <string name="prompt_password">Şifre</string>
     <string name="title_activity_main">Ana Sayfa</string>
     <string name="search">Ara</string>
@@ -87,4 +87,25 @@
     <string name="friend_request_accepting">Arkadaşlık isteği kabu ediliyor.</string>
     <string name="friend_accepted">Arkadaşlık isteği kabul edildi.</string>
     <string name="quit_sure">Çıkmak istediğinize emin misiniz?</string>
+    <string name="sevce_cannot_started">Kayıt başlatılamadı. Konum izinleri sağlanmamış.</string>
+    <string name="service_started">Kayıt başlatıldı.</string>
+    <string name="service_stopped">Kayıt durduruldu.</string>
+    <string name="service_open">Konum takibi açık.</string>
+    <string name="cannot_save_media">Konum takibi açık değil. Medya kaydedilemez.</string>
+    <string name="warn_storage">Depolama izni olmadan medya kaydedilemez.</string>
+    <string name="warn_sound_record">Ses kayıt izni olmadan ses kaydı yapılamaz.</string>
+    <string name="warn_camera">Kamera kullanılamaz.</string>
+    <string name="warn_location">Konum izni olmadan konum kaydı yapılamaz.</string>
+    <string name="edit_profile">Profili Düzenle</string>
+    <string name="biography">Biyografi</string>
+    <string name="website">Web sitesi</string>
+    <string name="birthday">Doğum Tarihi</string>
+    <string name="phone">Telefon</string>
+    <string name="change_profile_photo">Profil resmini değiştir</string>
+    <string name="select">Bir resim seçin</string>
+    <string name="pp_success">Profil resmi başarıyla değiştirildi.</string>
+    <string name="update_successful">Bilgiler başarıyla güncellendi.</string>
+    <string name="cannot_empty">boş olamaz.</string>
+    <string name="username_wrong">Kullanıcı adı Tükçe karakter içermemelidir.</string>
+    <string name="username_empty">Kullanıcı adı boş olamaz.</string>
 </resources>

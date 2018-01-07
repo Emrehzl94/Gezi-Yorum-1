@@ -61,7 +61,7 @@ public class LocationSaveService extends Service implements LocationListener {
 
         Notification.Builder not = new Notification.Builder(this).
                 setContentTitle(getText(R.string.app_name)).
-                setContentText("Konum takibi açık").
+                setContentText(getString(R.string.service_open)).
                 setSmallIcon(R.mipmap.ic_launcher).
                 setContentIntent(pendingIntent);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -75,11 +75,11 @@ public class LocationSaveService extends Service implements LocationListener {
         helper = new LocationDbOpenHelper(this);
         path = helper.getPath(path_id);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(this, "Service cannot started. Location permission is not granted.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, R.string.sevce_cannot_started, Toast.LENGTH_LONG).show();
             this.stopSelf();
         }else {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME, MIN_DISTANCE, this);
-            Toast.makeText(this, "Service started", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, R.string.service_started, Toast.LENGTH_LONG).show();
         }
 
         isTeamTrackEnabled = intent.getExtras().getBoolean(Constants.LIVE_TRACK, false);
@@ -144,7 +144,7 @@ public class LocationSaveService extends Service implements LocationListener {
         locationManager.removeUpdates(this);
         String type = path.calculateType();
         helper.updateTypeOfPath(path, type);
-        Toast.makeText(this,"Service stopped",Toast.LENGTH_LONG).show();
+        Toast.makeText(this,R.string.service_stopped,Toast.LENGTH_LONG).show();
         instance = null;
         if(timer != null){
             timer.cancel();

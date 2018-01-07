@@ -35,7 +35,7 @@ public class Notifications extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         getActivity().setTitle(getString(R.string.notification));
-        trip_invitation_notifications = view.findViewById(R.id.trip_invite_notifications);
+        trip_invitation_notifications = view.findViewById(R.id.notifications);
         friendship_requests = view.findViewById(R.id.friend_notifications);
         handler = new Handler();
         user = new User(getContext().getSharedPreferences(Constants.PREFNAME, Context.MODE_PRIVATE));

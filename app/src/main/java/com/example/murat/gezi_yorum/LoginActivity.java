@@ -214,10 +214,9 @@ public class LoginActivity extends AppCompatActivity {
             if(!handler.getResponseMessage()){
                 return false;
             }
-            String name_surname = "";
+            JSONObject userInfo = null;
             try {
-                JSONObject userInfo = new JSONObject(handler.getResponse());
-                name_surname = userInfo.getString("name") + " " + userInfo.getString("surname");
+                userInfo = new JSONObject(handler.getResponse());
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -240,7 +239,7 @@ public class LoginActivity extends AppCompatActivity {
                 e.printStackTrace();
                 return false;
             }
-            User.setArguments(token, uname, name_surname, profilePicturePath, preferences);
+            User.setArguments(token, uname, userInfo, profilePicturePath, preferences);
             return true;
         }
 

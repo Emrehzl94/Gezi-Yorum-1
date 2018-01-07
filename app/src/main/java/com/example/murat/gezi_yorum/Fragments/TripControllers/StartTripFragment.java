@@ -76,6 +76,8 @@ public class StartTripFragment extends Fragment{
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.start_trip_fragment, container, false);
         preferences = getActivity().getSharedPreferences(Constants.PREFNAME ,Context.MODE_PRIVATE);
+        user = new User(preferences);
+        preferences = getActivity().getSharedPreferences(Constants.PREFNAME + user.username ,Context.MODE_PRIVATE);
         handler = new Handler();
         if(preferences.getString(Trip.TRIPSTATE, Trip.ENDED).equals(Trip.STARTED)){
             new Thread(new Runnable() {
@@ -101,8 +103,6 @@ public class StartTripFragment extends Fragment{
         friends = view.findViewById(R.id.friends_list);
         selecteds = view.findViewById(R.id.selected_friends);
         choose_path = view.findViewById(R.id.choose_path);
-
-        user = new User(preferences);
 
         selectedFriends = new ArrayList<>();
 

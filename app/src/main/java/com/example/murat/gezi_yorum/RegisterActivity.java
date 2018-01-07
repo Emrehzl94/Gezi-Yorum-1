@@ -18,6 +18,9 @@ import com.example.murat.gezi_yorum.Utils.URLRequestHandler;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
+
 public class RegisterActivity extends AppCompatActivity {
     private EditText username_edit, pass1_edit, pass2_edit, email_edit, name_edit, surname_edit;
     @Override
@@ -43,9 +46,31 @@ public class RegisterActivity extends AppCompatActivity {
                 return;
             }
             String username = username_edit.getText().toString();
-            String email = email_edit.getText().toString();
             String name = name_edit.getText().toString();
             String surname = surname_edit.getText().toString();
+            String email = email_edit.getText().toString();
+            CharsetEncoder asciiEncoder = Charset.forName("US-ASCII").newEncoder();
+            if(!asciiEncoder.canEncode(username)){
+                username_edit.requestFocus();
+                username_edit.setError(getString(R.string.username_wrong));
+                return;
+            }else if(username.equals("")){
+                username_edit.requestFocus();
+                username_edit.setError(getString(R.string.username_empty));
+                return;
+            }else if(name.equals("")){
+                name_edit.requestFocus();
+                name_edit.setError(getString(R.string.name) + " " + getString(R.string.cannot_empty));
+                return;
+            }else if(surname.equals("")){
+                surname_edit.requestFocus();
+                surname_edit.setError(getString(R.string.surname) + " " + getString(R.string.cannot_empty));
+                return;
+            }else if(!User.validateEmail(email)) {
+                email_edit.requestFocus();
+                email_edit.setError(getString(R.string.error_invalid_email));
+                return;
+            }
 
             new UserRegister(username, pass1, email, name, surname).execute();
 

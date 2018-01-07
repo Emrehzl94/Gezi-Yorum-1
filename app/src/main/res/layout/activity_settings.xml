@@ -1,35 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <TableLayout
+    <TextView
+        android:gravity="center"
+        android:text="@string/default_share_options"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+    <RadioGroup
+        android:id="@+id/share_options_radio"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:orientation="vertical">
+        <RadioButton android:id="@+id/everybody"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/eveybody"
+            />
+        <RadioButton android:id="@+id/my_friends"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/only_my_friends"
+            />
+        <RadioButton android:id="@+id/only_me"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/only_me"
+            />
+    </RadioGroup>
+
+    <Switch
+        android:text="@string/enable_live_location"
+        android:id="@+id/live_track"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context="com.example.murat.gezi_yorum.SettingsActivity">
-        <TableRow>
-            <TextView
-                android:gravity="center"
-                android:text="@string/default_share_options"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
-
-            <include layout="@layout/share_options_radio_group"/>
-        </TableRow>
-
-        <TableRow>
-
-            <Switch
-                android:text="@string/enable_live_location"
-                android:id="@+id/live_track"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-
-
-        </TableRow>
-
-    </TableLayout>
+        android:layout_height="wrap_content"
+        android:layout_below="@id/share_options_radio"/>
     <Button
         android:id="@+id/save"
         android:layout_width="wrap_content"
