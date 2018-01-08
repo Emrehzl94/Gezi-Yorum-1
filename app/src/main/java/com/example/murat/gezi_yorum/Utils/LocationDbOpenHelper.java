@@ -144,7 +144,6 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
      * Inserts new trip to database created by user
      * @return trip_id
      */
-    //TODO: Add new ArrayList<Long> user_ids to this trip
     public long importTrip(long startdate, long finishdate, String name, String username){
         waitForLock();
         ContentValues values = new ContentValues();

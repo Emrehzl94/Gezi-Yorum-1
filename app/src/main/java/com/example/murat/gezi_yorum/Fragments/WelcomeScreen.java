@@ -28,6 +28,7 @@ public class WelcomeScreen extends Fragment {
                 ((MainActivity) getActivity()).itemSelected(view.getId());
             }
         };
+        getActivity().setTitle(R.string.home_screen);
         View view = inflater.inflate(R.layout.fragment_welcome_screen, container, false);
         ArrayList<View> buttons = view.getTouchables();
         for(View button : buttons){

@@ -118,4 +118,5 @@
     <string name="upload_successful">Gezi Paylaşıldı.</string>
     <string name="too_big_to_share">Bu gezi 100 MB\'den daha büyük. Paylaşılamıyor.</string>
     <string name="gps_not_enabled">GPS etkin değil. Lütfen etkinleştirin.</string>
+    <string name="home_screen">Başlangıç ekranı</string>
 </resources>

@@ -123,4 +123,5 @@
     <string name="upload_successful">Trip shared.</string>
     <string name="too_big_to_share">This trip is bigger than 100 MB. Cannot share.</string>
     <string name="gps_not_enabled">Your GPS not enabled. Please enable your GPS.</string>
+    <string name="home_screen">Home Screen</string>
 </resources>
