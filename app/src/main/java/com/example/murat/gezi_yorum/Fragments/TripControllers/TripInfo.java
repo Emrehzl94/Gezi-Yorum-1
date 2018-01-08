@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.media.ThumbnailUtils;
@@ -147,7 +148,7 @@ public class TripInfo extends TripSummary {
         });
         share_trip = view.findViewById(R.id.share_trip);
         if(trip.isShared){
-            share_trip.setBackgroundColor(Color.DKGRAY);
+            share_trip.setBackgroundTintList(ColorStateList.valueOf(Color.DKGRAY));
             share_trip.setText(R.string.shared_before);
         }else {
             share_trip.setOnClickListener(new View.OnClickListener() {

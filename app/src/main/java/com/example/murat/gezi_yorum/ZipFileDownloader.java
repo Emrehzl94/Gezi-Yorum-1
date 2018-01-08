@@ -80,7 +80,7 @@ public class ZipFileDownloader extends Service {
         not = new Notification.Builder(this).
                 setContentTitle(getText(R.string.app_name)).
                 setContentText("Dosya indiriliyor.").
-                setSmallIcon(R.mipmap.ic_launcher);
+                setSmallIcon(R.drawable.ic_stat_notification);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             not.setChannelId(Constants.CH1);
         }
@@ -105,10 +105,7 @@ public class ZipFileDownloader extends Service {
     }
     private void download(){
         try {
-            Scanner scanner = new Scanner(url.openStream());
-            String fileLink = scanner.next();
-            URL website = new URL(Constants.ROOT+fileLink);
-            ReadableByteChannel rbc = Channels.newChannel(website.openStream());
+            ReadableByteChannel rbc = Channels.newChannel(url.openStream());
             FileOutputStream fos = new FileOutputStream(getFilesDir()+"/trip.zip");
             fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
         } catch (IOException e) {
@@ -150,9 +147,18 @@ public class ZipFileDownloader extends Service {
                 helper.importPath(trip_id, pathInfo.getLong("start_date"), pathInfo.getLong("finish_date"),
                         filename ,pathInfo.getString("type"));
             }
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext(), getString(R.string.app_name));
+            builder.setSmallIcon(R.drawable.ic_stat_notification);
+            builder.setContentTitle(getString(R.string.successful_download));
+            builder.setChannelId(Constants.CH1);
+            manager.notify(0, builder.build());
 
         } catch (IOException|JSONException ex) {
             ex.printStackTrace();
+        }finally {
+            File zip = new File(getFilesDir()+"/trip.zip");
+            if(zip.exists())
+                zip.delete();
         }
     }
     private String entryToString(ZipFile file, ZipEntry entry){

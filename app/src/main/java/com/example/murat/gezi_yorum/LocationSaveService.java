@@ -62,7 +62,7 @@ public class LocationSaveService extends Service implements LocationListener {
         Notification.Builder not = new Notification.Builder(this).
                 setContentTitle(getText(R.string.app_name)).
                 setContentText(getString(R.string.service_open)).
-                setSmallIcon(R.mipmap.ic_launcher).
+                setSmallIcon(R.drawable.ic_stat_notification).
                 setContentIntent(pendingIntent);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             not.setChannelId(Constants.CH1);
@@ -158,7 +158,7 @@ public class LocationSaveService extends Service implements LocationListener {
 
     @Override
     public void onLocationChanged(Location location) {
-        if(location.getAccuracy()<40) {
+        if(location.getAccuracy()<4) {
             lastLocation = location;
             path.saveLocation(location);
         }

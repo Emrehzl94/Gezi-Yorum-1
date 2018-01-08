@@ -3,7 +3,9 @@ package com.example.murat.gezi_yorum.Fragments.TripControllers;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -46,12 +48,14 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -330,9 +334,10 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         editor.putString(Trip.TRIPSTATE, Trip.ENDED);
         editor.putLong(Constants.CHOSEN_TRIPID, -1);
         editor.apply();
+        parentActivity.onBackPressed();
     }
     public void startPathRecording(){
-        if(!checkLocationPermission(LOCATION_PERMISSION_REQUEST)) return;
+        if(!checkLocationPermission(LOCATION_PERMISSION_REQUEST) || !checkGPSEnabled()) return;
         long path_id = helper.startNewPath(trip.id, getContext());
         SharedPreferences.Editor editor = preferences.edit();
         editor.putLong(Path.PATH_ID,path_id);
@@ -352,7 +357,6 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         }
         pause_continue.setOnClickListener(pause);
         pause_continue.setImageResource(R.drawable.aar_ic_pause);
-        //addPathOnMap(map, path_id);
     }
     public void stopPathRecording(){
         Intent intent = new Intent(getContext(),LocationSaveService.class);
@@ -372,6 +376,28 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
             return false;
         }
         return true;
+    }
+
+    private boolean checkGPSEnabled(){
+        if(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
+            return true;
+        }
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle(getString(R.string.gps_not_enabled));
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+
+            }
+        });
+        builder.setPositiveButton(R.string.action_settings, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+            }
+        });
+        builder.create();
+        builder.show();
+        return false;
     }
 
     @Override
@@ -412,13 +438,22 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
      */
     @Override
     public void onLocationChanged(Location location) {
-        //if(location.getAccuracy()>4) return;
+        if(location.getAccuracy()>4) return;
         if(listener != null){
             listener.onLocationChanged(location);
             if(addedPolyLine != null && points != null){
                 points.add(new LatLng(location.getLatitude(),location.getLongitude()));
                 addedPolyLine.setPoints(points);
+                return;
             }
+            points = new ArrayList<>();
+            points.add(new LatLng(location.getLatitude(),location.getLongitude()));
+            PolylineOptions options = new PolylineOptions();
+            options.color(Color.RED);
+            options.width(15);
+            options.visible(true);
+            options.addAll(points);
+            addedPolyLine = map.addPolyline(options);
         }
     }
 

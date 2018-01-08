@@ -82,7 +82,7 @@
     <string name="last_added">En son eklenenler</string>
     <string name="more">Daha Fazla</string>
     <string name="share">Paylaş</string>
-    <string name="sharing">Gezi paylaşılıyor...</string>
+    <string name="sharing">Gezi paylaşılıyor…</string>
     <string name="trip_accepting">Gezi daveti kabul ediliyor.</string>
     <string name="friend_request_accepting">Arkadaşlık isteği kabu ediliyor.</string>
     <string name="friend_accepted">Arkadaşlık isteği kabul edildi.</string>
@@ -113,4 +113,9 @@
     <string name="timeline_info">Gezilerinizi harita üzerinde medya işaretçileri ve yol çizimi ile birlikte görün.</string>
     <string name="downloads_info">İndirdiğiniz gezileri harita üzerinde zaman çizelgesi gibi görün.</string>
     <string name="trip_info">Yeni bir gezi başlatın ya da başlattığınız geziyi izleyin.</string>
+    <string name="successful_download">Gezi başarıyla indirildi.</string>
+    <string name="uploading_trip">Gezi Gönderiliyor.</string>
+    <string name="upload_successful">Gezi Paylaşıldı.</string>
+    <string name="too_big_to_share">Bu gezi 100 MB\'den daha büyük. Paylaşılamıyor.</string>
+    <string name="gps_not_enabled">GPS etkin değil. Lütfen etkinleştirin.</string>
 </resources>

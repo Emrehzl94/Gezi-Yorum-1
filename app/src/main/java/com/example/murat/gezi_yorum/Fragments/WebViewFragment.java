@@ -9,6 +9,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.DownloadListener;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -55,12 +56,7 @@ public class WebViewFragment extends Fragment {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 String url = request.getUrl().toString();
-                if(url.startsWith(Constants.APP+"trip-download")) {
-                    Intent intent = new Intent(getContext(), ZipFileDownloader.class);
-                    intent.putExtra("url", url);
-                    getActivity().startService(intent);
-                    return true;
-                }else if(url.startsWith(Constants.ROOT)){
+                if(url.startsWith(Constants.ROOT)){
                     webView.loadUrl(url);
                 }else {
                     return super.shouldOverrideUrlLoading(view, request);
@@ -79,6 +75,14 @@ public class WebViewFragment extends Fragment {
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
                 progressBar.setVisibility(View.GONE);
+            }
+        });
+        webView.setDownloadListener(new DownloadListener() {
+            @Override
+            public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimeType, long contentLength) {
+                Intent intent = new Intent(getContext(), ZipFileDownloader.class);
+                intent.putExtra("url", url);
+                getActivity().startService(intent);
             }
         });
         WebSettings settings = webView.getSettings();

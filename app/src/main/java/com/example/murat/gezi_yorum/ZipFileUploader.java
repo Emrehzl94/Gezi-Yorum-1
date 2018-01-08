@@ -80,7 +80,7 @@ public class ZipFileUploader extends Service {
         not = new Notification.Builder(this).
                 setContentTitle(getText(R.string.app_name)).
                 setContentText("Dosyalar hazırlanıyor.").
-                setSmallIcon(R.mipmap.ic_launcher).
+                setSmallIcon(R.drawable.ic_stat_notification).
                 setProgress(100,0,false);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             not.setChannelId(Constants.CH2);
@@ -98,8 +98,20 @@ public class ZipFileUploader extends Service {
             public void run() {
                 create();
                 if(isValidToShare) {
+                    if(zipFile.length() > 1024*100){ // 100 MB
+                        not.setContentTitle(getString(R.string.too_big_to_share));
+                        manager.notify(notificationId,not.build());
+                        if(zipFile != null && zipFile.exists()){
+                            zipFile.delete();
+                        }
+                        stopSelf();
+                        return;
+                    }
                     upload();
                 }else {
+                    if(zipFile != null && zipFile.exists()){
+                        zipFile.delete();
+                    }
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
@@ -115,7 +127,7 @@ public class ZipFileUploader extends Service {
         return START_STICKY;
     }
     private void upload(){
-        not.setContentTitle("Dosya yükleniyor...");
+        not.setContentTitle(getString(R.string.uploading_trip));
         manager.notify(notificationId,not.build());
         String service = trip.isGroupTrip() ? "uploadGroupTripZip" : "uploadTripZip";
         String URL = Constants.APP + service;
@@ -134,13 +146,13 @@ public class ZipFileUploader extends Service {
             }
             List<String> response_messages = multipart.finish();
             helper.tripIsShared(trip.id);
-            message = "Dosyalar başarıyla yüklendi.";
+            message = getString(R.string.upload_successful);
         } catch (Exception e) {
             e.printStackTrace();
-            message = "Dosya yüklemesi sırasında hata meydana geldi..";
+            message = getString(R.string.error);
         }finally {
             NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext(), getString(R.string.app_name));
-            builder.setSmallIcon(R.mipmap.ic_launcher);
+            builder.setSmallIcon(R.drawable.ic_stat_notification);
             builder.setContentTitle(message);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 builder.setChannelId(Constants.CH1);

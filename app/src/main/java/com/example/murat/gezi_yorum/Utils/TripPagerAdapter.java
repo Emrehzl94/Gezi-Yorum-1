@@ -51,7 +51,7 @@ public class TripPagerAdapter extends FragmentStatePagerAdapter{
         Bundle info = new Bundle();
         info.putLong(Trip.TRIPID, trip_ids.get(position));
         info.putInt("position",position);
-        info.putBoolean("islast", getCount()-1 == position);
+        info.putBoolean("islast", (getCount()-1) == position);
         info.putInt("limit", limit);
         fragment.setArguments(info);
         fragments.put(position,fragment);

@@ -87,12 +87,12 @@
     <string name="last_added">Last added media</string>
     <string name="more">More</string>
     <string name="share">Share</string>
-    <string name="sharing">Trip sharing...</string>
+    <string name="sharing">Trip sharing…</string>
     <string name="trip_accepting">Trip invitation accepting.</string>
     <string name="friend_request_accepting">Friend request accepting.</string>
     <string name="friend_accepted">Friendship request accepted.</string>
     <string name="quit_sure">Are you sure want to quit?</string>
-    <string name="sevce_cannot_started">Save sevice cannot started. Location permission is not granted.</string>
+    <string name="sevce_cannot_started">Save service cannot started. Location permission is not granted.</string>
     <string name="service_started">Location save enabled.</string>
     <string name="service_stopped">Save service stopped.</string>
     <string name="service_open">Location track enabled.</string>
@@ -118,4 +118,9 @@
     <string name="timeline_info">See your trips on map with media markers and path.</string>
     <string name="downloads_info">See your downloaded trips on map like timeline.</string>
     <string name="trip_info">Start a new trip or watch started one.</string>
+    <string name="successful_download">Trip downloaded successfully.</string>
+    <string name="uploading_trip">Uploading Trip.</string>
+    <string name="upload_successful">Trip shared.</string>
+    <string name="too_big_to_share">This trip is bigger than 100 MB. Cannot share.</string>
+    <string name="gps_not_enabled">Your GPS not enabled. Please enable your GPS.</string>
 </resources>
