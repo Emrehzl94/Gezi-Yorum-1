@@ -77,21 +77,31 @@ public class Notifications extends Fragment {
             trip_invitation_notifications.setAdapter(
                     new NotificationsAdapter(getContext(), trip_invitation_notificationsList, NotificationsAdapter.TRIP, this)
             );
+        }else {
+            getView().findViewById(R.id.trip_not_text).setVisibility(View.GONE);
         }
         if(friendship_requestsList != null && friendship_requestsList.length() > 0) {
             friendship_requests.setAdapter(
                     new NotificationsAdapter(getContext(), friendship_requestsList, NotificationsAdapter.FRIENDSHIP,this)
             );
+        }else {
+            getView().findViewById(R.id.friend_not_text).setVisibility(View.GONE);
         }
         if((trip_invitation_notificationsList == null || trip_invitation_notificationsList.length() == 0)
                 && (friendship_requestsList == null || friendship_requestsList.length() == 0)) {
             getActivity().findViewById(R.id.nothing).setVisibility(View.VISIBLE);
         }
     }
-    public void acceptFriendRequest(int i){
+    public void acceptOrDenyFriendRequest(int i){
         friendship_requestsList.remove(i);
         friendship_requests.setAdapter(
                 new NotificationsAdapter(getContext(), friendship_requestsList, NotificationsAdapter.FRIENDSHIP,this)
+        );
+    }
+    public void denyTripRequest(int i){
+        trip_invitation_notificationsList.remove(i);
+        trip_invitation_notifications.setAdapter(
+                new NotificationsAdapter(getContext(), trip_invitation_notificationsList, NotificationsAdapter.TRIP,this)
         );
     }
     @Nullable

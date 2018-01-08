@@ -78,8 +78,8 @@ public class ZipFileDownloader extends Service {
         user = new User(getSharedPreferences(Constants.PREFNAME, Context.MODE_PRIVATE));
         manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         not = new Notification.Builder(this).
-                setContentTitle(getText(R.string.app_name)).
-                setContentText(getString(R.string.trip_download)).
+                setContentTitle(getString(R.string.trip_download)).
+                setProgress(0,0,true).
                 setSmallIcon(R.drawable.ic_stat_notification);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             not.setChannelId(Constants.CH1);

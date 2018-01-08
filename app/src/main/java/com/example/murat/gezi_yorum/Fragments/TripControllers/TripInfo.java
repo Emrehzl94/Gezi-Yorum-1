@@ -149,7 +149,7 @@ public class TripInfo extends TripSummary {
         }else if(trip.cover_media_id != -1){
             cover.setImageBitmap(ThumbnailUtils.extractThumbnail(
                     BitmapFactory.decodeFile(helper.getMediaFile(trip.cover_media_id).path)
-                    , 500, 500
+                    , 400, 400
             ));
         }
         changeCover.setOnClickListener(new View.OnClickListener() {
@@ -195,7 +195,10 @@ public class TripInfo extends TripSummary {
         if(resultCode == Activity.RESULT_OK){
             if(requestCode == CHOOSE_COVER_REQUEST) {
                 trip = helper.getTrip(trip.id);
-                cover.setImageBitmap(BitmapFactory.decodeFile(helper.getMediaFile(trip.cover_media_id).path));
+                cover.setImageBitmap(ThumbnailUtils.extractThumbnail(
+                        BitmapFactory.decodeFile(helper.getMediaFile(trip.cover_media_id).path)
+                        , 400, 400
+                ));
             }
         }
     }

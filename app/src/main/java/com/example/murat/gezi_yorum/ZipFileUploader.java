@@ -78,8 +78,7 @@ public class ZipFileUploader extends Service {
 
         manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         not = new Notification.Builder(this).
-                setContentTitle(getText(R.string.app_name)).
-                setContentText("Dosyalar hazırlanıyor.").
+                setContentTitle(getString(R.string.preparing)).
                 setSmallIcon(R.drawable.ic_stat_notification).
                 setProgress(100,0,false);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -140,6 +139,8 @@ public class ZipFileUploader extends Service {
     }
     private void upload(){
         not.setContentTitle(getString(R.string.uploading_trip));
+        not.setContentText(String.valueOf(zipFile.length()/(1024*1024))+" MB");
+        not.setProgress(0, 0, true);
         manager.notify(notificationId,not.build());
         String service = trip.isGroupTrip() ? "uploadGroupTripZip" : "uploadTripZip";
         String URL = Constants.APP + service;
@@ -227,7 +228,7 @@ public class ZipFileUploader extends Service {
             JSONArray mediaMetaData = new JSONArray();
             int fileCount = 0;
             for (MediaFile file: mediaFiles){
-                not.setContentTitle((fileCount++)+"/"+mediaFiles.size());
+                not.setContentText((fileCount++)+"/"+mediaFiles.size());
                 manager.notify(notificationId, not.build());
                 File entryFile = new File(file.path);
                 ZipEntry mediaFileEntry = new ZipEntry("Media/"+entryFile.getName());

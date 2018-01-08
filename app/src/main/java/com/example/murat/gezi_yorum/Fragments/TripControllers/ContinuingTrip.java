@@ -724,7 +724,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
                 }
                 try {
                     FileOutputStream ous = new FileOutputStream(outputFile);
-                    photo.compress(Bitmap.CompressFormat.WEBP, 90, ous);
+                    photo.compress(Bitmap.CompressFormat.JPEG, 90, ous);
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }

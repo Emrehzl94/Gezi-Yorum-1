@@ -207,7 +207,7 @@ public class NotificationsAdapter extends ArrayAdapter {
                                 @Override
                                 public void run() {
                                     Toast.makeText(getContext(), R.string.friend_accepted, Toast.LENGTH_SHORT).show();
-                                    parentFragment.acceptFriendRequest(selectedId);
+                                    parentFragment.acceptOrDenyFriendRequest(selectedId);
                                 }
                             });
                         }
@@ -223,22 +223,33 @@ public class NotificationsAdapter extends ArrayAdapter {
                 @Override
                 public void onClick(View view) {
                     selectedId = view.getId();
+                    Toast.makeText(getContext(), getContext().getString(R.string.denying_trip_request), Toast.LENGTH_SHORT).show();
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
                             try {
-                                if(preferences.getString(Trip.TRIPSTATE, "").equals(Trip.ACTIVE)) return;
                                 JSONObject notification = notifications.getJSONObject(selectedId);
                                 JSONObject trip = new JSONObject();
                                 trip.put("token", user.token);
                                 trip.put("id", notification.get("id"));
                                 String url = Constants.APP+"denyTripRequest";
-                                URLRequestHandler handler = new URLRequestHandler(trip.toString(), url);
-                                if(!handler.getResponseMessage() || !handler.getResponse().equals("true")) {
-                                    //Hata
+                                URLRequestHandler requestHandler = new URLRequestHandler(trip.toString(), url);
+                                if(!requestHandler.getResponseMessage() || !requestHandler.getResponse().equals("true")) {
+                                    handler.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Toast.makeText(getContext(), getContext().getString(R.string.error), Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
                                     return;
                                 }
-                                //Toast.makeText(getContext(), getContext().getString(R.string.deny) + selectedId, Toast.LENGTH_LONG).show();
+                                handler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(getContext(), getContext().getString(R.string.denied_trip_request), Toast.LENGTH_SHORT).show();
+                                        parentFragment.denyTripRequest(selectedId);
+                                    }
+                                });
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
@@ -251,6 +262,7 @@ public class NotificationsAdapter extends ArrayAdapter {
                 @Override
                 public void onClick(View view) {
                     selectedId = view.getId();
+                    Toast.makeText(getContext(), R.string.denying_friend_request, Toast.LENGTH_SHORT).show();
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
@@ -265,11 +277,23 @@ public class NotificationsAdapter extends ArrayAdapter {
 
                             URLRequestHandler requestHandler = new URLRequestHandler(request.toString(), url);
                             if (!requestHandler.getResponseMessage() || !requestHandler.getResponse().equals("true")) {
-                                //Hata
-                                Toast.makeText(getContext(), getContext().getString(R.string.error), Toast.LENGTH_LONG).show();
+                                handler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(getContext(), getContext().getString(R.string.error), Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                                return;
                             }
+                            handler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(getContext(), R.string.denied_friend_request, Toast.LENGTH_SHORT).show();
+                                    parentFragment.acceptOrDenyFriendRequest(selectedId);
+                                }
+                            });
                         }
-                    });
+                    }).start();
 
                 }
             };

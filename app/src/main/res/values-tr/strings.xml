@@ -123,4 +123,9 @@
     <string name="trip_download">Gezi İndiriliyor…</string>
     <string name="uploading_picture">Profil resmi yükleniyor…</string>
     <string name="choose">Seçiniz</string>
+    <string name="preparing">Gezi paylaşım için hazırlanıyor…</string>
+    <string name="denying_friend_request">Arkadaşlık isteği reddediliyor.</string>
+    <string name="denied_friend_request">Arkadaşlık isteği reddedildi.</string>
+    <string name="denying_trip_request">Gezi isteği reddediliyor.</string>
+    <string name="denied_trip_request">Gezi isteği reddedildi.</string>
 </resources>
