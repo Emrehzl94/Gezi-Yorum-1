@@ -119,4 +119,7 @@
     <string name="too_big_to_share">Bu gezi 100 MB\'den daha büyük. Paylaşılamıyor.</string>
     <string name="gps_not_enabled">GPS etkin değil. Lütfen etkinleştirin.</string>
     <string name="home_screen">Başlangıç ekranı</string>
+    <string name="no_file_selected">Dosya seçilmedi.</string>
+    <string name="trip_download">Gezi İndiriliyor…</string>
+    <string name="uploading_picture">Profil resmi yükleniyor…</string>
 </resources>

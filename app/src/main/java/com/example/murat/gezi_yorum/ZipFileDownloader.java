@@ -79,7 +79,7 @@ public class ZipFileDownloader extends Service {
         manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         not = new Notification.Builder(this).
                 setContentTitle(getText(R.string.app_name)).
-                setContentText("Dosya indiriliyor.").
+                setContentText(getString(R.string.trip_download)).
                 setSmallIcon(R.drawable.ic_stat_notification);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             not.setChannelId(Constants.CH1);

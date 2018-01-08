@@ -9,6 +9,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.location.Location;
@@ -28,6 +29,7 @@ import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.afollestad.materialcamera.MaterialCamera;
 import com.example.murat.gezi_yorum.Entity.Constants;
@@ -55,6 +57,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Timer;
@@ -121,7 +126,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         user = new User(preferences);
         preferences = parentActivity.getSharedPreferences(Constants.PREFNAME + user.username, Context.MODE_PRIVATE);
         activityHandler = new Handler();
-
+        locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
         pause_continue = view.findViewById(R.id.pause_continue);
         filesDir = getActivity().getFilesDir().getAbsolutePath();
         String state = preferences.getString(Trip.RECORDSTATE, Trip.PASSIVE);
@@ -242,7 +247,6 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
     public void onResume() {
         super.onResume();
         if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
             //noinspection ConstantConditions
             locationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, 0, 0, this);
         }
@@ -326,7 +330,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         editor.apply();
     }
     public void endTrip(){
-        parentActivity.showSnackbarMessage(getString(R.string.trip_finished), Snackbar.LENGTH_LONG);
+        Toast.makeText(getContext() ,getString(R.string.trip_finished), Toast.LENGTH_LONG).show();
         SharedPreferences.Editor editor = preferences.edit();
         stopPathRecording();
         helper.endTrip(trip.id);
@@ -707,6 +711,24 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         public void run() {
             Location lastknown = null;
             MediaFile mediaFile = null;
+            if(fileType.equals(MediaFile.PHOTO)){
+                Bitmap photo = BitmapFactory.decodeFile(filePath);
+                File output = new File(outputFile);
+                if(output.exists()){
+                    output.delete();
+                }
+                try {
+                    output.createNewFile();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    FileOutputStream ous = new FileOutputStream(outputFile);
+                    photo.compress(Bitmap.CompressFormat.WEBP, 90, ous);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
             while (lastknown == null){
                 lastknown = manager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
                 if(lastknown != null) {

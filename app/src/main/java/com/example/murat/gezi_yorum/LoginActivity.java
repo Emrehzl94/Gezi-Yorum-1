@@ -77,15 +77,6 @@ public class LoginActivity extends AppCompatActivity {
             startActivityForResult(intent, MAIN_ACTIVITY_RESULT);
         }
 
-        Button without_login = findViewById(R.id.without_login);
-        without_login.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(LoginActivity.this,MainActivity.class);
-                startActivityForResult(intent, MAIN_ACTIVITY_RESULT);
-            }
-        });
-
         emailEdit = findViewById(R.id.email);
 
         passwordEdit = findViewById(R.id.password);

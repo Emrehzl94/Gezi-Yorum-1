@@ -88,26 +88,17 @@ public class TripInfo extends TripSummary {
 
         cover = view.findViewById(R.id.cover);
         Button changeCover = view.findViewById(R.id.change_cover);
-        if(trip.isImported){
-            cover.setVisibility(View.GONE);
-        }else if(trip.cover_media_id != -1){
-            cover.setImageBitmap(ThumbnailUtils.extractThumbnail(
-                    BitmapFactory.decodeFile(helper.getMediaFile(trip.cover_media_id).path)
-                    , 500, 500
-            ));
-        }
-        changeCover.setOnClickListener(new View.OnClickListener() {
+
+        Button more = view.findViewById(R.id.more);
+        more.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(helper.getMediaFileCount(trip.id, MediaFile.PHOTO) > 0) {
-                    Intent intent = new Intent(getContext(), MediaActivity.class);
-                    intent.putExtra(Trip.TRIPID, trip.id);
-                    startActivityForResult(intent, CHOOSE_COVER_REQUEST);
-                }else {
-                    Snackbar.make(view, getString(R.string.no_media), Snackbar.LENGTH_LONG).show();
-                }
+                Intent intent = new Intent(getContext(), GalleryActivity.class);
+                intent.putExtra(Trip.TRIPID, trip.id);
+                startActivity(intent);
             }
         });
+
         Button deleteTrip = view.findViewById(R.id.delete_trip);
         deleteTrip.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -147,6 +138,34 @@ public class TripInfo extends TripSummary {
             }
         });
         share_trip = view.findViewById(R.id.share_trip);
+
+        if(trip.isImported){
+            cover.setVisibility(View.GONE);
+            share_trip.setVisibility(View.GONE);
+            changeCover.setVisibility(View.GONE);
+            edit_name.setVisibility(View.INVISIBLE);
+            view.findViewById(R.id.last_added).setVisibility(View.INVISIBLE);
+            return view;
+        }else if(trip.cover_media_id != -1){
+            cover.setImageBitmap(ThumbnailUtils.extractThumbnail(
+                    BitmapFactory.decodeFile(helper.getMediaFile(trip.cover_media_id).path)
+                    , 500, 500
+            ));
+        }
+        changeCover.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(helper.getMediaFileCount(trip.id, MediaFile.PHOTO) > 0) {
+                    Intent intent = new Intent(getContext(), MediaActivity.class);
+                    intent.putExtra(Trip.TRIPID, trip.id);
+                    startActivityForResult(intent, CHOOSE_COVER_REQUEST);
+                }else {
+                    Snackbar.make(view, getString(R.string.no_media), Snackbar.LENGTH_LONG).show();
+                }
+            }
+        });
+
+
         if(trip.isShared){
             share_trip.setBackgroundTintList(ColorStateList.valueOf(Color.DKGRAY));
             share_trip.setText(R.string.shared_before);
@@ -167,15 +186,6 @@ public class TripInfo extends TripSummary {
                 }
             });
         }
-        Button more = view.findViewById(R.id.more);
-        more.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(getContext(), GalleryActivity.class);
-                intent.putExtra(Trip.TRIPID, trip.id);
-                startActivity(intent);
-            }
-        });
         return view;
     }
 

@@ -98,9 +98,14 @@ public class ZipFileUploader extends Service {
             public void run() {
                 create();
                 if(isValidToShare) {
-                    if(zipFile.length() > 1024*100){ // 100 MB
-                        not.setContentTitle(getString(R.string.too_big_to_share));
-                        manager.notify(notificationId,not.build());
+                    if(zipFile.length() > 1024*1024*100){ // 100 MB
+                        NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext(), getString(R.string.app_name));
+                        builder.setSmallIcon(R.drawable.ic_stat_notification);
+                        builder.setContentTitle(getString(R.string.too_big_to_share));
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            builder.setChannelId(Constants.CH1);
+                        }
+                        manager.notify(0, builder.build());
                         if(zipFile != null && zipFile.exists()){
                             zipFile.delete();
                         }
@@ -115,6 +120,13 @@ public class ZipFileUploader extends Service {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
+                            NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext(), getString(R.string.app_name));
+                            builder.setSmallIcon(R.drawable.ic_stat_notification);
+                            builder.setContentTitle(getString(R.string.not_suitable_for_share));
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                builder.setChannelId(Constants.CH1);
+                            }
+                            manager.notify(0, builder.build());
                             Toast.makeText(getApplicationContext(),
                                     R.string.not_suitable_for_share, Toast.LENGTH_LONG).show();
                         }

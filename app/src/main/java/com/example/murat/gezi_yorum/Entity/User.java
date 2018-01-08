@@ -84,7 +84,7 @@ public class User {
         OutputStream os = null;
         try {
             os = new FileOutputStream(dest);
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[5*1024*1024];
             int length;
             while ((length = source.read(buffer)) > 0) {
                 os.write(buffer, 0, length);

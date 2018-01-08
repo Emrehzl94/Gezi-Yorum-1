@@ -131,15 +131,23 @@ public class EditProfile extends AppCompatActivity {
                 return;
             }
             try {
+                Toast.makeText(this, R.string.uploading_picture, Toast.LENGTH_LONG).show();
                 InputStream inputStream = getContentResolver().openInputStream(data.getData());
                 user.changeProfilePhoto(inputStream);
                 profilePhoto.setImageBitmap(ThumbnailUtils.extractThumbnail(
                         BitmapFactory.decodeFile(user.profilePicturePath), 400, 400
                 ));
                 new Thread(new PPUploader(user.profilePicturePath, user.token)).start();
-            } catch (FileNotFoundException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
+                Toast.makeText(this,
+                        getString(R.string.error),
+                        Toast.LENGTH_LONG).show();
             }
+        }else {
+            Toast.makeText(this,
+                    getString(R.string.no_file_selected),
+                    Toast.LENGTH_LONG).show();
         }
     }
 
