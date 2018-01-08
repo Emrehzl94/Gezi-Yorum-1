@@ -122,4 +122,5 @@
     <string name="no_file_selected">Dosya seçilmedi.</string>
     <string name="trip_download">Gezi İndiriliyor…</string>
     <string name="uploading_picture">Profil resmi yükleniyor…</string>
+    <string name="choose">Seçiniz</string>
 </resources>

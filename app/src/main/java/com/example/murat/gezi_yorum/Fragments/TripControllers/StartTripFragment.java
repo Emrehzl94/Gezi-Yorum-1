@@ -67,6 +67,7 @@ public class StartTripFragment extends Fragment{
     private ArrayList<Trip> importedTrips;
 
     private SharedPreferences preferences;
+    private Boolean isListed = false;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -266,6 +267,7 @@ public class StartTripFragment extends Fragment{
             handler.getResponseMessage();
             try {
                 JSONArray friendsJson = new JSONArray(handler.getResponse());
+                friendsList.add(getString(R.string.choose));
                 for (int i = 0; i < friendsJson.length(); i++){
                     JSONObject friend = friendsJson.optJSONObject(i);
                     friendsList.add(friend.getString("username"));
@@ -284,9 +286,18 @@ public class StartTripFragment extends Fragment{
                 friends.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                     @Override
                     public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                        selectedFriends.add(friendsList.get(i));
-                        ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item,selectedFriends);
-                        selecteds.setAdapter(adapter);
+                        if(isListed) {
+                            if(i==0) return;
+                            selectedFriends.add(friendsList.get(i));
+                            ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, selectedFriends);
+                            selecteds.setAdapter(adapter);
+
+                            friendsList.remove(i);
+                            adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, friendsList);
+                            friends.setAdapter(adapter);
+                        }else {
+                            isListed = true;
+                        }
                     }
 
                     @Override
@@ -297,8 +308,12 @@ public class StartTripFragment extends Fragment{
                 selecteds.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                        friendsList.add(selectedFriends.get(i));
+                        ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item,friendsList);
+                        friends.setAdapter(adapter);
+
                         selectedFriends.remove(i);
-                        ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item,selectedFriends);
+                        adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item,selectedFriends);
                         selecteds.setAdapter(adapter);
                     }
                 });
