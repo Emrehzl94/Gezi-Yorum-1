@@ -58,21 +58,44 @@
             android:textAlignment="center"
             android:textAppearance="@style/TextAppearance.AppCompat"
             android:text="@string/prompt_password"/>
-        <EditText
-            android:inputType="textPassword"
-            android:id="@+id/password_edit"
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content">
+            <EditText
+                android:inputType="textPassword"
+                android:id="@+id/password_edit"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_toStartOf="@id/look_pass"/>
+            <ImageButton
+                android:id="@+id/look_pass"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_action_look"
+                android:layout_alignParentEnd="true"/>
+        </RelativeLayout>
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textAlignment="center"
             android:textAppearance="@style/TextAppearance.AppCompat"
             android:text="@string/password_again"/>
-        <EditText
-            android:id="@+id/password2_edit"
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="match_parent">
+            <EditText
+                android:inputType="textPassword"
+                android:id="@+id/password2_edit"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_toStartOf="@id/look_pass_again"/>
+            <ImageButton
+                android:id="@+id/look_pass_again"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_action_look"
+                android:layout_alignParentEnd="true"/>
+        </RelativeLayout>
         <TextView
             android:inputType="textEmailAddress"
             android:layout_width="match_parent"

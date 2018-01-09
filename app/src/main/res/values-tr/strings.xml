@@ -128,4 +128,5 @@
     <string name="denied_friend_request">Arkadaşlık isteği reddedildi.</string>
     <string name="denying_trip_request">Gezi isteği reddediliyor.</string>
     <string name="denied_trip_request">Gezi isteği reddedildi.</string>
+    <string name="return_startup">Başlangıç ekranına dön</string>
 </resources>

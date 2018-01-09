@@ -11,7 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.ImageButton;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -91,7 +91,7 @@ public class NotificationsAdapter extends ArrayAdapter {
             TextView textMessage = view.findViewById(R.id.notification_text);
             textMessage.setText(Html.fromHtml(text));
 
-            ImageButton acceptButton = view.findViewById(R.id.accept);
+            Button acceptButton = view.findViewById(R.id.accept);
             acceptButton.setId(position);
             View.OnClickListener trip_acceptListener = new View.OnClickListener() {
                 @Override
@@ -216,7 +216,7 @@ public class NotificationsAdapter extends ArrayAdapter {
             };
             acceptButton.setOnClickListener(type == TRIP ? trip_acceptListener : friendshipAcceptListener);
 
-            ImageButton denyButton = view.findViewById(R.id.deny);
+            Button denyButton = view.findViewById(R.id.deny);
             denyButton.setId(position);
 
             View.OnClickListener tripDenyListener = new View.OnClickListener() {

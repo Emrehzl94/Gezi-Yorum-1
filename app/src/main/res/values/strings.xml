@@ -133,4 +133,5 @@
     <string name="denied_friend_request">Friend request denied.</string>
     <string name="denying_trip_request">Working on deny trip request.</string>
     <string name="denied_trip_request">Trip request denied.</string>
+    <string name="return_startup">Return to home screen</string>
 </resources>

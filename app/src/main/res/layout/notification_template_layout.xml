@@ -10,18 +10,20 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
-        <ImageButton
+        <Button
             android:id="@+id/accept"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/aar_ic_check"
+            android:text="@string/accept"
+            android:drawableEnd="@drawable/aar_ic_check"
             android:backgroundTint="@android:color/holo_green_light"
             />
-        <ImageButton
+        <Button
             android:id="@+id/deny"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/aar_ic_clear"
+            android:text="@string/deny"
+            android:drawableEnd="@drawable/aar_ic_clear"
             android:backgroundTint="@android:color/holo_red_light"/>
     </LinearLayout>
 

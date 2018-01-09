@@ -20,6 +20,8 @@ import com.example.murat.gezi_yorum.Entity.Constants;
 import com.example.murat.gezi_yorum.R;
 import com.example.murat.gezi_yorum.ZipFileDownloader;
 
+import java.util.Stack;
+
 /**
  * Social Media WebViewFragment Page Environment
  */
@@ -29,6 +31,8 @@ public class WebViewFragment extends Fragment {
     private WebView webView;
     private ProgressBar progressBar;
 
+    private Stack<String> urlStack;
+    String currentUrl;
     @SuppressLint("SetJavaScriptEnabled")
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
@@ -58,10 +62,12 @@ public class WebViewFragment extends Fragment {
                 String url = request.getUrl().toString();
                 if(url.startsWith(Constants.ROOT)){
                     webView.loadUrl(url);
+                    urlStack.push(currentUrl);
+                    currentUrl = url;
+                    return true;
                 }else {
                     return super.shouldOverrideUrlLoading(view, request);
                 }
-                return false;
             }
 
             @Override
@@ -81,17 +87,16 @@ public class WebViewFragment extends Fragment {
             @Override
             public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimeType, long contentLength) {
                 Intent intent = new Intent(getContext(), ZipFileDownloader.class);
-                intent.putExtra("url", url);
+                intent.putExtra("currentUrl", url);
                 getActivity().startService(intent);
             }
         });
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
-        try {
-            webView.loadUrl(url);
-        }catch (Exception e){
-            e.printStackTrace();
-        }
+        webView.loadUrl(url);
+
+        urlStack = new Stack<>();
+        currentUrl = url;
     }
 
     @Nullable
@@ -105,8 +110,9 @@ public class WebViewFragment extends Fragment {
      * @return if can go back
      */
     public boolean goBack(){
-        if(webView.canGoBack()){
-            webView.goBack();
+        if(!urlStack.isEmpty()){
+            currentUrl = urlStack.pop();
+            webView.loadUrl(currentUrl);
             return true;
         }
         return false;
