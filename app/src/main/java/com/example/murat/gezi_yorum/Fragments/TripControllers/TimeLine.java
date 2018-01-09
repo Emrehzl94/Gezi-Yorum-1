@@ -16,13 +16,11 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.murat.gezi_yorum.Entity.Constants;
-import com.example.murat.gezi_yorum.Entity.Trip;
 import com.example.murat.gezi_yorum.Entity.User;
 import com.example.murat.gezi_yorum.MediaActivity;
 import com.example.murat.gezi_yorum.R;
 import com.example.murat.gezi_yorum.Utils.LocationDbOpenHelper;
 import com.example.murat.gezi_yorum.Utils.TripPagerAdapter;
-import com.example.murat.gezi_yorum.ZipFileUploader;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -94,10 +92,6 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
         loadAdapter();
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(TimeLine.this);
-    }
-    @Override
-    public void onResume() {
-        super.onResume();
     }
     public void loadAdapter(){
         ArrayList<Long> trip_ids;
@@ -172,5 +166,8 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
     }
     public void setPrevPage(){
         viewPager.setCurrentItem(viewPager.getCurrentItem()-1);
+    }
+    public GoogleMap getMap(){
+        return map;
     }
 }

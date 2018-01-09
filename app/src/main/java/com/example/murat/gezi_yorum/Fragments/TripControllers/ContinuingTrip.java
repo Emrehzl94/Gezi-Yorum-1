@@ -251,6 +251,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
             locationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, 0, 0, this);
         }
         if(map!=null && !PHOTO_CONTIUNE){
+            setUpView(getView());
             requestToDrawPathOnMap(map,true, followingTrip);
         }
         if(trip.isGroupTrip() && preferences.getBoolean(Constants.LIVE_TRACK, true)){

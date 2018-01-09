@@ -55,6 +55,14 @@ public class TripInfo extends TripSummary {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        setUpView(getView());
+        if(parentFragment.getMap() != null)
+            requestToDrawPathOnMap(parentFragment.getMap(), false, null);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.tripinfo_fragment, container, false);
         parentFragment = (TimeLine)getParentFragment();

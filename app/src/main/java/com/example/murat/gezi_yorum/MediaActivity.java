@@ -20,6 +20,7 @@ public class MediaActivity extends AppCompatActivity {
     private LocationDbOpenHelper helper;
     private ViewPager viewPager;
     private Long trip_id;
+    private MediaPagerAdapter mediaPagerAdapter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,6 +53,24 @@ public class MediaActivity extends AppCompatActivity {
                 mediaFiles.add(helper.getMediaFile(id));
             }
         }
-        viewPager.setAdapter(new MediaPagerAdapter(getSupportFragmentManager(), mediaFiles));
+        mediaPagerAdapter = new MediaPagerAdapter(getSupportFragmentManager(), mediaFiles);
+        viewPager.setAdapter(mediaPagerAdapter);
+    }
+    public void removeFragment(long id){
+        for(int i = 0; i<mediaFiles.size(); i++){
+            if(mediaFiles.get(i).id == id){
+                mediaFiles.remove(i);
+                if(mediaFiles.size() == 0){
+                    finish();
+                    return;
+                }
+                mediaPagerAdapter.setDataset(mediaFiles);
+                viewPager.setAdapter(mediaPagerAdapter);
+                if(viewPager.getCurrentItem() >= mediaFiles.size()){
+                    viewPager.setCurrentItem(mediaFiles.size()-1);
+                }
+
+            }
+        }
     }
 }

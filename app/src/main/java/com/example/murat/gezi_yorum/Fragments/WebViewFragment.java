@@ -10,10 +10,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.DownloadListener;
+import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 
 import com.example.murat.gezi_yorum.Entity.Constants;
@@ -33,13 +35,18 @@ public class WebViewFragment extends Fragment {
 
     private Stack<String> urlStack;
     String currentUrl;
+
+    private FrameLayout customViewContainer;
+    private View customView;
+    private WebChromeClient.CustomViewCallback customViewCallback;
+    private WebChromeClient client;
     @SuppressLint("SetJavaScriptEnabled")
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         progressBar = view.findViewById(R.id.progressBar);
-
+        customViewContainer = view.findViewById(R.id.customViewContainer);
         Bundle extras = getArguments();
         String url = Constants.APP + extras.getString(Constants.PAGE);
         switch (extras.getString(Constants.PAGE)){
@@ -83,16 +90,55 @@ public class WebViewFragment extends Fragment {
                 progressBar.setVisibility(View.GONE);
             }
         });
+        client = new WebChromeClient(){
+            private View mVideoProgressView;
+            @Override
+            public void onShowCustomView(View view, CustomViewCallback callback) {
+                if(customView != null){
+                    callback.onCustomViewHidden();
+                    return;
+                }
+                customView = view;
+                webView.setVisibility(View.GONE);
+                customViewContainer.setVisibility(View.VISIBLE);
+                customViewContainer.addView(view);
+                customViewCallback = callback;
+            }
+
+            @Override
+            public View getVideoLoadingProgressView() {
+                if(mVideoProgressView == null) {
+                    LayoutInflater inflater = LayoutInflater.from(getActivity());
+                    mVideoProgressView = inflater.inflate(R.layout.video_progress, null);
+                }
+                return mVideoProgressView;
+            }
+
+            @Override
+            public void onHideCustomView() {
+                super.onHideCustomView();
+                if(customView == null)
+                    return;
+                webView.setVisibility(View.VISIBLE);
+                customViewContainer.setVisibility(View.GONE);
+                customView.setVisibility(View.GONE);
+                customViewContainer.removeView(customView);
+                customViewCallback.onCustomViewHidden();
+                customView = null;
+            }
+        };
+        webView.setWebChromeClient(client);
         webView.setDownloadListener(new DownloadListener() {
             @Override
             public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimeType, long contentLength) {
                 Intent intent = new Intent(getContext(), ZipFileDownloader.class);
-                intent.putExtra("currentUrl", url);
+                intent.putExtra("url", url);
                 getActivity().startService(intent);
             }
         });
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
+        settings.setAppCacheEnabled(true);
         webView.loadUrl(url);
 
         urlStack = new Stack<>();
@@ -110,6 +156,11 @@ public class WebViewFragment extends Fragment {
      * @return if can go back
      */
     public boolean goBack(){
+        if(customView != null){
+            webView.onPause();
+            client.onHideCustomView();
+            return true;
+        }
         if(!urlStack.isEmpty()){
             currentUrl = urlStack.pop();
             webView.loadUrl(currentUrl);

@@ -31,6 +31,8 @@ public class Notifications extends Fragment {
     private JSONArray trip_invitation_notificationsList;
     private JSONArray friendship_requestsList;
     private User user;
+
+    private Boolean isPaused;
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -65,11 +67,24 @@ public class Notifications extends Fragment {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        loadAdapter();
+                        if(!isPaused)
+                            loadAdapter();
                     }
                 });
             }
         }).start();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        isPaused = false;
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        isPaused = true;
     }
 
     public void loadAdapter(){

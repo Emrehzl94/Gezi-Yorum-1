@@ -217,6 +217,7 @@ public class EditProfile extends AppCompatActivity {
                         Toast.makeText(getApplicationContext(), R.string.update_successful, Toast.LENGTH_LONG).show();
                     }
                 });
+                return;
             }
             handler.post(new Runnable() {
                 @Override

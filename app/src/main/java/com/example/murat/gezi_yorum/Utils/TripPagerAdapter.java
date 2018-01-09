@@ -34,10 +34,6 @@ public class TripPagerAdapter extends FragmentStatePagerAdapter{
         notifyDataSetChanged();
     }
 
-    public void setLimit(int limit){
-        this.limit = limit;
-    }
-
     // Returns total number of pages
     @Override
     public int getCount() {

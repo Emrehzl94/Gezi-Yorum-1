@@ -16,6 +16,7 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import com.example.murat.gezi_yorum.Entity.MediaFile;
+import com.example.murat.gezi_yorum.MediaActivity;
 import com.example.murat.gezi_yorum.R;
 import com.example.murat.gezi_yorum.Utils.LocationDbOpenHelper;
 
@@ -44,8 +45,11 @@ abstract class MediaFragment extends Fragment {
 
         note = view.findViewById(R.id.note);
         Bundle extras = getArguments();
-        final Long mediaFileId = extras.getLong("fileId");
+        Long mediaFileId = extras.getLong("fileId");
         mediaFile = helper.getMediaFile(mediaFileId);
+        if(mediaFile == null){
+            return;
+        }
         note.setText(mediaFile.about_note);
 
         fadeIn = new AlphaAnimation(0, 1);
@@ -142,6 +146,7 @@ abstract class MediaFragment extends Fragment {
                         if(file.exists()){
                             file.delete();
                         }
+                        ((MediaActivity)getActivity()).removeFragment(mediaFile.id);
                     }
                 });
                 builder.create();

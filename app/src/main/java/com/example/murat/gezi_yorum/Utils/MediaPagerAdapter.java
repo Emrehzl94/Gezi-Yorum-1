@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentStatePagerAdapter;
 
 import com.example.murat.gezi_yorum.Entity.MediaFile;
 
@@ -14,7 +15,7 @@ import java.util.ArrayList;
  * Pager Adapter for media files
  */
 
-public class MediaPagerAdapter extends FragmentPagerAdapter {
+public class MediaPagerAdapter extends FragmentStatePagerAdapter {
     private ArrayList<MediaFile> mediaFiles;
 
     public MediaPagerAdapter(FragmentManager fm, ArrayList<MediaFile> mediaFiles) {
@@ -34,5 +35,10 @@ public class MediaPagerAdapter extends FragmentPagerAdapter {
     @Override
     public int getCount() {
         return mediaFiles.size();
+    }
+
+    public void setDataset(ArrayList<MediaFile> mediaFiles){
+        this.mediaFiles = mediaFiles;
+        notifyDataSetChanged();
     }
 }

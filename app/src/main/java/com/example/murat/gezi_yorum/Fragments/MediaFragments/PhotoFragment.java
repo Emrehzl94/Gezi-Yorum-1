@@ -19,6 +19,7 @@ public class PhotoFragment extends MediaFragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view,savedInstanceState);
+        if(mediaFile==null) return;
         imageView = view.findViewById(R.id.imageView);
         imageView.setImage(ImageSource.uri(mediaFile.path));
         imageView.setOnClickListener(new View.OnClickListener() {

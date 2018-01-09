@@ -20,6 +20,7 @@ public class VideoFragment extends MediaFragment implements EasyVideoCallback{
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view,savedInstanceState);
+        if(mediaFile==null) return;
         player = view.findViewById(R.id.player);
         player.setCallback(this);
         player.setSource(Uri.parse(mediaFile.path));
