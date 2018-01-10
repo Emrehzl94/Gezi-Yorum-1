@@ -4,7 +4,7 @@
     <string name="action_settings">Ayarlar</string>
     <string name="action_sign_in">Oturum Aç</string>
     <string name="error_field_required">Bu alan gerekli</string>
-    <string name="error_incorrect_password">Şifre yanlış</string>
+    <string name="error_incorrect_password">Şifre hatalı.</string>
     <string name="error_invalid_email">E-posta adresi geçersiz</string>
     <string name="error_invalid_password">Şifre çok kısa</string>
     <string name="navigation_drawer_close"/>
@@ -97,7 +97,7 @@
     <string name="warn_camera">Kamera kullanılamaz.</string>
     <string name="warn_location">Konum izni olmadan konum kaydı yapılamaz.</string>
     <string name="edit_profile">Profili Düzenle</string>
-    <string name="biography">Biyografi</string>
+    <string name="biography">Kendinden bahset</string>
     <string name="website">Web sitesi</string>
     <string name="birthday">Doğum Tarihi</string>
     <string name="phone">Telefon</string>
@@ -129,4 +129,8 @@
     <string name="denying_trip_request">Gezi isteği reddediliyor.</string>
     <string name="denied_trip_request">Gezi isteği reddedildi.</string>
     <string name="return_startup">Başlangıç ekranına dön</string>
+    <string name="go_profile">Profili Gör</string>
+    <string name="email_activation_required">E-posta doğrulaması gerekmekte.</string>
+    <string name="ok">Tamam</string>
+    <string name="user_not_exist">Böyle bir kullanıcı yok.</string>
 </resources>

@@ -220,11 +220,12 @@ public class ZipFileUploader extends Service {
                 ZipEntry pathMetaDataEntry = new ZipEntry(Constants.PATH_META);
                 zipOutputStream.putNextEntry(pathMetaDataEntry);
                 zipOutputStream.write(pathMetaData.toString().getBytes());
+            }else {
+                isValidToShare = true;
             }
             if(!isValidToShare) return;
             // Media metadata preparing and media and media metadata writing to zip
-            ArrayList<MediaFile> mediaFiles = helper.getMediaFiles(trip.id,null,
-                    " AND " + LocationDbOpenHelper.COLUMN_SHARE_OPTION +"!=\""+MediaFile.ONLY_ME+"\"", null);
+            ArrayList<MediaFile> mediaFiles = helper.getMediaFiles(trip.id,null, null, null);
             JSONArray mediaMetaData = new JSONArray();
             int fileCount = 0;
             for (MediaFile file: mediaFiles){

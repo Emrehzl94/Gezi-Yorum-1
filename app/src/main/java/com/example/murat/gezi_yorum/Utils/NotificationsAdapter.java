@@ -20,6 +20,7 @@ import com.example.murat.gezi_yorum.Entity.Trip;
 import com.example.murat.gezi_yorum.Entity.User;
 import com.example.murat.gezi_yorum.Fragments.Notifications;
 import com.example.murat.gezi_yorum.Fragments.TripControllers.ContinuingTrip;
+import com.example.murat.gezi_yorum.Fragments.WebViewFragment;
 import com.example.murat.gezi_yorum.MainActivity;
 import com.example.murat.gezi_yorum.R;
 
@@ -297,6 +298,27 @@ public class NotificationsAdapter extends ArrayAdapter {
 
                 }
             };
+
+            Button viewProfile = view.findViewById(R.id.look_at_profile);
+            viewProfile.setId(position);
+            viewProfile.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    int position = view.getId();
+                    WebViewFragment fragment = new WebViewFragment();
+                    Bundle arguments = new Bundle();
+                    try {
+                        JSONObject notification = notifications.getJSONObject(position);
+                        String link =  "@"+notification.getString("name");
+                        arguments.putString(Constants.PAGE,link);
+                        MainActivity activity = (MainActivity) parentFragment.getActivity();
+                        fragment.setArguments(arguments);
+                        activity.changeFragment(fragment);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
 
             denyButton.setOnClickListener(type == TRIP ? tripDenyListener : friendDenyListener);
         } catch (JSONException e) {

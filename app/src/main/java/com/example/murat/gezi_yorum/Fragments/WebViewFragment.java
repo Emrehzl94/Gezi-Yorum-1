@@ -60,6 +60,7 @@ public class WebViewFragment extends Fragment {
             case Constants.SEARCH:
                 getActivity().setTitle(getString(R.string.search));
                 break;
+                default: getActivity().setTitle("");
         }
 
         webView = view.findViewById(R.id.webView);

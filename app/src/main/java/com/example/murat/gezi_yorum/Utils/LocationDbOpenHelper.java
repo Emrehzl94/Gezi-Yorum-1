@@ -144,13 +144,13 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
      * Inserts new trip to database created by user
      * @return trip_id
      */
-    public long importTrip(long startdate, long finishdate, String name, String username){
+    public long importTrip(long startdate, long finishdate, String name, String username, int isImported){
         waitForLock();
         ContentValues values = new ContentValues();
         values.put(COLUMN_STARTDATE,startdate);
         values.put(COLUMN_FINISHDATE,finishdate);
         values.put(COLUMN_NAME, name);
-        values.put(COLUMN_ISIMPORTED, 1);
+        values.put(COLUMN_ISIMPORTED, isImported);
         values.put(COLUMN_IDONSERVER, -1);
         values.put(COLUMN_CREATOR, new Boolean(false).toString());
         values.put(COLUMN_USERNAME, username);

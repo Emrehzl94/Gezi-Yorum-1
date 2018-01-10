@@ -25,6 +25,12 @@
             android:text="@string/deny"
             android:drawableEnd="@drawable/aar_ic_clear"
             android:backgroundTint="@android:color/holo_red_light"/>
+        <Button
+            android:id="@+id/look_at_profile"
+            android:drawableEnd="@drawable/ic_action_look"
+            android:text="@string/go_profile"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
     </LinearLayout>
 
 </LinearLayout>

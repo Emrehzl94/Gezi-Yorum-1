@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
 import android.media.ThumbnailUtils;
 import android.net.ConnectivityManager;
+import android.net.Uri;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -25,6 +26,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -131,13 +133,15 @@ public class EditProfile extends AppCompatActivity {
                 return;
             }
             try {
-                Toast.makeText(this, R.string.uploading_picture, Toast.LENGTH_LONG).show();
-                InputStream inputStream = getContentResolver().openInputStream(data.getData());
-                user.changeProfilePhoto(inputStream);
-                profilePhoto.setImageBitmap(ThumbnailUtils.extractThumbnail(
-                        BitmapFactory.decodeFile(user.profilePicturePath), 400, 400
-                ));
-                new Thread(new PPUploader(user.profilePicturePath, user.token)).start();
+                Toast.makeText(this, R.string.uploading_picture, Toast.LENGTH_SHORT).show();
+                InputStream inputStream= getContentResolver().openInputStream(data.getData());
+                String uploadingpp = getFilesDir()+"/uploadingpp";
+                File uploading = new File(uploadingpp);
+                if(uploading.exists()){
+                    uploading.delete();
+                }
+                User.copyFile(inputStream, uploading);
+                new Thread(new PPUploader(uploading, user.token)).start();
             } catch (Exception e) {
                 e.printStackTrace();
                 Toast.makeText(this,
@@ -155,8 +159,8 @@ public class EditProfile extends AppCompatActivity {
         private File photo;
         private String token;
 
-        PPUploader(String path, String token){
-            photo = new File(path);
+        PPUploader(File photo, String token){
+            this.photo = photo;
             this.token = token;
         }
         @Override
@@ -172,6 +176,10 @@ public class EditProfile extends AppCompatActivity {
                     @Override
                     public void run() {
                         Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.pp_success), Toast.LENGTH_LONG).show();
+                        user.changeProfilePhoto(photo);
+                        profilePhoto.setImageBitmap(ThumbnailUtils.extractThumbnail(
+                                BitmapFactory.decodeFile(user.profilePicturePath), 400, 400
+                        ));
                     }
                 });
 

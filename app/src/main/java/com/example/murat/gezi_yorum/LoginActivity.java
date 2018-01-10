@@ -3,9 +3,11 @@ package com.example.murat.gezi_yorum;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -29,6 +31,7 @@ import com.example.murat.gezi_yorum.Utils.URLRequestHandler;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
@@ -185,33 +188,55 @@ public class LoginActivity extends AppCompatActivity {
 
         private final String uname;
         private final String mPassword;
+        private int errorMessageId;
 
         UserLoginTask(String email, String password) {
             uname = email;
             mPassword = password;
+
         }
 
         @Override
         protected Boolean doInBackground(Void... params) {
+            String url = Constants.APP+"checkUserActivated";
+            URLRequestHandler requestHandler = new URLRequestHandler(uname, url);
+            if(requestHandler.getResponseMessage()){
+                String response = requestHandler.getResponse();
+                if(response.equals("false")){
+                    errorMessageId = R.string.email_activation_required;
+                    return false;
+                }else if(response.equals("notExist")){
+                    errorMessageId = R.string.user_not_exist;
+                    return false;
+                }
+            }
+
             String data = "{\"username\":\"" + uname + "\",\"password\":\"" + mPassword + "\"}";
-            String url = Constants.APP+"login";
-            URLRequestHandler handler = new URLRequestHandler(data,url);
-            if(!handler.getResponseMessage()){
+            url = Constants.APP+"login";
+            requestHandler = new URLRequestHandler(data,url);
+            if(!requestHandler.getResponseMessage()){
                 //wrong user name or password
+                errorMessageId = R.string.error_incorrect_password;
                 return false;
             }
 
-            String token = handler.getResponse();
+            String token = requestHandler.getResponse();
+            if(token == null || token.equals("")){
+                errorMessageId = R.string.error;
+                return false;
+            }
 
-            handler = new URLRequestHandler(token, Constants.APP + "getUserInfoByToken");
-            if(!handler.getResponseMessage()){
+            requestHandler = new URLRequestHandler(token, Constants.APP + "getUserInfoByToken");
+            if(!requestHandler.getResponseMessage()){
+                errorMessageId = R.string.error;
                 return false;
             }
             JSONObject userInfo = null;
             try {
-                userInfo = new JSONObject(handler.getResponse());
+                userInfo = new JSONObject(requestHandler.getResponse());
             } catch (JSONException e) {
-                e.printStackTrace();
+                errorMessageId = R.string.error;
+                return false;
             }
 
             CookieManager manager = CookieManager.getInstance();
@@ -219,9 +244,9 @@ public class LoginActivity extends AppCompatActivity {
             manager.setCookie(Constants.ROOT,   Constants.APPLICATION+"=true");
             SharedPreferences preferences = getSharedPreferences(Constants.PREFNAME, Context.MODE_PRIVATE);
 
-            handler = new URLRequestHandler(uname, Constants.APP+"downloadProfilePhotoPath");
-            handler.getResponseMessage();
-            String link = handler.getResponse();
+            requestHandler = new URLRequestHandler(uname, Constants.APP+"downloadProfilePhotoPath");
+            requestHandler.getResponseMessage();
+            String link = requestHandler.getResponse();
             String profilePicturePath = getFilesDir() + "/profile.jpg";
             try {
                 URL website = new URL(Constants.ROOT+link);
@@ -229,7 +254,7 @@ public class LoginActivity extends AppCompatActivity {
                 FileOutputStream fos = new FileOutputStream(profilePicturePath);
                 fos.getChannel().transferFrom(rbc, 0, 5242880);
             } catch (IOException e) {
-                e.printStackTrace();
+                errorMessageId = R.string.error;
                 return false;
             }
             User.setArguments(token, uname, userInfo, profilePicturePath, preferences);
@@ -237,7 +262,7 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         @Override
-        protected void onPostExecute(final Boolean success) {
+        protected void onPostExecute(Boolean success) {
             mAuthTask = null;
             showProgress(false);
 
@@ -245,8 +270,16 @@ public class LoginActivity extends AppCompatActivity {
                 Intent intent = new Intent(LoginActivity.this,MainActivity.class);
                 startActivityForResult(intent, MAIN_ACTIVITY_RESULT);
             } else {
-                passwordEdit.setError(getString(R.string.error_incorrect_password));
-                passwordEdit.requestFocus();
+                AlertDialog.Builder builder = new AlertDialog.Builder(LoginActivity.this);
+                builder.setTitle(getString(errorMessageId));
+                builder.setNegativeButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+
+                    }
+                });
+                builder.create();
+                builder.show();
             }
         }
 

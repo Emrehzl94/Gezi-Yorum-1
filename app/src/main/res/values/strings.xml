@@ -102,7 +102,6 @@
     <string name="warn_camera">Cannot use camera.</string>
     <string name="warn_location">Cannot save location without location permission.</string>
     <string name="edit_profile">Edit Profile</string>
-    <string name="biography">Biography</string>
     <string name="website">Website</string>
     <string name="birthday">Birthday</string>
     <string name="phone">Phone</string>
@@ -134,4 +133,9 @@
     <string name="denying_trip_request">Working on deny trip request.</string>
     <string name="denied_trip_request">Trip request denied.</string>
     <string name="return_startup">Return to home screen</string>
+    <string name="biography">Tell us about yourself</string>
+    <string name="go_profile">Look at profile</string>
+    <string name="email_activation_required">Email activation required.</string>
+    <string name="ok">OK</string>
+    <string name="user_not_exist">This user not exist.</string>
 </resources>

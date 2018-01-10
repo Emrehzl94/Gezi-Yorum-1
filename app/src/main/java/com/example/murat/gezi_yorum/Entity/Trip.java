@@ -62,6 +62,7 @@ public class Trip {
             jsonObject.put("startdate",startdate);
             jsonObject.put("finishdate", finishdate);
             jsonObject.put("name", name);
+            jsonObject.put("members", new JSONArray(members));
         } catch (JSONException e) {
             e.printStackTrace();
         }

@@ -6,6 +6,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -68,19 +69,18 @@ public class User {
         return s.equals("null") ? "" : s;
     }
 
-    public void changeProfilePhoto(InputStream newFile){
+    public void changeProfilePhoto(File newFile){
         File ppfile = new File(profilePicturePath);
         if(ppfile.exists()){
             ppfile.delete();
         }
         try {
-            ppfile.createNewFile();
-            copyFile(newFile, ppfile);
-        } catch (IOException e) {
+            newFile.renameTo(new File(profilePicturePath));
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    private static void copyFile(InputStream source, File dest) throws IOException {
+    public static void copyFile(InputStream source, File dest) throws IOException {
         OutputStream os = null;
         try {
             os = new FileOutputStream(dest);

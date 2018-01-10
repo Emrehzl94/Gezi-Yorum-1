@@ -125,7 +125,15 @@ public class ZipFileDownloader extends Service {
 
             ZipEntry tripMetaEntry = zipFile.getEntry(Constants.TRIP_META);
             JSONObject tripMeta = new JSONObject(entryToString(zipFile, tripMetaEntry));
-            long trip_id = helper.importTrip(tripMeta.getLong("startdate"), tripMeta.getLong("finishdate"), tripMeta.getString("name"), user.username);
+            int isImported = 1;
+            JSONArray members = tripMeta.getJSONArray("members");
+            for(int i=0; i< members.length(); i++){
+                if(members.getString(i).equals(user.username)){
+                    isImported = 0;
+                    break;
+                }
+            }
+            long trip_id = helper.importTrip(tripMeta.getLong("startdate"), tripMeta.getLong("finishdate"), tripMeta.getString("name"), user.username, isImported);
 
             ZipEntry mediaMetaEntry = zipFile.getEntry(Constants.MEDIA_META);
             JSONArray mediaMeta = new JSONArray(entryToString(zipFile, mediaMetaEntry));
