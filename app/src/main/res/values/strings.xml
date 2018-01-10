@@ -138,4 +138,7 @@
     <string name="email_activation_required">Email activation required.</string>
     <string name="ok">OK</string>
     <string name="user_not_exist">This user not exist.</string>
+    <string name="gallery">Gallery</string>
+    <string name="size">Size:</string>
+    <string name="sure_to_upload">Are you sure to upload? This process will may to use cellular data.</string>
 </resources>

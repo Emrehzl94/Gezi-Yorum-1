@@ -33,6 +33,9 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Notifications ListViewAdapter
@@ -84,10 +87,12 @@ public class NotificationsAdapter extends ArrayAdapter {
                 text = "<b>" + getContext().getString(R.string.invitation) + "</b><br>" +
                         getContext().getString(R.string.invitee) + notification.getString("name") + " " + notification.getString("surname") + "<br>" +
                         getContext().getString(R.string.explain) + notification.getString("explanation") + "<br>" +
-                        getContext().getString(R.string.members) + membersBuilder.toString();
+                        getContext().getString(R.string.members) + membersBuilder.toString() + "<br>" +
+                        (DateFormat.getDateTimeInstance().format(new Date(notification.getLong("creationTime"))));
             }else if(type == FRIENDSHIP){
                 text = getContext().getString(R.string.friendship_request) +"<br>" +
-                        notification.getString("name") + " " + notification.getString("surname");
+                        notification.getString("name") + " " + notification.getString("surname") + "<br>"+
+                        (DateFormat.getDateTimeInstance().format(new Date(notification.getLong("sendTime"))));
             }
             TextView textMessage = view.findViewById(R.id.notification_text);
             textMessage.setText(Html.fromHtml(text));

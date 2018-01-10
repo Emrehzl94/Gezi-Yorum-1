@@ -22,6 +22,7 @@ import com.example.murat.gezi_yorum.Entity.MediaFile;
 import com.example.murat.gezi_yorum.Entity.Path;
 import com.example.murat.gezi_yorum.Entity.Trip;
 import com.example.murat.gezi_yorum.GalleryActivity;
+import com.example.murat.gezi_yorum.LoginActivity;
 import com.example.murat.gezi_yorum.MediaActivity;
 import com.example.murat.gezi_yorum.R;
 import com.example.murat.gezi_yorum.Utils.LocationDbOpenHelper;
@@ -58,7 +59,7 @@ public class TripInfo extends TripSummary {
     public void onResume() {
         super.onResume();
         setUpView(getView());
-        if(parentFragment.getMap() != null)
+        if(parentFragment.currentPosition == position && parentFragment.getMap() != null)
             requestToDrawPathOnMap(parentFragment.getMap(), false, null);
     }
 
@@ -182,12 +183,35 @@ public class TripInfo extends TripSummary {
                 @Override
                 public void onClick(View view) {
                     if(!trip.isShared) {
-                        Snackbar.make(view, getString(R.string.trip_sharing), Snackbar.LENGTH_LONG).show();
-                        Intent intent = new Intent(getContext(), ZipFileUploader.class);
-                        intent.putExtra(Trip.TRIPID, trip.id);
-                        getActivity().startService(intent);
-                        share_trip.setText(R.string.sharing);
-                        share_trip.setOnClickListener(null);
+                        long totalLength = 0;
+                        ArrayList<MediaFile> mediaFiles = helper.getMediaFiles(trip.id, null, null, null);
+                        for(MediaFile mediaFile : mediaFiles){
+                            File media = new File(mediaFile.path);
+                            totalLength += media.length();
+                        }
+                        String message = getString(R.string.size) + (totalLength/(1024*1024)) + "MB";
+                        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                        builder.setTitle(message);
+                        builder.setMessage(R.string.sure_to_upload);
+                        builder.setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+
+                            }
+                        });
+                        builder.setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                Snackbar.make(getView(), getString(R.string.trip_sharing), Snackbar.LENGTH_LONG).show();
+                                Intent intent = new Intent(getContext(), ZipFileUploader.class);
+                                intent.putExtra(Trip.TRIPID, trip.id);
+                                getActivity().startService(intent);
+                                share_trip.setText(R.string.sharing);
+                                share_trip.setOnClickListener(null);
+                            }
+                        });
+                        builder.create();
+                        builder.show();
                     }else {
                         Snackbar.make(view, getString(R.string.shared_before), Snackbar.LENGTH_LONG).show();
                     }

@@ -2,6 +2,7 @@ package com.example.murat.gezi_yorum;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -11,6 +12,8 @@ import android.view.View;
 import android.webkit.CookieManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.murat.gezi_yorum.Entity.Constants;
@@ -25,6 +28,8 @@ import java.nio.charset.CharsetEncoder;
 
 public class RegisterActivity extends AppCompatActivity {
     private EditText username_edit, pass1_edit, pass2_edit, email_edit, name_edit, surname_edit;
+    private ProgressBar registerProgress;
+    private LinearLayout controlFrame;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,6 +42,8 @@ public class RegisterActivity extends AppCompatActivity {
         email_edit = findViewById(R.id.email_edit);
         name_edit = findViewById(R.id.name_edit);
         surname_edit = findViewById(R.id.surname_edit);
+        registerProgress = findViewById(R.id.register_progress);
+        controlFrame = findViewById(R.id.controlFrame);
 
         ImageButton look_pass = findViewById(R.id.look_pass);
         look_pass.setOnClickListener(new View.OnClickListener() {
@@ -114,6 +121,7 @@ public class RegisterActivity extends AppCompatActivity {
         private String email;
         private String name;
         private String surname;
+        private Handler handler;
 
         UserRegister(String uname, String password, String email, String name, String surname) {
             this.uname = uname;
@@ -121,10 +129,13 @@ public class RegisterActivity extends AppCompatActivity {
             this.email = email;
             this.name = name;
             this.surname = surname;
+            registerProgress.setVisibility(View.VISIBLE);
+            controlFrame.setVisibility(View.GONE);
         }
 
         @Override
         protected Boolean doInBackground(Void... params) {
+
             JSONObject user_info = new JSONObject();
             try {
                 user_info.put("username", uname);
@@ -137,17 +148,7 @@ public class RegisterActivity extends AppCompatActivity {
             }
             String url = Constants.APP+"userRegister";
             URLRequestHandler handler = new URLRequestHandler(user_info.toString(), url);
-            if(!handler.getResponseMessage()){
-                //unsuccesful
-                return false;
-            }
-
-            String token = handler.getResponse();
-
-            CookieManager manager = CookieManager.getInstance();
-            manager.setCookie(Constants.ROOT,   User.TOKEN+"="+token);
-            manager.setCookie(Constants.ROOT,   Constants.APPLICATION+"=true");
-            return true;
+            return handler.getResponseMessage();
         }
 
         @Override
@@ -158,6 +159,8 @@ public class RegisterActivity extends AppCompatActivity {
             }else {
                 Toast.makeText(getApplicationContext(), getString(R.string.error), Toast.LENGTH_LONG).show();
             }
+            registerProgress.setVisibility(View.GONE);
+            controlFrame.setVisibility(View.VISIBLE);
         }
 
         @Override

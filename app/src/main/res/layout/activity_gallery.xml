@@ -1,10 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.murat.gezi_yorum.GalleryActivity">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context="com.example.murat.gezi_yorum.GalleryActivity"
+    android:orientation="vertical">
+    <android.support.design.widget.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/AppTheme.AppBarOverlay">
 
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            app:popupTheme="@style/AppTheme.PopupOverlay" >
+
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/gallery"
+                android:textAppearance="@style/TextAppearance.AppCompat.Title" />
+            <LinearLayout
+                android:id="@+id/contentPanel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_gravity="end"
+                android:visibility="gone">
+                <ImageButton
+                    android:id="@+id/select_all"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_action_select_all"
+                    android:background="#00000000"
+                    />
+
+                <ImageButton
+                    android:id="@+id/delete"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@android:drawable/ic_menu_delete"
+                    android:background="#00000000"/>
+                <ImageButton
+                    android:id="@+id/share_options"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@android:drawable/ic_menu_share"
+                    android:background="#00000000"
+                    />
+            </LinearLayout>
+        </android.support.v7.widget.Toolbar>
+    </android.support.design.widget.AppBarLayout>
     <GridView
         android:id="@+id/preview"
         android:layout_width="match_parent"
@@ -14,4 +65,4 @@
         android:gravity="center"
         />
 
-</android.support.constraint.ConstraintLayout>
+</LinearLayout>

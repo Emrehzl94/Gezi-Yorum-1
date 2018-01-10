@@ -36,7 +36,7 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
     private ViewPager viewPager;
 
     private TripPagerAdapter pagerAdapter;
-    private Integer currentPosition;
+    public Integer currentPosition;
 
     private Boolean loadImporteds = false;
     private User user;

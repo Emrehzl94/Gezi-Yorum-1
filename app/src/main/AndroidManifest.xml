@@ -58,8 +58,9 @@
             android:theme="@style/MaterialCamera.CaptureActivity" />
         <activity android:name=".SettingsActivity" />
         <activity android:name=".GalleryActivity"
-            android:hardwareAccelerated="true"/>
-        <activity android:name=".EditProfile"></activity>
+            android:hardwareAccelerated="true"
+            android:theme="@style/AppTheme.NoActionBar"/>
+        <activity android:name=".EditProfile"/>
     </application>
 
 </manifest>

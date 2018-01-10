@@ -47,9 +47,4 @@ public class MediaGridViewAdapter extends ArrayAdapter<Bitmap> {
         }
         return imageView;
     }
-    public void itemOnClick(int position){
-        if(media.size()>0){
-            media.get(position).startActivityForView(activity);
-        }
-    }
 }

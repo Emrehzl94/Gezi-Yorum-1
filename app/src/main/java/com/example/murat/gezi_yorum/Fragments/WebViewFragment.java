@@ -10,6 +10,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.CookieManager;
 import android.webkit.DownloadListener;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
@@ -45,7 +46,7 @@ public class WebViewFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
+        String cookie = CookieManager.getInstance().getCookie(Constants.ROOT);
         progressBar = view.findViewById(R.id.progressBar);
         customViewContainer = view.findViewById(R.id.customViewContainer);
         Bundle extras = getArguments();

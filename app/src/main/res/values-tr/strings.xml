@@ -133,4 +133,7 @@
     <string name="email_activation_required">E-posta doğrulaması gerekmekte.</string>
     <string name="ok">Tamam</string>
     <string name="user_not_exist">Böyle bir kullanıcı yok.</string>
+    <string name="gallery">Galeri</string>
+    <string name="size">"Boyut: "</string>
+    <string name="sure_to_upload">Yüklemek istediğinize emin misiniz? Bu işlem hücresel veri kullanımına neden olabilir.</string>
 </resources>
