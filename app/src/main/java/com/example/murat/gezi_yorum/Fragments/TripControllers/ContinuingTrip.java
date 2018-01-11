@@ -114,7 +114,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
     private HashMap<String,Marker> usersMarkers;
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.continuing_trip_fragment, container, false);
         getActivity().setTitle("Devam eden");
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
@@ -318,6 +318,13 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
             locationManager.removeUpdates(this);
             if (map != null) {
                 map.clear();
+            }
+        }
+        if(timer != null){
+            try {
+                timer.cancel();
+            }catch (Exception ex){
+                ex.printStackTrace(); //Kill exception
             }
         }
     }

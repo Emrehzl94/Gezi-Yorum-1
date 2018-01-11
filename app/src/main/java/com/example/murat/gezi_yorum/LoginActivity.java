@@ -14,6 +14,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.View;
@@ -23,6 +24,7 @@ import android.webkit.ValueCallback;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.example.murat.gezi_yorum.Entity.Constants;
 import com.example.murat.gezi_yorum.Entity.User;
@@ -51,11 +53,13 @@ public class LoginActivity extends AppCompatActivity {
     private EditText passwordEdit;
     private View progressView;
     private View loginFormView;
+
+    private Handler handler;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-
+        handler = new Handler();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             CharSequence name = getString(R.string.app_name);// The user-visible name of the channel.
             NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -103,9 +107,73 @@ public class LoginActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+        Button forgetPassword = findViewById(R.id.forgetten_password);
+        forgetPassword.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(LoginActivity.this);
+                builder.setTitle(getString(R.string.forget_password));
+                builder.setMessage(R.string.username);
+                final EditText username_edit = new EditText(LoginActivity.this);
+                username_edit.setId(0);
+                builder.setView(username_edit);
+                builder.setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                    }
+                });
+                builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        Toast.makeText(LoginActivity.this, R.string.please_wait, Toast.LENGTH_LONG).show();
+                        String username = username_edit.getText().toString();
+                        new Thread(new SendForgetPassword(username)).start();
+                    }
+                });
+                builder.create();
+                builder.show();
+            }
+        });
 
     }
 
+    private class SendForgetPassword implements Runnable{
+        private String username;
+
+        SendForgetPassword(String username){
+            this.username = username;
+        }
+        @Override
+        public void run() {
+            URLRequestHandler requestHandler = new URLRequestHandler(username, Constants.APP + "forgotPassword");
+            if(requestHandler.getResponseMessage()){
+                if(requestHandler.getResponse().equals("true")){
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            AlertDialog.Builder builder = new AlertDialog.Builder(LoginActivity.this);
+                            builder.setMessage(R.string.forget_password_ok);
+                            builder.setNegativeButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+
+                                }
+                            });
+                            builder.create();
+                            builder.show();
+                        }
+                    });
+                    return;
+                }
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(LoginActivity.this, R.string.error, Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        }
+    }
 
     /**
      * Attempts to sign in or register the account specified by the login form.
@@ -231,7 +299,7 @@ public class LoginActivity extends AppCompatActivity {
                 errorMessageId = R.string.error;
                 return false;
             }
-            JSONObject userInfo = null;
+            JSONObject userInfo;
             try {
                 userInfo = new JSONObject(requestHandler.getResponse());
             } catch (JSONException e) {

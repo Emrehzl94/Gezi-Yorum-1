@@ -136,4 +136,7 @@
     <string name="gallery">Galeri</string>
     <string name="size">"Boyut: "</string>
     <string name="sure_to_upload">Yüklemek istediğinize emin misiniz? Bu işlem hücresel veri kullanımına neden olabilir.</string>
+    <string name="forget_password">Şifreni mi unuttun?</string>
+    <string name="forget_password_ok">Size gönderilen e-posta içerisindeki linki kullanarak şifrenizi yenileyebilirsiniz.</string>
+    <string name="please_wait">Lütfen bekleyiniz…</string>
 </resources>
