@@ -24,6 +24,7 @@ import com.example.murat.gezi_yorum.Entity.Path;
 import com.example.murat.gezi_yorum.Entity.User;
 import com.example.murat.gezi_yorum.Utils.LocationDbOpenHelper;
 import com.example.murat.gezi_yorum.Utils.MultipartUtility;
+import com.example.murat.gezi_yorum.Utils.URLRequestHandler;
 
 import org.json.JSONArray;
 
@@ -55,7 +56,10 @@ public class ZipFileUploader extends Service {
     private Notification.Builder not;
 
     private Boolean isValidToShare = false;
+    private Boolean isTeamLeaderUploaded = true;
     private Handler handler;
+
+    private Thread uploadThread;
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -92,7 +96,7 @@ public class ZipFileUploader extends Service {
         Long trip_id = extras.getLong(Trip.TRIPID);
         trip = helper.getTrip(trip_id);
         handler = new Handler();
-        new Thread(new Runnable() {
+        uploadThread = new Thread(new Runnable() {
             @Override
             public void run() {
                 create();
@@ -108,11 +112,9 @@ public class ZipFileUploader extends Service {
                         if(zipFile != null && zipFile.exists()){
                             zipFile.delete();
                         }
-                        stopSelf();
-                        return;
-                    }
-                    upload();
-                }else {
+                    }else
+                        upload();
+                }else if(isTeamLeaderUploaded){
                     if(zipFile != null && zipFile.exists()){
                         zipFile.delete();
                     }
@@ -130,10 +132,11 @@ public class ZipFileUploader extends Service {
                                     R.string.not_suitable_for_share, Toast.LENGTH_LONG).show();
                         }
                     });
-                    stopSelf();
                 }
+                stopSelf();
             }
-        }).start();
+        });
+        uploadThread.start();
 
         return START_STICKY;
     }
@@ -221,6 +224,28 @@ public class ZipFileUploader extends Service {
                 zipOutputStream.putNextEntry(pathMetaDataEntry);
                 zipOutputStream.write(pathMetaData.toString().getBytes());
             }else {
+                String url = Constants.APP + "checkOwnerSent";
+                URLRequestHandler requestHandler = new URLRequestHandler(trip.idOnServer.toString(), url);
+                if(requestHandler.getResponseMessage()){
+                    String response = requestHandler.getResponse();
+                    if(response.equals("false")){
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext(), getString(R.string.app_name));
+                                builder.setSmallIcon(R.drawable.ic_stat_notification);
+                                builder.setContentTitle(getString(R.string.cant_upload));
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                    builder.setChannelId(Constants.CH1);
+                                }
+                                manager.notify(1, builder.build());
+                                Toast.makeText(ZipFileUploader.this, R.string.cant_upload, Toast.LENGTH_LONG).show();
+                            }
+                        });
+                        isTeamLeaderUploaded = false;
+                        return;
+                    }
+                }
                 isValidToShare = true;
             }
             if(!isValidToShare) return;

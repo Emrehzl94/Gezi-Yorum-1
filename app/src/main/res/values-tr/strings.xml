@@ -84,7 +84,7 @@
     <string name="share">Paylaş</string>
     <string name="sharing">Gezi paylaşılıyor…</string>
     <string name="trip_accepting">Gezi daveti kabul ediliyor.</string>
-    <string name="friend_request_accepting">Arkadaşlık isteği kabu ediliyor.</string>
+    <string name="friend_request_accepting">Arkadaşlık isteği kabul ediliyor.</string>
     <string name="friend_accepted">Arkadaşlık isteği kabul edildi.</string>
     <string name="quit_sure">Çıkmak istediğinize emin misiniz?</string>
     <string name="sevce_cannot_started">Kayıt başlatılamadı. Konum izinleri sağlanmamış.</string>
@@ -139,4 +139,5 @@
     <string name="forget_password">Şifreni mi unuttun?</string>
     <string name="forget_password_ok">Size gönderilen e-posta içerisindeki linki kullanarak şifrenizi yenileyebilirsiniz.</string>
     <string name="please_wait">Lütfen bekleyiniz…</string>
+    <string name="cant_upload">Takım lideri henüz hiçbir şey yüklememiş.</string>
 </resources>

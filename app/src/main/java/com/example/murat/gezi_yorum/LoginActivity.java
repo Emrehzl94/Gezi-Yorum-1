@@ -76,6 +76,10 @@ public class LoginActivity extends AppCompatActivity {
 
         }
 
+        SharedPreferences preferences = getSharedPreferences(Constants.PREFNAME, Context.MODE_PRIVATE);
+        Constants.ROOT = preferences.getString("root", Constants.ROOT);
+        Constants.APP = Constants.ROOT + "/Geziyorum/";
+
         CookieManager manager = CookieManager.getInstance();
         // Set up the login form.
         String token = manager.getCookie(Constants.ROOT);

@@ -144,4 +144,5 @@
     <string name="forget_password">Forget password?</string>
     <string name="forget_password_ok">You can refresh your password using the link in email send to you.</string>
     <string name="please_wait">Please wait…</string>
+    <string name="cant_upload">Team leader didn\'t uploaded anything yet.</string>
 </resources>

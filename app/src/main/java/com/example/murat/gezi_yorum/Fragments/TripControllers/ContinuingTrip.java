@@ -257,9 +257,9 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         if(trip.isGroupTrip() && preferences.getBoolean(Constants.LIVE_TRACK, true)){
             timer = new Timer();
             usersMarkers = new HashMap<>();
-            //Getting all of team members locations in 10 seconds
+            //Getting all of team members locations in 3 seconds
             try {
-                timer.schedule(publishTask, 5000, 10000);
+                timer.schedule(publishTask, 1000, 3000);
             }catch (IllegalStateException ex){
                 ex.printStackTrace();
             }
@@ -278,6 +278,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
             this.members_info = members_info;
         }
         public void run(){
+            if(map == null) return;
             for(int i=0; i<members_info.length(); i++){
                 try {
                     JSONObject member = members_info.getJSONObject(i);

@@ -87,7 +87,7 @@ public class LocationSaveService extends Service implements LocationListener {
             user = new User(getSharedPreferences(Constants.PREFNAME, Context.MODE_PRIVATE));
             trip = helper.getTrip(intent.getExtras().getLong(Trip.TRIPID));
             timer = new Timer();
-            timer.schedule(publishTask, 2000, 10000);
+            timer.schedule(publishTask, 1000, 3000);
             lastLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         }
         return START_STICKY;

@@ -27,8 +27,8 @@
         </activity>
         <activity
             android:name=".MainActivity"
-            android:label="@string/title_activity_main"
             android:hardwareAccelerated="true"
+            android:label="@string/title_activity_main"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
 
@@ -57,10 +57,12 @@
             android:hardwareAccelerated="true"
             android:theme="@style/MaterialCamera.CaptureActivity" />
         <activity android:name=".SettingsActivity" />
-        <activity android:name=".GalleryActivity"
+        <activity
+            android:name=".GalleryActivity"
             android:hardwareAccelerated="true"
-            android:theme="@style/AppTheme.NoActionBar"/>
-        <activity android:name=".EditProfile"/>
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".EditProfile" />
+        <activity android:name=".SecretActivity"></activity>
     </application>
 
 </manifest>

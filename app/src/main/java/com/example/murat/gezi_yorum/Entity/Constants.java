@@ -15,8 +15,8 @@ public class Constants {
     //Server side constants
     //public static final String ROOT = "http://192.168.1.36:8080";
     //public static final String APP = "http://192.168.1.36:8080/Geziyorum/";
-    public static final String ROOT = "http://163.172.176.169:8080";
-    public static final String APP = "http://163.172.176.169:8080/Geziyorum/";
+    public static String ROOT = "http://163.172.176.169:8080";
+    public static String APP = ROOT+"/Geziyorum/";
     public static final String PAGE = "page";
     public static final String HOME = "home";
     public static final String PROFILE = "profile";
