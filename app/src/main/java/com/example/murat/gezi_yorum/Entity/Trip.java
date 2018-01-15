@@ -49,11 +49,11 @@ public class Trip {
     }
 
     public String getStartdate() {
-        return DateFormat.getDateInstance().format(startdate);
+        return DateFormat.getDateTimeInstance().format(startdate);
     }
 
     public String getFinishdate() {
-        return DateFormat.getDateInstance().format(finishdate);
+        return DateFormat.getDateTimeInstance().format(finishdate);
     }
 
     public JSONObject toJSONObject(){

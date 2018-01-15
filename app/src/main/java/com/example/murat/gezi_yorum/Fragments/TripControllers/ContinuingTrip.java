@@ -259,19 +259,19 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
             usersMarkers = new HashMap<>();
             //Getting all of team members locations in 3 seconds
             try {
-                timer.schedule(publishTask, 1000, 3000);
+                timer.schedule(new PublishTask(), 1000, 3000);
             }catch (IllegalStateException ex){
                 ex.printStackTrace();
             }
         }
     }
-    TimerTask publishTask = new TimerTask() {
+    private class PublishTask extends TimerTask {
         @Override
         public void run() {
             if(LocationSaveService.instance != null && LocationSaveService.instance.lastknownteamlocation != null)
                 activityHandler.post(new TeamLocationPost(LocationSaveService.instance.lastknownteamlocation));
         }
-    };
+    }
     private class TeamLocationPost implements Runnable{
         private JSONArray members_info;
         TeamLocationPost(JSONArray members_info){
@@ -363,7 +363,7 @@ public class ContinuingTrip extends TripSummary implements OnMapReadyCallback, L
         getActivity().startService(intent);
         if(trip.isGroupTrip() && preferences.getBoolean(Constants.LIVE_TRACK, true)){
             try {
-                timer.schedule(publishTask, 5000, 10000);
+                timer.schedule(new PublishTask(), 5000, 10000);
             }catch (IllegalStateException ex){
                 ex.printStackTrace();
             }

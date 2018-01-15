@@ -22,7 +22,6 @@ import com.example.murat.gezi_yorum.Entity.MediaFile;
 import com.example.murat.gezi_yorum.Entity.Path;
 import com.example.murat.gezi_yorum.Entity.Trip;
 import com.example.murat.gezi_yorum.GalleryActivity;
-import com.example.murat.gezi_yorum.LoginActivity;
 import com.example.murat.gezi_yorum.MediaActivity;
 import com.example.murat.gezi_yorum.R;
 import com.example.murat.gezi_yorum.Utils.LocationDbOpenHelper;
@@ -147,6 +146,9 @@ public class TripInfo extends TripSummary {
             }
         });
         share_trip = view.findViewById(R.id.share_trip);
+        String start_end_text = trip.getStartdate() + " - " + trip.getFinishdate();
+        Button start_end = view.findViewById(R.id.start_end);
+        start_end.setText(start_end_text);
 
         if(trip.isImported){
             cover.setVisibility(View.GONE);

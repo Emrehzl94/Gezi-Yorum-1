@@ -67,9 +67,18 @@
                     android:drawableEnd="@android:drawable/ic_menu_delete"/>
 
             </LinearLayout>
+            <Button
+                android:id="@+id/start_end"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_below="@id/control"
+                android:drawableLeft="@drawable/ic_action_start_end"
+                android:background="#00000000"/>
+
             <include layout="@layout/media_layout"
                 android:id="@+id/media_view"
-                android:layout_below="@id/control"
+                android:layout_below="@id/start_end"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 />
