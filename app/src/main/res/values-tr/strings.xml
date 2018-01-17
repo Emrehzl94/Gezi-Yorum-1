@@ -78,7 +78,7 @@
     <string name="friendship_requests">Arkadaşlık İstekleri</string>
     <string name="friendship_request">Arkadaşlık İsteği</string>
     <string name="change_cover">Kapak fotoğrafını değiştir</string>
-    <string name="delete_trip">Sil</string>
+    <string name="delete_trip">Geziyi Sil</string>
     <string name="last_added">En son eklenenler</string>
     <string name="more">Daha Fazla</string>
     <string name="share">Paylaş</string>
@@ -140,4 +140,5 @@
     <string name="forget_password_ok">Size gönderilen e-posta içerisindeki linki kullanarak şifrenizi yenileyebilirsiniz.</string>
     <string name="please_wait">Lütfen bekleyiniz…</string>
     <string name="cant_upload">Takım lideri henüz hiçbir şey yüklememiş.</string>
+    <string name="trip_downloading">Gezi indiriliyor. İlerlemeyi bildirim panelinden takip edebilirsiniz.</string>
 </resources>

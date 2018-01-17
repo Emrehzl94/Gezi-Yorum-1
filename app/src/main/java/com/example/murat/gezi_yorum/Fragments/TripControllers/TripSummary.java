@@ -110,7 +110,7 @@ public abstract class TripSummary extends Fragment {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                mediaFiles = helper.getMediaFiles(trip.id,null, null, limit);
+                mediaFiles = helper.getMediaFiles(trip.id,null, null, limit, false);
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
@@ -249,7 +249,7 @@ public abstract class TripSummary extends Fragment {
                                 updateAndAnimateMap(map, points, move);
                             }else {
                                 Path path = helper.getPath(path_id);
-                                ArrayList<MediaFile> media = helper.getMediaFiles(trip.id, null, null, null);
+                                ArrayList<MediaFile> media = helper.getMediaFiles(trip.id, null, null, null, false);
                                 addMarkersToMap(map, media, trip.isImported);
                                 updateAndAnimateMap(map, path.drawOnMap(map, path.getLocationsAsLatLng(), trip.isImported).getPoints(), move);
                             }

@@ -30,7 +30,7 @@ public class MediaActivity extends AppCompatActivity {
         helper = new LocationDbOpenHelper(this);
         trip_id = extras.getLong(Trip.TRIPID, -1);
         if(trip_id != -1){
-            mediaFiles = helper.getMediaFiles(trip_id, MediaFile.PHOTO, null, null);
+            mediaFiles = helper.getMediaFiles(trip_id, MediaFile.PHOTO, null, null, true);
             FloatingActionButton ok_button = findViewById(R.id.ok);
             ok_button.setVisibility(View.VISIBLE);
             ok_button.setOnClickListener(new View.OnClickListener() {

@@ -83,7 +83,7 @@
     <string name="friendship_requests">Friendship Requests</string>
     <string name="friendship_request">Friendship Request</string>
     <string name="change_cover">Change cover photo</string>
-    <string name="delete_trip">Delete</string>
+    <string name="delete_trip">Delete Trip</string>
     <string name="last_added">Last added media</string>
     <string name="more">More</string>
     <string name="share">Share</string>
@@ -145,4 +145,5 @@
     <string name="forget_password_ok">You can refresh your password using the link in email send to you.</string>
     <string name="please_wait">Please wait…</string>
     <string name="cant_upload">Team leader didn\'t uploaded anything yet.</string>
+    <string name="trip_downloading">Trip downloading. You watch process on notification bar.</string>
 </resources>

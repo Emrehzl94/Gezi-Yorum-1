@@ -488,7 +488,7 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
      * @param additionalQuery additional SQL query
      * @return mediaFiles
      */
-    public ArrayList<MediaFile> getMediaFiles(long trip_id, @Nullable String type ,@Nullable String additionalQuery, Integer limit) {
+    public ArrayList<MediaFile> getMediaFiles(long trip_id, @Nullable String type ,@Nullable String additionalQuery, Integer limit, Boolean orderByAsc) {
         waitForLock();
         SQLiteDatabase db = getReadableDatabase();
         String query = "SELECT * FROM "+TABLE_MEDIA+" WHERE "+COLUMN_TRIPID+"='"+trip_id+"'";
@@ -498,7 +498,10 @@ public class LocationDbOpenHelper extends SQLiteOpenHelper {
         if (additionalQuery != null){
             query += additionalQuery;
         }
-        query += " ORDER BY "+ COLUMN_DATE + " DESC, "+COLUMN_LATITUDE +","+COLUMN_LONGTITUDE;
+        if(orderByAsc)
+            query += " ORDER BY "+ COLUMN_DATE + " ASC";
+        else
+            query += " ORDER BY "+ COLUMN_DATE + " DESC";
         if(limit != null){
             query += " LIMIT "+ limit;
         }

@@ -314,7 +314,7 @@ public class NotificationsAdapter extends ArrayAdapter {
                     Bundle arguments = new Bundle();
                     try {
                         JSONObject notification = notifications.getJSONObject(position);
-                        String link =  "@"+notification.getString("name");
+                        String link =  "@"+notification.getString("username");
                         arguments.putString(Constants.PAGE,link);
                         MainActivity activity = (MainActivity) parentFragment.getActivity();
                         fragment.setArguments(arguments);

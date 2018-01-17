@@ -81,6 +81,7 @@ public class ZipFileDownloader extends Service {
                 setContentTitle(getString(R.string.trip_download)).
                 setProgress(0,0,true).
                 setSmallIcon(R.drawable.ic_stat_notification);
+        Toast.makeText(this, R.string.trip_downloading, Toast.LENGTH_LONG).show();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             not.setChannelId(Constants.CH1);
         }

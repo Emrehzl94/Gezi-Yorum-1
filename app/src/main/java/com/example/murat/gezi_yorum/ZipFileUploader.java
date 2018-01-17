@@ -250,7 +250,7 @@ public class ZipFileUploader extends Service {
             }
             if(!isValidToShare) return;
             // Media metadata preparing and media and media metadata writing to zip
-            ArrayList<MediaFile> mediaFiles = helper.getMediaFiles(trip.id,null, null, null);
+            ArrayList<MediaFile> mediaFiles = helper.getMediaFiles(trip.id,null, null, null, true);
             JSONArray mediaMetaData = new JSONArray();
             int fileCount = 0;
             for (MediaFile file: mediaFiles){

@@ -6,7 +6,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.RadioGroup;
@@ -20,7 +19,7 @@ import java.util.ArrayList;
 
 public class GalleryActivity extends AppCompatActivity {
     ArrayList<MediaFile> mediaFiles;
-    private long trip_id;
+    private Trip trip;
     GridView gridView;
     LocationDbOpenHelper helper;
     ArrayList<Integer> selectedFiles;
@@ -41,9 +40,9 @@ public class GalleryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gallery);
 
-        trip_id = getIntent().getExtras().getLong(Trip.TRIPID);
-
+        long trip_id = getIntent().getExtras().getLong(Trip.TRIPID);
         helper = new LocationDbOpenHelper(this);
+        trip = helper.getTrip(trip_id);
 
         showListener = new AdapterView.OnItemClickListener() {
             @Override
@@ -107,7 +106,7 @@ public class GalleryActivity extends AppCompatActivity {
                         for(Integer item : selectedFiles){
                             helper.deleteMediaFile(mediaFiles.get(item).id);
                         }
-                        mediaFiles = helper.getMediaFiles(trip_id, null, null, null);
+                        mediaFiles = helper.getMediaFiles(trip.id, null, null, null, true);
                         gridView.setAdapter(new MediaGridViewAdapter(GalleryActivity.this, mediaFiles));
                         selectedFiles.clear();
                     }
@@ -119,6 +118,9 @@ public class GalleryActivity extends AppCompatActivity {
         });
 
         setShareOption = findViewById(R.id.share_options);
+        if(trip.isShared){
+            setShareOption.setVisibility(View.GONE);
+        }
         setShareOption.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -203,7 +205,7 @@ public class GalleryActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        mediaFiles = helper.getMediaFiles(trip_id, null, null, null);
+        mediaFiles = helper.getMediaFiles(trip.id, null, null, null, true);
         MediaGridViewAdapter adapter = new MediaGridViewAdapter(this, mediaFiles);
         gridView.setAdapter(adapter);
     }
@@ -212,8 +214,18 @@ public class GalleryActivity extends AppCompatActivity {
         selectedAll = gridView.getChildCount() == selectedFiles.size();
         if(selectedAll){
             selectAll.setImageResource(R.drawable.ic_action_unselect_all);
-        }else {
+        }else if (selectedFiles.size() != 0){
             selectAll.setImageResource(R.drawable.ic_action_select_all);
+        }else {
+            gridView.setOnItemClickListener(showListener);
+            for(Integer item : selectedFiles){
+                View view = gridView.getChildAt(item);
+                view.setPadding(2,2,2,2);
+            }
+            selectedFiles.clear();
+            controlPanel.setVisibility(View.GONE);
+            gridView.setOnItemLongClickListener(longClickListener);
+            selectedAll = false;
         }
     }
 }

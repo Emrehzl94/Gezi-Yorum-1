@@ -129,7 +129,7 @@ public class TripInfo extends TripSummary {
                                 path.getFile().delete();
                             helper.deletePath(path_id);
                         }
-                        ArrayList<MediaFile> mediaFiles = helper.getMediaFiles(trip.id, null, null, null);
+                        ArrayList<MediaFile> mediaFiles = helper.getMediaFiles(trip.id, null, null, 3, false);
                         for(MediaFile file: mediaFiles){
                             File media = new File(file.path);
                             if(media.exists()){
@@ -186,7 +186,7 @@ public class TripInfo extends TripSummary {
                 public void onClick(View view) {
                     if(!trip.isShared) {
                         long totalLength = 0;
-                        ArrayList<MediaFile> mediaFiles = helper.getMediaFiles(trip.id, null, null, null);
+                        ArrayList<MediaFile> mediaFiles = helper.getMediaFiles(trip.id, null, null, 3, false);
                         for(MediaFile mediaFile : mediaFiles){
                             File media = new File(mediaFile.path);
                             totalLength += media.length();
