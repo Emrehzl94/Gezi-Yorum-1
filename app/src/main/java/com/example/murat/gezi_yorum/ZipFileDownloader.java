@@ -93,11 +93,6 @@ public class ZipFileDownloader extends Service {
             public void run() {
                 download();
                 importZip();
-                try {
-                    Thread.sleep(3000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
                 stopSelf();
             }
         }).start();

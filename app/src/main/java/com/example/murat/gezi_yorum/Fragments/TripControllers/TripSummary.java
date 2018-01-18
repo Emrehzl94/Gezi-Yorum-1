@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.StrictMode;
 import android.support.v4.app.Fragment;
+import android.text.InputFilter;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
@@ -76,6 +77,9 @@ public abstract class TripSummary extends Fragment {
                 AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
                 final EditText editName = new EditText(getContext());
                 editName.setId(0);
+                InputFilter[] filterArray = new InputFilter[1];
+                filterArray[0] = new InputFilter.LengthFilter(100);
+                editName.setFilters(filterArray);
                 editName.setText(trip.name);
                 builder.setView(editName);
                 builder.setTitle(getString(R.string.change_name));

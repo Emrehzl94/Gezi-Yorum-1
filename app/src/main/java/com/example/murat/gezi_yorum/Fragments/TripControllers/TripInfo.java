@@ -191,7 +191,7 @@ public class TripInfo extends TripSummary {
                             File media = new File(mediaFile.path);
                             totalLength += media.length();
                         }
-                        String message = getString(R.string.size) + (totalLength/(1024*1024)) + "MB";
+                        String message = getString(R.string.size) + (totalLength/(1024*1024) + 4) + "MB";
                         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
                         builder.setTitle(message);
                         builder.setMessage(R.string.sure_to_upload);

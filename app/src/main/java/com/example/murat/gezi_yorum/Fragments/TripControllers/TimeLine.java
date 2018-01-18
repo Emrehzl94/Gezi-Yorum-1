@@ -2,13 +2,9 @@ package com.example.murat.gezi_yorum.Fragments.TripControllers;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.ColorStateList;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetBehavior;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
@@ -53,7 +49,6 @@ public class TimeLine extends Fragment implements OnMapReadyCallback {
         nothing = view.findViewById(R.id.nothing);
         behavior = BottomSheetBehavior.from(bottomsheet);
         behavior.setHideable(false);
-        behavior.setPeekHeight(300);
 
         viewPager = view.findViewById(R.id.pager);
         helper = new LocationDbOpenHelper(getContext());

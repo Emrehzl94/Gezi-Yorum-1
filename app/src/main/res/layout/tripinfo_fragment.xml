@@ -25,6 +25,21 @@
                 android:background="#00000000"
                 android:scaleX="-1"
                 android:layout_alignParentEnd="true" />
+            <TextView
+                android:id="@+id/header"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:textAppearance="@android:style/TextAppearance.Holo.Medium" />
+            <ImageButton
+                android:id="@+id/edit_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@android:drawable/ic_menu_edit"
+                android:layout_centerHorizontal="true"
+                android:background="#00000000"
+                android:layout_marginStart="@dimen/activity_vertical_margin"
+                android:layout_toEndOf="@id/header"/>
             <ImageView
                 android:id="@+id/cover"
                 android:layout_width="match_parent"
@@ -33,7 +48,7 @@
                 android:layout_marginLeft="@dimen/mcam_action_icon_size"
                 android:layout_marginRight="@dimen/mcam_action_icon_size"
                 android:src="@android:drawable/ic_menu_gallery"
-                android:layout_below="@id/prevbutton"
+                android:layout_below="@id/start_end"
                 android:layout_toEndOf="@id/prevbutton"
                 android:layout_toStartOf="@id/nextbutton"
                 />
@@ -72,27 +87,29 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerHorizontal="true"
-                android:layout_below="@id/control"
+                android:layout_below="@id/header"
                 android:drawableLeft="@drawable/ic_action_start_end"
                 android:background="#00000000"/>
-
-            <include layout="@layout/media_layout"
-                android:id="@+id/media_view"
-                android:layout_below="@id/start_end"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                />
-
         <TextView
             android:id="@+id/last_added"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/media_view"
+            android:layout_below="@id/control"
             android:text="@string/last_added"
             android:textAppearance="@style/TextAppearance.AppCompat.Large" />
+
+        <GridView
+            android:id="@+id/preview"
+            android:layout_below="@id/last_added"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:numColumns="3"
+            android:stretchMode="columnWidth"
+            android:gravity="center"
+            />
         <Button
             android:id="@+id/more"
-            android:layout_below="@id/media_view"
+            android:layout_below="@id/preview"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"

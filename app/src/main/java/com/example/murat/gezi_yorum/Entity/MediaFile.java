@@ -47,13 +47,14 @@ public class MediaFile {
     public static final String EVERYBODY = "everybody";
     public static final String MY_FRIENDS = "only_friends";
     public static final String ONLY_ME = "only_me";
+
     /**
-     *This constructor used while adding new media
+     * This constructor used while adding new media
      */
-    public MediaFile(String type, String path,double latitude, double longitude, double altitude , long trip_id, long time, String share_option){
+    public MediaFile(String type, String path, double latitude, double longitude, double altitude, long trip_id, long time, String share_option) {
         this.type = type;
         this.path = path;
-        this.location = new mLocation(latitude,longitude,altitude,time);
+        this.location = new mLocation(latitude, longitude, altitude, time);
         this.trip_id = trip_id;
         this.share_option = share_option;
         this.about_note = "";
@@ -62,14 +63,14 @@ public class MediaFile {
     /**
      * This constructor used by DB
      */
-    public MediaFile(Long id,String type, String path,double latitude, double longitude, double altitude , long trip_id, long time,byte[] imageData, String share_option, String about_note){
+    public MediaFile(Long id, String type, String path, double latitude, double longitude, double altitude, long trip_id, long time, byte[] imageData, String share_option, String about_note) {
         this(type, path, latitude, longitude, altitude, trip_id, time, share_option);
-        thumbNail = BitmapFactory.decodeByteArray(imageData,0,imageData.length);
+        thumbNail = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
         this.id = id;
         this.about_note = about_note;
     }
 
-    public MediaFile(JSONObject object, String path, Long trip_id){
+    public MediaFile(JSONObject object, String path, Long trip_id) {
         try {
             this.type = object.getString("type");
             this.path = path;
@@ -85,10 +86,11 @@ public class MediaFile {
 
     /**
      * Generates thumbnail for this file
+     *
      * @param context current activity
      */
-    public void generateThumbNail(Context context){
-        if(thumbNail == null) {
+    public void generateThumbNail(Context context) {
+        if (thumbNail == null) {
             switch (type) {
                 case PHOTO:
                     thumbNail = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(path), 100, 100);
@@ -105,10 +107,11 @@ public class MediaFile {
 
     /**
      * adds this file to map
+     *
      * @param map GoogleMap
      */
 
-    public void addToMap(GoogleMap map, Boolean isImported){
+    public void addToMap(GoogleMap map, Boolean isImported) {
         float color = isImported ? BitmapDescriptorFactory.HUE_BLUE : getColorForMap();
         map.addMarker(new MarkerOptions().position(location.convertLatLng())
                 .icon(BitmapDescriptorFactory.defaultMarker(color))
@@ -116,14 +119,14 @@ public class MediaFile {
         );
     }
 
-    private float getColorForMap(){
+    private float getColorForMap() {
         float color = 0;
-        switch (type){
+        switch (type) {
             case PHOTO:
                 color = BitmapDescriptorFactory.HUE_RED;
                 break;
             case VIDEO:
-                color = BitmapDescriptorFactory.HUE_BLUE;
+                color = BitmapDescriptorFactory.HUE_CYAN;
                 break;
             case SOUNDRECORD:
                 color = BitmapDescriptorFactory.HUE_GREEN;
@@ -133,7 +136,7 @@ public class MediaFile {
     }
 
 
-    public static String getSubdir(String type){
+    public static String getSubdir(String type) {
         String subdir = "";
         switch (type) {
             case PHOTO:
@@ -148,7 +151,8 @@ public class MediaFile {
         }
         return subdir;
     }
-    public static String getExtension(String type){
+
+    public static String getExtension(String type) {
         String extension = "";
         switch (type) {
             case PHOTO:
@@ -163,14 +167,16 @@ public class MediaFile {
         }
         return extension;
     }
+
     /**
      * Returns thumbnail array created from media files
+     *
      * @param files MediaFile array
      * @return array
      */
-    public static ArrayList<Bitmap> getThumbnailArray(ArrayList<MediaFile> files){
+    public static ArrayList<Bitmap> getThumbnailArray(ArrayList<MediaFile> files) {
         ArrayList<Bitmap> return_array = new ArrayList<>();
-        for (MediaFile file : files){
+        for (MediaFile file : files) {
             return_array.add(file.thumbNail);
         }
         return return_array;
@@ -178,21 +184,23 @@ public class MediaFile {
 
     /**
      * Starts activity for this file
+     *
      * @param activity currentActivity
      */
-    public void startActivityForView(Activity activity){
+    public void startActivityForView(Activity activity) {
         Intent intent = new Intent(activity, MediaActivity.class);
-        intent.putExtra("fileIds",String.valueOf(id));
+        intent.putExtra("fileIds", String.valueOf(id));
         activity.startActivity(intent);
     }
 
     /**
      * Returns compatible viewer for media type
+     *
      * @return Fragment
      */
-    public Fragment getViewer(){
+    public Fragment getViewer() {
         Fragment fragment = null;
-        switch (type){
+        switch (type) {
             case PHOTO:
                 fragment = new PhotoFragment();
                 break;
@@ -206,7 +214,7 @@ public class MediaFile {
         return fragment;
     }
 
-    public JSONObject toJSONObject(){
+    public JSONObject toJSONObject() {
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("path", new File(path).getName());
@@ -222,7 +230,7 @@ public class MediaFile {
         return jsonObject;
     }
 
-    public byte[] getByteArray(){
+    public byte[] getByteArray() {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         thumbNail.compress(Bitmap.CompressFormat.JPEG, 100, stream);
         return stream.toByteArray();
