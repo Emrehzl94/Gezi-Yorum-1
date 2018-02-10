@@ -62,7 +62,6 @@
             android:hardwareAccelerated="true"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".EditProfile" />
-        <activity android:name=".SecretActivity"></activity>
     </application>
 
 </manifest>

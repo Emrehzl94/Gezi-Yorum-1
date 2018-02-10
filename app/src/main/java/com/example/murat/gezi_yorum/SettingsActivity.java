@@ -69,14 +69,5 @@ public class SettingsActivity extends AppCompatActivity {
                 Snackbar.make(view, getString(R.string.saved), Snackbar.LENGTH_LONG).show();
             }
         });
-
-        save_button.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View view) {
-                Intent intent = new Intent(SettingsActivity.this, SecretActivity.class);
-                startActivity(intent);
-                return true;
-            }
-        });
     }
 }
