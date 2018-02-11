@@ -17,3 +17,5 @@ Uygulamanın web tarafı için:
 https://github.com/4Frisby/Geziyorum-web-db
 
 APK dosyası için : https://1drv.ms/u/s!Anx7ReSRhEiqxjy-YaeoKPx67O3V
+
+İnternet sitesi için : http://163.172.176.169:8080/Geziyorum/
