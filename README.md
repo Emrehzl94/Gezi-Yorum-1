@@ -11,7 +11,7 @@ Android için gezi takip ve yönetimi uygulaması
 *İndirilen geziyi rota olarak belirleme
 
 Uygulama bilgisi için Latex projesine bakınız. 
-https://github.com/bugdetector/Latex
+https://github.com/bugdetector/Latex/blob/master/main.pdf
 
 Uygulamanın web tarafı için: 
 https://github.com/4Frisby/Geziyorum-web-db
